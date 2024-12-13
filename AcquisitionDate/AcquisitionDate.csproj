@@ -9,6 +9,7 @@
   </PropertyGroup>
     
   <ItemGroup>
+    <Folder Include="Acquisition\" />
     <Folder Include="Windows\Windows\" />
   </ItemGroup>
     

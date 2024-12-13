@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue;
@@ -24,6 +25,11 @@ internal class LodestoneNetworker : ILodestoneNetworker
     List<ILodestoneQueueElement> _queueElements = new List<ILodestoneQueueElement>();
 
     float lodestoneQueueReleaseTimer = 0;
+
+    public LodestoneNetworker()
+    {
+        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=");
+    }
 
     public void AddElementToQueue(ILodestoneRequest request)
     {
@@ -75,7 +81,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
         }
 
         if (lodestoneQueueReleaseTimer < TIME_BETWEEN_RELEASES) return;
-        if (lodestoneQueueReleaseTimer >= TIME_BETWEEN_RELEASES) lodestoneQueueReleaseTimer = TIME_BETWEEN_RELEASES;
+        lodestoneQueueReleaseTimer = 0;
 
         for (int i = 0; i < _queueElements.Count; i++)
         {
@@ -83,7 +89,6 @@ internal class LodestoneNetworker : ILodestoneNetworker
             if (element.QueueState != QueueState.InQueue) continue;
 
             element.SendRequest();
-            lodestoneQueueReleaseTimer = 0;
             break;
         }
 
@@ -91,8 +96,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
             if (queueElement.QueueState != QueueState.Failure && 
-                queueElement.QueueState != QueueState.Success && 
-                queueElement.QueueState != QueueState.InQueue) continue;
+                queueElement.QueueState != QueueState.Success) continue;
 
             queueElement.Dispose();
             _queueElements.RemoveAt(i);

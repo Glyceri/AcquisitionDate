@@ -53,7 +53,7 @@ internal class AchievementDateRequest : CharacterRequest
             if (value == null) continue;
 
             string num = value.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
-            int achievementID = int.Parse(num);
+            uint achievementID = uint.Parse(num);
 
             DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
             if (acquiredTime == null) continue;

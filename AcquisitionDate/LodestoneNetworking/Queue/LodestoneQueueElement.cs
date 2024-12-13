@@ -27,7 +27,6 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
         OnSuccess = onSuccess;
         OnFailure = onFailure;
         MessageRequest = new HttpRequestMessage(HttpMethod.Get, actionURL);
-
         CancellationTokenSource = new CancellationTokenSource();
 
         QueueState = QueueState.Idle;

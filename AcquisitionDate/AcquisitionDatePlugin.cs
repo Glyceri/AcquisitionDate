@@ -11,6 +11,7 @@ using AcquisitionDate.LodestoneRequests.Requests;
 using AcquisitionDate.Updating.Interfaces;
 using AcquisitionDate.Updating;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneRequests.Interfaces;
 
 namespace AcquisitionDate;
 
@@ -24,6 +25,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
     readonly Regex pageRegex = new Regex(@"Page 1 of ^(?<pagecount>.+)", RegexOptions.Compiled);
 
     readonly ExcelSheet<Achievement> achievements;
+    readonly ExcelSheet<Quest> quests;
 
     readonly IUpdateHandler UpdateHandler;
     readonly ILodestoneNetworker LodestoneNetworker;
@@ -38,10 +40,24 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         UpdateHandler = new UpdateHandler(LodestoneNetworker);
 
         achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
+        quests = PluginHandlers.DataManager.GetExcelSheet<Quest>();
+        
+        /*
+        foreach (var quest in quests)
+        {
+            try
+            {
+                PluginHandlers.PluginLog.Debug("Quest Place: " + quest.JournalGenre.Value.Name.ExtractText());
+            }
+            catch { }
+            PluginHandlers.PluginLog.Debug("Quest: " + quest.Name.ExtractText());   
+        }*/
 
-        AchievementPageCountRequest request = new AchievementPageCountRequest(30338174, OnOutcome);
+        //ILodestoneRequest request = new AchievementPageCountRequest(30338174, OnOutcome);
+        //LodestoneNetworker.AddElementToQueue(request);
 
-        LodestoneNetworker.AddElementToQueue(request);
+        ILodestoneRequest request2 = new QuestPageCountRequest(30338174, OnOutcome2);
+        LodestoneNetworker.AddElementToQueue(request2);
     }
 
     void OnOutcome(PageCountData? val)
@@ -54,6 +70,20 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         {
             AchievementDateRequest dataRequest = new AchievementDateRequest(30338174, i, OnAchievement);
 
+            //LodestoneNetworker.AddElementToQueue(dataRequest);
+        }
+    }
+
+    void OnOutcome2(PageCountData? val)
+    {
+        PluginHandlers.PluginLog.Debug($"OUTCOME2: {val?.PageCount}");
+
+        if (val == null) return;
+
+        for (int i = 0; i < val.Value.PageCount; i++)
+        {
+            QuestDataRequest dataRequest = new QuestDataRequest(30338174, i, OnQuest);
+
             LodestoneNetworker.AddElementToQueue(dataRequest);
         }
     }
@@ -61,6 +91,12 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
     void OnAchievement(AchievementData achiData)
     {
         PluginHandlers.PluginLog.Debug($"Got data for achievement: {achievements.GetRow((uint)achiData.AchievementID).Name}: {achiData.AchievedDate.ToString("dd/MM/yy")}");
+    }
+
+    void OnQuest(QuestData quest)
+    {
+        PluginHandlers.PluginLog.Debug($"Got data for quest: {quests.GetRow(quest.QuestID).Name}: {quest.AchievedDate.ToString("dd/MM/yy")}");
+
     }
 
     public void Dispose()
