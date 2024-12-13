@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.SDK/11.0.0">
+  <PropertyGroup>
+    <Version>0.0.0.1</Version>
+    <Description>A plugin that shows the acquisition date of stuff.</Description>
+    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+    
+  <ItemGroup>
+    <Folder Include="Windows\Windows\" />
+  </ItemGroup>
+    
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
+  </ItemGroup>
+</Project>

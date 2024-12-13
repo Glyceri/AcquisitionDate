@@ -1,0 +1,12 @@
+{
+    "Author": "Glyceri",
+    "Name": "Acquisition Date",
+    "Punchline": "Shows the date when you acquired something.",
+    "Description": "Shows the date when you acquired something.",
+    "ApplicableVersion": "any",
+    "Tags": [
+        "sample",
+        "plugin",
+        "goats"
+    ]
+}
