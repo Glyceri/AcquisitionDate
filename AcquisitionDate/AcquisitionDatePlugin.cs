@@ -15,6 +15,8 @@ using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Services;
 using AcquisitionDate.Serializiation.DirtySystem;
 using AcquisitionDate.Serializiation;
+using AcquisitionDate.Acquisition.Interfaces;
+using AcquisitionDate.Acquisition;
 
 namespace AcquisitionDate;
 
@@ -29,6 +31,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
     readonly IDatabase Database;
     readonly IUserList UserList;
+    readonly IAcquirerHandler AcquirerHandler;
 
     readonly DirtyHandler DirtyHandler;
     readonly SaveHandler SaveHandler;
@@ -39,19 +42,22 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         Services = new AcquisitionSevices();
 
         DirtyHandler = new DirtyHandler();
+        SaveHandler = new SaveHandler(DirtyHandler, Services.Configuration);
 
         Database = new DatableDatabase(Services, DirtyHandler);
         UserList = new UserList(Database);
 
         LodestoneNetworker = new LodestoneNetworker();
-        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services);
+        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler);
         HookHandler = new HookHandler(UserList);
 
-        WindowHandler = new WindowHandler(pluginInterface, UserList, Database);
+        AcquirerHandler = new AcquirerHandler(LodestoneNetworker);
+
+        WindowHandler = new WindowHandler(Services, pluginInterface, UserList, Database);
 
         Services.Configuration.Initialise(Database);
 
-        SaveHandler = new SaveHandler(DirtyHandler, Services.Configuration);
+        
     }
 
     public void Dispose()
@@ -61,5 +67,6 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         UpdateHandler?.Dispose();
         LodestoneNetworker?.Dispose();
         SaveHandler?.Dispose();
+        AcquirerHandler?.Dispose();
     }
 }

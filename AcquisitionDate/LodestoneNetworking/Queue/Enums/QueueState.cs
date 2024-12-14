@@ -7,5 +7,6 @@ internal enum QueueState
     BeingProcessed,
     Success,
     Failure,
+    Cancelled,
     Stale,
 }

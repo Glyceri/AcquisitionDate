@@ -14,6 +14,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 {
     public float TimeInQueue { get; private set; }
     public QueueState QueueState { get; private set; }
+    public bool DISPOSED { get; private set; } = false;
 
     readonly CancellationTokenSource CancellationTokenSource;
     readonly Action<HtmlDocument> OnSuccess;
@@ -76,7 +77,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         try
         {
-            response = await _HttpClient.SendAsync(MessageRequest).ConfigureAwait(false);
+            response = await _HttpClient.SendAsync(MessageRequest, CancellationTokenSource.Token).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
@@ -101,7 +102,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         try
         {
-            document.LoadHtml(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+            document.LoadHtml(await response.Content.ReadAsStringAsync(CancellationTokenSource.Token).ConfigureAwait(false));
         }
         catch(Exception ex)
         {
@@ -110,14 +111,14 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
         }
 
         QueueState = QueueState.Success;
-        await PluginHandlers.Framework.Run(() => OnSuccess.Invoke(document)).ConfigureAwait(false);
+        await PluginHandlers.Framework.Run(() => OnSuccess.Invoke(document), CancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     void HandleFailure(Exception ex)
     {
         QueueState = QueueState.Failure;
         CancellationTokenSource.Cancel();
-        PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex));
+        PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex), CancellationTokenSource.Token);
     }
 
     public void Dispose()
@@ -126,5 +127,13 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
         CancellationTokenSource.Dispose();
 
         MessageRequest.Dispose();
+
+        DISPOSED = true;
+    }
+
+    public void Cancel()
+    {
+        QueueState = QueueState.Cancelled;
+        CancellationTokenSource.Cancel();
     }
 }

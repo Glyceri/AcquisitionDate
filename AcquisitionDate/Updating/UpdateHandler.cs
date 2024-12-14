@@ -1,6 +1,7 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.Serializiation;
 using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
 using AcquisitionDate.Updating.Updatables;
@@ -14,14 +15,16 @@ internal class UpdateHandler : IUpdateHandler
     readonly ILodestoneNetworker LodestoneNetworker;
     readonly IUserList UserList;
     readonly IAcquisitionServices Services;
+    readonly SaveHandler SaveHandler;
 
     readonly List<IUpdatable> _updatables = new List<IUpdatable>();
 
-    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services)
+    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services, SaveHandler saveHandler)
     {
         LodestoneNetworker = lodestoneNetworker;
         UserList = userList;
         Services = services;
+        SaveHandler = saveHandler;
 
         PluginHandlers.Framework.Update += OnUpdate;
         Setup();
@@ -31,6 +34,7 @@ internal class UpdateHandler : IUpdateHandler
     {
         _updatables.Add(new LodestoneNetworkHelper(LodestoneNetworker));
         _updatables.Add(new LodestoneIDHelper(LodestoneNetworker, UserList, Services.Sheets));
+        _updatables.Add(new SaveHandlerHelper(SaveHandler));
     }
 
     public void Dispose()

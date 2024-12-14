@@ -8,6 +8,8 @@ internal class SaveHandler : IDisposable
     readonly IDirtyListener DirtyListener;
     readonly Configuration Configuration;
 
+    bool shouldSave = false;
+
     public SaveHandler(IDirtyListener dirtyListener, Configuration configuration)
     {
         DirtyListener = dirtyListener;
@@ -18,6 +20,14 @@ internal class SaveHandler : IDisposable
 
     void OnDirty()
     {
+        shouldSave = true;
+    }
+
+    public void Update(float deltaTime)
+    {
+        if (!shouldSave) return;
+
+        shouldSave = false;
         Configuration.Save();
     }
 

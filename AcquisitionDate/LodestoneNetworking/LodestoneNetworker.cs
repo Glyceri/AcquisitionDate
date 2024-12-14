@@ -31,11 +31,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
         HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=");
     }
 
-    public void AddElementToQueue(ILodestoneRequest request)
+    public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)
     {
         ILodestoneQueueElement queueElement = new LodestoneQueueElement(HttpClient, request.HandleSuccess, request.HandleFailure, GetBaseString() + request.GetURL());
         queueElement.MarkAsInQueue();
+
         _queueElements.Add(queueElement);
+
+        return queueElement;
     }
 
     /// <summary>
@@ -44,11 +47,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
     /// <param name="onSuccess">Gives the HTML page back upon success.</param>
     /// <param name="onFailure">Gives the exception back upon failure.</param>
     /// <param name="URL">The lodestone URL WITHOUT the ##.finalfantasyxiv.com part (Note this does NOT end with a /)</param>
-    public void AddElementToQueue(Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string URL)
+    public ILodestoneQueueElement AddElementToQueue(Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string URL)
     {
         ILodestoneQueueElement queueElement = new LodestoneQueueElement(HttpClient, onSuccess, onFailure, GetBaseString() + URL);
         queueElement.MarkAsInQueue();
+
         _queueElements.Add(queueElement);
+
+        return queueElement;
     }
 
     string GetBaseString()
@@ -96,7 +102,8 @@ internal class LodestoneNetworker : ILodestoneNetworker
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
             if (queueElement.QueueState != QueueState.Failure && 
-                queueElement.QueueState != QueueState.Success) continue;
+                queueElement.QueueState != QueueState.Success &&
+                queueElement.QueueState != QueueState.Cancelled) continue;
 
             queueElement.Dispose();
             _queueElements.RemoveAt(i);

@@ -6,6 +6,7 @@ using AcquisitionDate.Windows.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Windows;
 
@@ -16,14 +17,16 @@ internal class WindowHandler : IDisposable
 
     readonly WindowSystem WindowSystem;
 
+    readonly IAcquisitionServices Services;
     readonly IUserList UserList;
     readonly IDatabase Database;
 
-    public WindowHandler(IDalamudPluginInterface pluginInterface, IUserList userList, IDatabase database)
+    public WindowHandler(IAcquisitionServices services, IDalamudPluginInterface pluginInterface, IUserList userList, IDatabase database)
     {
         WindowSystem = new WindowSystem("AcquisitionDate");
         pluginInterface.UiBuilder.Draw += Draw;
 
+        Services = services;
         UserList = userList;
         Database = database;
 
@@ -32,7 +35,7 @@ internal class WindowHandler : IDisposable
 
     void Register()
     {
-        AddWindow(new AcquisitionDebugWindow(UserList, Database));
+        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database));
     }
 
     void Draw()

@@ -17,6 +17,8 @@ internal class DatableList : IDatableList
 
     readonly IDirtySetter DirtySetter;
 
+    public int Length => IDs.Length;
+
     public DatableList(IDirtySetter dirtySetter)
     {
         DirtySetter = dirtySetter;

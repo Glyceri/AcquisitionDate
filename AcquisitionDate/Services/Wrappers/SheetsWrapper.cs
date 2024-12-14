@@ -24,6 +24,8 @@ internal class SheetsWrapper : ISheets
             ];
     }
 
+    public Quest[] AllQuests => Quests;
+
     public Quest? GetQuest(string name, string journalGroup)
     {
         int questCount = Quests.Length;

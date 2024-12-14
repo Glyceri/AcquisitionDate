@@ -1,5 +1,7 @@
+using AcquisitionDate.Acquisition.Elements;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Services.Interfaces;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using System;
@@ -12,6 +14,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 {
     readonly IUserList UserList;
     readonly IDatabase Database;
+    readonly IAcquisitionServices Services;
 
     protected override Vector2 MinSize { get; } = new Vector2(350, 136);
     protected override Vector2 MaxSize { get; } = new Vector2(2000, 2000);
@@ -20,8 +23,9 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     int currentActive = 0;
     List<DevStruct> devStructList = new List<DevStruct>();
 
-    public AcquisitionDebugWindow(IUserList userList, IDatabase database) : base("Acquisition Dev Window")
+    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database) : base("Acquisition Dev Window")
     {
+        Services = services;
         UserList = userList;
         Database = database;
 
@@ -47,7 +51,82 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
             ImGui.LabelText(localUser.Data.HomeworldName.ToString(), "Homeworld Name: ");
             ImGui.LabelText(localUser.ContentID.ToString(), "ContentID: ");
             ImGui.LabelText(localUser.LodestoneID?.ToString() ?? "...", "Lodestone ID: ");
+
+            ImGui.NewLine();
+
+            List<uint> achieves = GetCompletedAchievementIds();
+
+            ImGui.LabelText(achieves.Count.ToString(), "Achieves Count: ");
+            ImGui.LabelText(UserList.ActiveUser!.Data.AchievementList.Length.ToString(), "Stored Achieves Count: ");
+            
+
+            ImGui.BeginDisabled(localUser.LodestoneID == null);
+
+            if (ImGui.Button("Aqcuire Achievements"))
+            {
+                AchievementAcquirer.Instance.Acquire(localUser.Data);
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.BeginDisabled(!AchievementAcquirer.Instance.IsAcquiring);
+
+            if (ImGui.Button("Cancel Acquirement"))
+            {
+                AchievementAcquirer.Instance.Cancel();
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.LabelText(AchievementAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
+            ImGui.LabelText(AchievementAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
         }
+    }
+
+    public unsafe List<uint> GetCompletedAchievementIds()
+    {
+        List<uint> completedAchievementIds = new List<uint>();
+
+
+
+        for (int byteIndex = 0; byteIndex < FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievements.Length; byteIndex++)
+        {
+            byte currentByte = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievements[byteIndex];
+
+            // Check each bit in the current byte
+            for (int bitIndex = 0; bitIndex < 8; bitIndex++)
+            {
+                // If the bit is set (achievement is completed), add the achievementId
+                if ((currentByte & (1 << bitIndex)) != 0)
+                {
+                    uint achievementId = (uint)(byteIndex * 8 + bitIndex);
+                    completedAchievementIds.Add(achievementId);
+                }
+            }
+        }
+
+        /*
+
+            for (int i = completedAchievementIds.Count - 1; i >= 0; i--)
+            {
+
+                bool contained = false;
+
+                foreach (Quest q in Services.Sheets.AllQuests)
+                {
+                    PluginHandlers.PluginLog.Debug(completedAchievementIds[i].ToString() + " : " + q.RowId);
+                    if (q.RowId != completedAchievementIds[i]) continue;
+
+                    contained = true;
+
+                }
+
+                if (contained) continue;
+
+                //completedAchievementIds.RemoveAt(i);
+            }*/
+
+            return completedAchievementIds;
     }
 
 
@@ -95,10 +174,10 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     struct DevStruct
     {
         public readonly string title;
-        public readonly Action onSelected;
+        public readonly System.Action onSelected;
         public readonly Action<bool>? requestUpdate;
 
-        public DevStruct(string title, Action onSelected, Action<bool>? requestUpdate = null)
+        public DevStruct(string title, System.Action onSelected, Action<bool>? requestUpdate = null)
         {
             this.title = title;
             this.onSelected = onSelected;
