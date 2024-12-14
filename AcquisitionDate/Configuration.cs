@@ -20,6 +20,13 @@ internal class Configuration : IPluginConfiguration
     {
         Database = database;
         hasSetUp = true;
+
+        CurrentInitialise();
+    }
+
+    void CurrentInitialise()
+    {
+        SerializableUsers ??= [];
     }
 
     public void Save()

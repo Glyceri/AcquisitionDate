@@ -1,5 +1,6 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Serializiation;
 using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,14 @@ internal class DatableList : IDatableList
     public DatableList(IDirtySetter dirtySetter)
     {
         DirtySetter = dirtySetter;
+    }
+
+    public DatableList(IDirtySetter dirtySetter, SerializableList list) : this(dirtySetter)
+    {
+        IDs = list.IDS;
+        LodestoneTimes = list.LodestoneTimes;
+        CopyPasteTimes = list.CopyPasteTimes;
+        ManualTimes = list.ManualTimes;
     }
 
     public DateTime? GetDate(uint ID)

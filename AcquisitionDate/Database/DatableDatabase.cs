@@ -17,6 +17,27 @@ internal class DatableDatabase : IDatabase
     {
         Services = services;
         DirtySetter = dirtySetter;
+
+        Setup();
+    }
+
+    void Setup()
+    {
+        SerializableUser[]? users = Services.Configuration.SerializableUsers;
+        if (users == null) return;
+
+        foreach (SerializableUser user in users)
+        {
+            IDatableData newData = new DatableData(Services, DirtySetter,
+                user.Name,
+                user.Homeworld,
+                user.ContentID,
+                user.LodestoneID,
+                new DatableList(DirtySetter, user.AchievementList),
+                new DatableList(DirtySetter, user.QuestList));
+
+            _entries.Add(newData);
+        }
     }
 
     public IDatableData GetEntry(ulong contentID)

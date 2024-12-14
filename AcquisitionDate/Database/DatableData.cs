@@ -13,7 +13,7 @@ internal class DatableData : IDatableData
     public ushort Homeworld { get; private set; }
     public string HomeworldName { get; private set; } = "";
 
-    public ulong? LodestoneID { get; private set; }
+    public ulong? LodestoneID { get; private set; } = null;
 
     public bool HasSearchedLodestoneID { get; set; } = false;
     public bool IsReady => LodestoneID != null;
@@ -35,10 +35,13 @@ internal class DatableData : IDatableData
         Services = services;
         DirtySetter = dirtySetter;
 
-        Name = name;
-        Homeworld = homeworld;
-        ContentID = contentID;
-        LodestoneID = lodestoneID;
+        SetName(name);
+        SetHomeworld(homeworld);
+        SetContentID(contentID);
+        if (lodestoneID != null)
+        {
+            SetLodestoneID(lodestoneID.Value);
+        }
 
         AchievementList = new DatableList(DirtySetter);
         QuestList = new DatableList(DirtySetter);

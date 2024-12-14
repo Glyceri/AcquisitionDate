@@ -3,7 +3,6 @@ using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Common.Lua;
 using System.Linq;
 
 namespace AcquisitionDate.HtmlParser;
