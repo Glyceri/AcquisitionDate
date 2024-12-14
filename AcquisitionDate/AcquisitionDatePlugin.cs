@@ -53,11 +53,11 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
             PluginHandlers.PluginLog.Debug("Quest: " + quest.Name.ExtractText());   
         }*/
 
-        //ILodestoneRequest request = new AchievementPageCountRequest(30338174, OnOutcome);
-        //LodestoneNetworker.AddElementToQueue(request);
+        ILodestoneRequest request = new AchievementPageCountRequest(30338174, OnOutcome);
+        LodestoneNetworker.AddElementToQueue(request);
 
-        ILodestoneRequest request2 = new QuestPageCountRequest(30338174, OnOutcome2);
-        LodestoneNetworker.AddElementToQueue(request2);
+        //ILodestoneRequest request2 = new QuestPageCountRequest(30338174, OnOutcome2);
+        //LodestoneNetworker.AddElementToQueue(request2);
     }
 
     void OnOutcome(PageCountData? val)
@@ -70,7 +70,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         {
             AchievementDateRequest dataRequest = new AchievementDateRequest(30338174, i, OnAchievement);
 
-            //LodestoneNetworker.AddElementToQueue(dataRequest);
+            LodestoneNetworker.AddElementToQueue(dataRequest);
         }
     }
 

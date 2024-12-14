@@ -8,6 +8,7 @@ using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests;
@@ -20,6 +21,8 @@ internal class QuestDataRequest : CharacterRequest
     readonly int Page;
 
     readonly ExcelSheet<Quest>[] quests;
+
+    readonly Regex regex = new Regex(@"^(?<questGroup>.*?)(\s*(?:""(?<questName>.*?)""|「(?<questName>.*?)」|„(?<questName>.*?)“|\((?<questName>.*?)\))\s*)$");
 
     public QuestDataRequest(int lodestoneCharacterID, int page, Action<QuestData> continuousSuccessCallback, System.Action successCallback = null, Action<Exception> failureCallback = null) : base(lodestoneCharacterID)
     {
@@ -60,6 +63,9 @@ internal class QuestDataRequest : CharacterRequest
             string value = entryQuestName.ChildNodes[1].GetDirectInnerText().Trim();
             string decoded = HttpUtility.HtmlDecode(value);
 
+            Match match = regex.Match(decoded);
+            if (!match.Success) continue;
+
             uint? rowID = null;
 
             for (int i = 0; i < quests.Length; i++)
@@ -70,10 +76,7 @@ internal class QuestDataRequest : CharacterRequest
 
                 foreach (Quest quest in sheet)
                 {
-                    string? questName = GetStringFromQuest(quest);
-                    if (questName.IsNullOrWhitespace()) continue;
-
-                    if (questName != decoded) continue;
+                    if (!QuestValid(quest, match)) continue;
 
                     rowID = quest.RowId;
                     break;
@@ -86,15 +89,21 @@ internal class QuestDataRequest : CharacterRequest
         }
     }
 
-    string? GetStringFromQuest(Quest quest)
+    bool QuestValid(Quest quest, Match match)
     {
         try
         {
-            return $"{quest.JournalGenre.Value.Name.ExtractText()} ({quest.Name.ExtractText()})";
-        }
-        catch { }
+            string journalGenre = quest.JournalGenre.Value.Name.ExtractText();
+            string questName = quest.Name.ExtractText();
 
-        return null;
+            if (journalGenre != match.Groups["questGroup"].Value) return false;
+            if (questName != match.Groups["questName"].Value) return false;
+
+            return true;
+
+        } catch { }
+
+        return false;
     }
 
     public override string GetURL() =>  base.GetURL() + $"quest/?page={Page}#anchor_quest";
