@@ -8,5 +8,8 @@ internal interface ISheets
     uint? GetWorldID(string worldName);
 
     Quest? GetQuest(string name, string journalGroup);
+    Quest? GetQuest(string name);
     Quest[] AllQuests { get; }
+
+    Achievement? GetAchievement(string name);
 }

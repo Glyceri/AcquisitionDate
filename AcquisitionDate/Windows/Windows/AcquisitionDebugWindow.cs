@@ -1,9 +1,15 @@
 using AcquisitionDate.Acquisition.Elements;
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.StructTests;
 using Dalamud.Interface.Utility;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -35,7 +41,10 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
         Open();
     }
 
-    void DrawUserList()
+    int current = 1480;
+    bool stopPrint = false;
+
+    unsafe void DrawUserList()
     {
         Vector2 size = new Vector2(ImGui.GetContentRegionAvail().X, 30 * ImGuiHelpers.GlobalScale);
 
@@ -54,11 +63,17 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.NewLine();
 
-            List<uint> achieves = GetCompletedAchievementIds();
-
-            ImGui.LabelText(achieves.Count.ToString(), "Achieves Count: ");
-            ImGui.LabelText(UserList.ActiveUser!.Data.AchievementList.Length.ToString(), "Stored Achieves Count: ");
             
+
+            if (ImGui.Button("UP"))
+            {
+                current += 1000;
+            }
+
+            if (ImGui.Button("Toggle"))
+            {
+                stopPrint ^= true;
+            }
 
             ImGui.BeginDisabled(localUser.LodestoneID == null);
 
@@ -82,53 +97,6 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
             ImGui.LabelText(AchievementAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
         }
     }
-
-    public unsafe List<uint> GetCompletedAchievementIds()
-    {
-        List<uint> completedAchievementIds = new List<uint>();
-
-
-
-        for (int byteIndex = 0; byteIndex < FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievements.Length; byteIndex++)
-        {
-            byte currentByte = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievements[byteIndex];
-
-            // Check each bit in the current byte
-            for (int bitIndex = 0; bitIndex < 8; bitIndex++)
-            {
-                // If the bit is set (achievement is completed), add the achievementId
-                if ((currentByte & (1 << bitIndex)) != 0)
-                {
-                    uint achievementId = (uint)(byteIndex * 8 + bitIndex);
-                    completedAchievementIds.Add(achievementId);
-                }
-            }
-        }
-
-        /*
-
-            for (int i = completedAchievementIds.Count - 1; i >= 0; i--)
-            {
-
-                bool contained = false;
-
-                foreach (Quest q in Services.Sheets.AllQuests)
-                {
-                    PluginHandlers.PluginLog.Debug(completedAchievementIds[i].ToString() + " : " + q.RowId);
-                    if (q.RowId != completedAchievementIds[i]) continue;
-
-                    contained = true;
-
-                }
-
-                if (contained) continue;
-
-                //completedAchievementIds.RemoveAt(i);
-            }*/
-
-            return completedAchievementIds;
-    }
-
 
     void DrawUserDatabase()
     {

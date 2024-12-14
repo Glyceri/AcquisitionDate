@@ -26,6 +26,19 @@ internal class SheetsWrapper : ISheets
 
     public Quest[] AllQuests => Quests;
 
+    public Achievement? GetAchievement(string name)
+    {
+        foreach (Achievement achievement in Achievements)
+        {
+            string achiName = achievement.Name.ExtractText();
+            if (achiName != name) continue;
+
+            return achievement;
+        }
+
+        return null;
+    }
+
     public Quest? GetQuest(string name, string journalGroup)
     {
         int questCount = Quests.Length;
@@ -39,6 +52,26 @@ internal class SheetsWrapper : ISheets
 
                 if (!name.Equals(questName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
                 if (!journalGroup.Equals(journalGenre, System.StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                return quest;
+            }
+            catch { continue; }
+        }
+
+        return null;
+    }
+
+    public Quest? GetQuest(string name)
+    {
+        int questCount = Quests.Length;
+        for (int i = 0; i < questCount; i++)
+        {
+            try
+            {
+                Quest quest = Quests[i];
+                string questName = quest.Name.ExtractText();
+
+                if (!name.Equals(questName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
 
                 return quest;
             }

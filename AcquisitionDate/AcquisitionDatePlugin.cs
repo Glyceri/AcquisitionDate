@@ -49,15 +49,13 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
         LodestoneNetworker = new LodestoneNetworker();
         UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler);
-        HookHandler = new HookHandler(UserList);
+        HookHandler = new HookHandler(Services, UserList);
 
         AcquirerHandler = new AcquirerHandler(LodestoneNetworker);
 
         WindowHandler = new WindowHandler(Services, pluginInterface, UserList, Database);
 
-        Services.Configuration.Initialise(Database);
-
-        
+        Services.Configuration.Initialise(Database);    
     }
 
     public void Dispose()
