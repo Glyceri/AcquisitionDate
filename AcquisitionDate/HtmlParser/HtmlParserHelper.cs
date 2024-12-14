@@ -3,6 +3,8 @@ using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Common.Lua;
+using System.Linq;
 
 namespace AcquisitionDate.HtmlParser;
 
@@ -53,5 +55,15 @@ internal static class HtmlParserHelper
         }
 
         return nodes;
+    }
+
+    public static uint? GetValueFromDashedLink(string value)
+    {
+        string num = value.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
+        if (num.IsNullOrWhitespace()) return null;
+
+        if (!uint.TryParse(num, out uint ID)) return null;
+
+        return ID;
     }
 }

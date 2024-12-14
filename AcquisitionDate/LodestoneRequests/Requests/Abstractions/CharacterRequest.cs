@@ -1,12 +1,20 @@
+using AcquisitionDate.Database.Interfaces;
+
 namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions;
 
 internal abstract class CharacterRequest : LodestoneRequest
 {
-    protected readonly int LodestoneCharacterID;
+    protected readonly ulong? LodestoneCharacterID;
 
-    public CharacterRequest(int lodestoneCharacterID)
+    public CharacterRequest(IDatableData data)
     {
-        LodestoneCharacterID = lodestoneCharacterID;
+        if (!data.IsReady)
+        {
+            ShouldError = true;
+            return;
+        }
+
+        LodestoneCharacterID = data.LodestoneID;
     }
 
     public override string GetURL() => $"/lodestone/character/{LodestoneCharacterID}/";

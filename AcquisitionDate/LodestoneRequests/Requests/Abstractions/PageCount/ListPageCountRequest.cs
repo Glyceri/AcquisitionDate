@@ -1,3 +1,4 @@
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
 using Dalamud.Utility;
 using HtmlAgilityPack;
@@ -8,7 +9,7 @@ namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
 
 internal abstract class ListPageCountRequest : PageCountRequest
 {
-    protected ListPageCountRequest(int lodestoneCharacterID, Action<PageCountData?> pageCountCallback) : base(lodestoneCharacterID, pageCountCallback) { }
+    protected ListPageCountRequest(IDatableData data, Action<PageCountData?> pageCountCallback) : base(data, pageCountCallback) { }
 
     Regex regex = new Regex(@"(?:von|\/|of|ページ)\s*(\d+)");
 

@@ -1,5 +1,7 @@
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
 using AcquisitionDate.Updating.Updatables;
 using Dalamud.Plugin.Services;
@@ -10,12 +12,16 @@ namespace AcquisitionDate.Updating;
 internal class UpdateHandler : IUpdateHandler
 {
     readonly ILodestoneNetworker LodestoneNetworker;
+    readonly IUserList UserList;
+    readonly IAcquisitionServices Services;
 
     readonly List<IUpdatable> _updatables = new List<IUpdatable>();
 
-    public UpdateHandler(ILodestoneNetworker lodestoneNetworker)
+    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services)
     {
         LodestoneNetworker = lodestoneNetworker;
+        UserList = userList;
+        Services = services;
 
         PluginHandlers.Framework.Update += OnUpdate;
         Setup();
@@ -24,6 +30,7 @@ internal class UpdateHandler : IUpdateHandler
     void Setup()
     {
         _updatables.Add(new LodestoneNetworkHelper(LodestoneNetworker));
+        _updatables.Add(new LodestoneIDHelper(LodestoneNetworker, UserList, Services.Sheets));
     }
 
     public void Dispose()

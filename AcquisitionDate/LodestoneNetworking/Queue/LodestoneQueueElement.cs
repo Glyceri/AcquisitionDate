@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneNetworking.Queue.Enums;
 using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
 using HtmlAgilityPack;
@@ -66,7 +67,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         QueueState = QueueState.BeingProcessed;
 
-        Task.Run(async () => await SendLodestoneRequest(), CancellationTokenSource.Token);
+        Task.Run(async () => await SendLodestoneRequest(), CancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     async Task SendLodestoneRequest()
@@ -75,7 +76,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         try
         {
-            response = await _HttpClient.SendAsync(MessageRequest);
+            response = await _HttpClient.SendAsync(MessageRequest).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
@@ -100,7 +101,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         try
         {
-            document.LoadHtml(await response.Content.ReadAsStringAsync());
+            document.LoadHtml(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         }
         catch(Exception ex)
         {
@@ -109,14 +110,14 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
         }
 
         QueueState = QueueState.Success;
-        OnSuccess.Invoke(document);
+        await PluginHandlers.Framework.Run(() => OnSuccess.Invoke(document)).ConfigureAwait(false);
     }
 
     void HandleFailure(Exception ex)
     {
         QueueState = QueueState.Failure;
         CancellationTokenSource.Cancel();
-        OnFailure?.Invoke(ex);
+        PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex));
     }
 
     public void Dispose()

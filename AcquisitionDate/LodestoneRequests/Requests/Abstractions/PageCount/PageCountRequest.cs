@@ -1,4 +1,5 @@
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
 using HtmlAgilityPack;
 using System;
@@ -11,7 +12,7 @@ internal abstract class PageCountRequest : CharacterRequest
 
     protected abstract int Outcome { get; set; }
 
-    public PageCountRequest(int lodestoneCharacterID, Action<PageCountData?> pageCountCallback) : base(lodestoneCharacterID)
+    public PageCountRequest(IDatableData data, Action<PageCountData?> pageCountCallback) : base(data)
     {
         PageCountCallback = pageCountCallback;
     }

@@ -2,38 +2,58 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using System;
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Windows.Interfaces;
+using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Windows.Windows;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Windows;
 
 internal class WindowHandler : IDisposable
 {
-    WindowSystem windowSystem;
+    static int _internalCounter = 0;
+    public static int InternalCounter { get => _internalCounter++; }
 
-    public WindowHandler(IDalamudPluginInterface pluginInterface)
+    readonly WindowSystem WindowSystem;
+
+    readonly IUserList UserList;
+    readonly IDatabase Database;
+
+    public WindowHandler(IDalamudPluginInterface pluginInterface, IUserList userList, IDatabase database)
     {
-        windowSystem = new WindowSystem("AcquisitionDate");
-        pluginInterface.UiBuilder.Draw += windowSystem.Draw;
+        WindowSystem = new WindowSystem("AcquisitionDate");
+        pluginInterface.UiBuilder.Draw += Draw;
+
+        UserList = userList;
+        Database = database;
+
+        Register();
     }
 
-    public void Dispose()
+    void Register()
     {
-        PluginHandlers.PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
-        windowSystem.RemoveAllWindows();
+        AddWindow(new AcquisitionDebugWindow(UserList, Database));
+    }
+
+    void Draw()
+    {
+        _internalCounter = 0;
+        WindowSystem.Draw();
     }
 
     public void AddWindow(AcquisitionWindow acquisitionWindow)
     {
-        windowSystem.AddWindow(acquisitionWindow);
+        WindowSystem.AddWindow(acquisitionWindow);
     }
 
     public void RemoveWindow(AcquisitionWindow acquisitionWindow)
     {
-        windowSystem.RemoveWindow(acquisitionWindow);
+        WindowSystem.RemoveWindow(acquisitionWindow);
     }
 
     public void OpenWindow<T>() where T : AcquisitionWindow
     {
-        foreach(Window w in windowSystem.Windows)
+        foreach(Window w in WindowSystem.Windows)
         {
             if (w is not T) continue;
             w.IsOpen = true;
@@ -42,7 +62,7 @@ internal class WindowHandler : IDisposable
 
     public void CloseWindow<T>() where T : AcquisitionWindow
     {
-        foreach (Window w in windowSystem.Windows)
+        foreach (Window w in WindowSystem.Windows)
         {
             if (w is not T) continue;
             w.IsOpen = false;
@@ -51,10 +71,26 @@ internal class WindowHandler : IDisposable
 
     public void ToggleWindow<T>() where T : AcquisitionWindow
     {
-        foreach (Window w in windowSystem.Windows)
+        foreach (Window w in WindowSystem.Windows)
         {
             if (w is not T) continue;
             w.IsOpen ^= true;
         }
+    }
+
+    public void Dispose()
+    {
+        PluginHandlers.PluginInterface.UiBuilder.Draw -= Draw;
+        ClearAllWindows();
+    }
+
+    void ClearAllWindows()
+    {
+        foreach (IAcquisitionWindow window in WindowSystem.Windows)
+        {
+            window?.Dispose();
+        }
+
+        WindowSystem?.RemoveAllWindows();
     }
 }

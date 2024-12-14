@@ -1,3 +1,4 @@
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
 using HtmlAgilityPack;
@@ -7,7 +8,7 @@ namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
 
 internal abstract class AchievementTypePageCountRequest : ListPageCountRequest
 {
-    public AchievementTypePageCountRequest(int lodestoneCharacterID, Action<PageCountData?> pageCountCallback) : base(lodestoneCharacterID, pageCountCallback) { }
+    public AchievementTypePageCountRequest(IDatableData data, Action<PageCountData?> pageCountCallback) : base(data, pageCountCallback) { }
 
     protected override int Outcome { get; set; } = 0;
 

@@ -1,6 +1,10 @@
+using System;
+
 namespace AcquisitionDate.Windows.Interfaces;
 
-internal interface IAcquisitionWindow
+internal interface IAcquisitionWindow : IDisposable
 {
-    string Name { get; }
+    void Open();
+    void Close();
+    void Toggle();
 }

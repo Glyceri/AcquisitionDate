@@ -1,6 +1,8 @@
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneRequests.Requests.Abstractions;
+using Dalamud.Utility;
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ internal class AchievementDateRequest : CharacterRequest
     readonly Action<AchievementData> ContinuousSuccessCallback;
     readonly int Page;
 
-    public AchievementDateRequest(int lodestoneCharacterID, int page, Action<AchievementData> continuousSuccessCallback, Action successCallback = null, Action<Exception> failureCallback = null) : base(lodestoneCharacterID)
+    public AchievementDateRequest(IDatableData data, int page, Action<AchievementData> continuousSuccessCallback, Action successCallback = null, Action<Exception> failureCallback = null) : base(data)
     {
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
@@ -42,6 +44,9 @@ internal class AchievementDateRequest : CharacterRequest
             
             string value = entryAchievement.GetAttributeValue("href", string.Empty);
 
+            uint? achievementID = HtmlParserHelper.GetValueFromDashedLink(value);
+            if (achievementID == null) continue;
+
             HtmlNode? listentry = HtmlParserHelper.GetNode(entryAchievement, "entry__achievement--list");
             if (listentry == null) continue;
             
@@ -53,12 +58,12 @@ internal class AchievementDateRequest : CharacterRequest
             if (value == null) continue;
 
             string num = value.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
-            uint achievementID = uint.Parse(num);
+            if (num.IsNullOrWhitespace()) continue;
 
             DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
             if (acquiredTime == null) continue;
 
-            ContinuousSuccessCallback?.Invoke(new AchievementData(achievementID, acquiredTime.Value));
+            ContinuousSuccessCallback?.Invoke(new AchievementData(achievementID.Value, acquiredTime.Value));
         }
     }
 

@@ -1,10 +1,9 @@
-using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneRequests.Requests.Abstractions;
-using Dalamud.Utility;
+using AcquisitionDate.Services.Interfaces;
 using HtmlAgilityPack;
-using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -20,23 +19,18 @@ internal class QuestDataRequest : CharacterRequest
     readonly Action<QuestData> ContinuousSuccessCallback;
     readonly int Page;
 
-    readonly ExcelSheet<Quest>[] quests;
-
     readonly Regex regex = new Regex(@"^(?<questGroup>.*?)(\s*(?:""(?<questName>.*?)""|「(?<questName>.*?)」|„(?<questName>.*?)“|\((?<questName>.*?)\))\s*)$");
 
-    public QuestDataRequest(int lodestoneCharacterID, int page, Action<QuestData> continuousSuccessCallback, System.Action successCallback = null, Action<Exception> failureCallback = null) : base(lodestoneCharacterID)
+    readonly ISheets Sheets;
+
+    public QuestDataRequest(ISheets sheets, IDatableData data, int page, Action<QuestData> continuousSuccessCallback, System.Action successCallback = null, Action<Exception> failureCallback = null) : base(data)
     {
+        Sheets = sheets;
+
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
         Page = page;
         ContinuousSuccessCallback = continuousSuccessCallback;
-
-        quests = [
-            PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.English),
-            PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.Japanese),
-            PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.German),
-            PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.French),
-            ];
     }
 
     public override void HandleFailure(Exception exception) => FailureCallback?.Invoke(exception);
@@ -66,26 +60,15 @@ internal class QuestDataRequest : CharacterRequest
             Match match = regex.Match(decoded);
             if (!match.Success) continue;
 
-            uint? rowID = null;
+            string questGroup = match.Groups["questGroup"].Value;
+            string questName = match.Groups["questName"].Value;
 
-            for (int i = 0; i < quests.Length; i++)
-            {
-                ExcelSheet<Quest> sheet = quests[i];
+            Quest? quest = Sheets.GetQuest(questName, questGroup);
+            if (quest == null) continue;
 
-                if (rowID != null) break;
+            uint rowID = quest.Value.RowId;
 
-                foreach (Quest quest in sheet)
-                {
-                    if (!QuestValid(quest, match)) continue;
-
-                    rowID = quest.RowId;
-                    break;
-                }
-            }
-
-            if (rowID == null) continue;
-
-            ContinuousSuccessCallback?.Invoke(new QuestData(rowID.Value, time.Value));
+            ContinuousSuccessCallback?.Invoke(new QuestData(rowID, time.Value));
         }
     }
 

@@ -4,8 +4,6 @@ namespace AcquisitionDate.LodestoneNetworking.LodestoneStringBuilder;
 
 internal static class LodestoneStringBuiler
 {
-
-
     static string GetBaseString(LodestoneRegion lodestoneRegion)
     {
         string prefix = string.Empty;

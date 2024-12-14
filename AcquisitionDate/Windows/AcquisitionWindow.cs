@@ -1,29 +1,59 @@
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Windows.Attributes;
 using AcquisitionDate.Windows.Interfaces;
+using System.Numerics;
+using Dalamud.Interface.Utility;
 
 namespace AcquisitionDate.Windows;
 
 internal abstract class AcquisitionWindow : Window, IAcquisitionWindow
 {
-    public string Name { get; private set; } = "";
+    protected abstract Vector2 MinSize { get; }
+    protected abstract Vector2 MaxSize { get; }
+    protected abstract Vector2 DefaultSize { get; }
 
     public AcquisitionWindow(string name, ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse, bool forceMainWindow = false) : base(name, flags, forceMainWindow) 
     {
-        Name = name;
-        PluginHandlers.Plugin.WindowHandler.AddWindow(this);
-        HandleAttributing();
+        SizeCondition = ImGuiCond.FirstUseEver;
+        Size = DefaultSize;
+
+        SizeConstraints = new WindowSizeConstraints()
+        {
+            MinimumSize = MinSize,
+            MaximumSize = MaxSize,
+        };
     }
 
-    void HandleAttributing()
+    readonly Vector2 windowPadding = new(8, 8);
+    readonly Vector2 framePadding = new(4, 3);
+    readonly Vector2 itemInnerSpacing = new(4, 4);
+    readonly Vector2 itemSpacing = new(4, 4);
+
+    public sealed override void PreDraw()
     {
-        object[] attributes = GetType().GetCustomAttributes(true);
-        foreach(object attribute in attributes)
-        {
-            if (attribute is SettingsWindowAttribute) PluginHandlers.PluginInterface.UiBuilder.OpenConfigUi += () => IsOpen = true;
-            if (attribute is MainWindowAttribute) PluginHandlers.PluginInterface.UiBuilder.OpenMainUi += () => IsOpen = true;
-        }
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, windowPadding * ImGuiHelpers.GlobalScale);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, framePadding * ImGuiHelpers.GlobalScale);
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, itemSpacing * ImGuiHelpers.GlobalScale);
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemInnerSpacing, itemInnerSpacing * ImGuiHelpers.GlobalScale);
+
+        OnEarlyDraw();
     }
+
+    public sealed override void PostDraw()
+    {
+        OnLateDraw();
+        ImGui.PopStyleVar(4);
+    }
+
+    public sealed override void Draw() => OnDraw();
+
+    protected virtual void OnEarlyDraw() { }
+    protected virtual void OnDraw() { }
+    protected virtual void OnLateDraw() { }
+    protected virtual void OnDispose() { }
+
+    public void Close() => IsOpen = false;
+    public void Open() => IsOpen = true;
+
+    public void Dispose() => OnDispose();
 }
