@@ -1,4 +1,5 @@
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Serializiation;
 
 namespace AcquisitionDate.Database.Interfaces;
 
@@ -19,4 +20,6 @@ internal interface IDatableData
 
     void UpdateEntry(IDatableUser datableUser);
     void SetLodestoneID(ulong lodestoneID);
+
+    SerializableUser SerializeEntry();
 }

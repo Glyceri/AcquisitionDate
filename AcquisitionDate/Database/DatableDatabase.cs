@@ -1,4 +1,6 @@
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Serializiation;
+using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
 
@@ -9,10 +11,12 @@ internal class DatableDatabase : IDatabase
     List<IDatableData> _entries = new List<IDatableData>();
 
     readonly IAcquisitionServices Services;
+    readonly IDirtySetter DirtySetter;
 
-    public DatableDatabase(IAcquisitionServices services)
+    public DatableDatabase(IAcquisitionServices services, IDirtySetter dirtySetter)
     {
         Services = services;
+        DirtySetter = dirtySetter;
     }
 
     public IDatableData GetEntry(ulong contentID)
@@ -20,7 +24,7 @@ internal class DatableDatabase : IDatabase
         IDatableData? entry = GetEntryNoCreate(contentID);
         if (entry != null) return entry;
 
-        IDatableData newEntry = new DatableData(Services, string.Empty, 0, contentID, null);
+        IDatableData newEntry = new DatableData(Services, DirtySetter, string.Empty, 0, contentID, null);
         _entries.Add(newEntry);
         return newEntry;
     }
@@ -37,5 +41,24 @@ internal class DatableDatabase : IDatabase
         }
 
         return null;
+    }
+
+    public SerializableUser[] SerializeDatabase()
+    {
+        List<SerializableUser> users = new List<SerializableUser>();
+
+        int entryCount = _entries.Count;
+        for (int i = 0; i < entryCount; i++)
+        {
+            IDatableData data = _entries[i];
+            users.Add(data.SerializeEntry());
+        }
+
+        return users.ToArray();
+    }
+
+    public void SetDirty()
+    {
+        DirtySetter.NotifyDirty();
     }
 }

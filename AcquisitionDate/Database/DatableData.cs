@@ -1,5 +1,7 @@
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Serializiation;
+using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Database;
@@ -16,28 +18,30 @@ internal class DatableData : IDatableData
     public bool HasSearchedLodestoneID { get; set; } = false;
     public bool IsReady => LodestoneID != null;
 
-    readonly IAcquisitionServices Services;
-
     public IDatableList AchievementList { get; }
     public IDatableList QuestList { get; }
 
-    public DatableData(IAcquisitionServices services, string name, ushort homeworld, ulong contentID, ulong? lodestoneID, IDatableList achievementList, IDatableList questList) : this(services, name, homeworld, contentID, lodestoneID)
+    readonly IAcquisitionServices Services;
+    readonly IDirtySetter DirtySetter;
+
+    public DatableData(IAcquisitionServices services, IDirtySetter dirtySetter, string name, ushort homeworld, ulong contentID, ulong? lodestoneID, IDatableList achievementList, IDatableList questList) : this(services, dirtySetter, name, homeworld, contentID, lodestoneID)
     {
         AchievementList = achievementList;
         QuestList = questList;
     }
 
-    public DatableData(IAcquisitionServices services, string name, ushort homeworld, ulong contentID, ulong? lodestoneID)
+    public DatableData(IAcquisitionServices services, IDirtySetter dirtySetter, string name, ushort homeworld, ulong contentID, ulong? lodestoneID)
     {
         Services = services;
+        DirtySetter = dirtySetter;
 
         Name = name;
         Homeworld = homeworld;
         ContentID = contentID;
         LodestoneID = lodestoneID;
 
-        AchievementList = new DatableList();
-        QuestList = new DatableList();
+        AchievementList = new DatableList(DirtySetter);
+        QuestList = new DatableList(DirtySetter);
     }
 
     public void UpdateEntry(IDatableUser datableUser)
@@ -45,6 +49,8 @@ internal class DatableData : IDatableData
         SetContentID(datableUser.ContentID);
         SetName(datableUser.Name);
         SetHomeworld(datableUser.Homeworld);
+
+        MarkDirty();
     }
 
     void SetHomeworld(ushort homeworld)
@@ -67,5 +73,14 @@ internal class DatableData : IDatableData
     {
         LodestoneID = lodestoneID;
         HasSearchedLodestoneID = true;
+
+        MarkDirty();
     }
+
+    void MarkDirty()
+    {
+        DirtySetter.NotifyDirty();
+    }
+
+    public SerializableUser SerializeEntry() => new SerializableUser(this);
 }

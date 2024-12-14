@@ -1,5 +1,6 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,17 @@ namespace AcquisitionDate.Database;
 
 internal class DatableList : IDatableList
 {
-    uint[] IDs = [];
-    DateTime?[] LodestoneTimes = [];
-    DateTime?[] CopyPasteTimes = [];
-    DateTime?[] ManualTimes = [];
+    public uint[] IDs = [];
+    public DateTime?[] LodestoneTimes = [];
+    public DateTime?[] CopyPasteTimes = [];
+    public DateTime?[] ManualTimes = [];
+
+    readonly IDirtySetter DirtySetter;
+
+    public DatableList(IDirtySetter dirtySetter)
+    {
+        DirtySetter = dirtySetter;
+    }
 
     public DateTime? GetDate(uint ID)
     {
@@ -50,7 +58,11 @@ internal class DatableList : IDatableList
         if (dateType == AcquiredDateType.CopyPaste) CopyPasteTimes[i] = null;
         if (dateType == AcquiredDateType.Manual)    ManualTimes[i] = null;
 
-        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null) return true;
+        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null) 
+        { 
+            SetDirty(); 
+            return true; 
+        }
 
         return RemoveDate(ID);
     }
@@ -64,6 +76,8 @@ internal class DatableList : IDatableList
         RemoveAt(ref LodestoneTimes, index.Value);
         RemoveAt(ref CopyPasteTimes, index.Value);
         RemoveAt(ref ManualTimes, index.Value);
+
+        SetDirty();
 
         return true;
     }
@@ -79,7 +93,7 @@ internal class DatableList : IDatableList
             LodestoneTimes = [.. LodestoneTimes, dateType == AcquiredDateType.Lodestone ? value : null];
             CopyPasteTimes = [.. CopyPasteTimes, dateType == AcquiredDateType.CopyPaste ? value : null];
             ManualTimes = [.. ManualTimes, dateType == AcquiredDateType.Manual ? value : null];
-
+            SetDirty();
             return;
         }
 
@@ -89,9 +103,18 @@ internal class DatableList : IDatableList
         if (dateType == AcquiredDateType.CopyPaste) CopyPasteTimes[i] = value;
         if (dateType == AcquiredDateType.Manual) ManualTimes[i] = value;
 
-        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null) return;
+        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null)
+        {
+            SetDirty();
+            return;
+        }
 
         RemoveDate(ID);
+    }
+
+    void SetDirty()
+    {
+        DirtySetter.NotifyDirty();
     }
 
     int? GetIndex(uint ID)
