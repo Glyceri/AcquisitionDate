@@ -1,6 +1,7 @@
 using AcquisitionDate.Acquisition.Elements;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
 
 namespace AcquisitionDate.Acquisition;
@@ -8,11 +9,13 @@ namespace AcquisitionDate.Acquisition;
 internal class AcquirerHandler : IAcquirerHandler
 {
     readonly ILodestoneNetworker LodestoneNetworker;
+    readonly IAcquisitionServices Services;
 
     List<IAcquirer> acquirers = new List<IAcquirer>();
 
-    public AcquirerHandler(ILodestoneNetworker networker)
+    public AcquirerHandler(IAcquisitionServices services, ILodestoneNetworker networker)
     {
+        Services = services;
         LodestoneNetworker = networker;
 
         Setup();
@@ -21,6 +24,7 @@ internal class AcquirerHandler : IAcquirerHandler
     void Setup()
     {
         AddAcquirer(new AchievementAcquirer(LodestoneNetworker));
+        AddAcquirer(new QuestAcquirer(Services, LodestoneNetworker));
     }
 
     void AddAcquirer(IAcquirer acquirer)

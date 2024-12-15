@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
@@ -63,7 +64,7 @@ internal class AchievementDateRequest : CharacterRequest
             DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
             if (acquiredTime == null) continue;
 
-            ContinuousSuccessCallback?.Invoke(new AchievementData(achievementID.Value, acquiredTime.Value));
+            PluginHandlers.Framework.Run(() => ContinuousSuccessCallback?.Invoke(new AchievementData(achievementID.Value, acquiredTime.Value)));
         }
     }
 

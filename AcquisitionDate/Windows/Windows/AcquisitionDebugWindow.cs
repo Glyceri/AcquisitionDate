@@ -63,17 +63,6 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.NewLine();
 
-            
-
-            if (ImGui.Button("UP"))
-            {
-                current += 1000;
-            }
-
-            if (ImGui.Button("Toggle"))
-            {
-                stopPrint ^= true;
-            }
 
             ImGui.BeginDisabled(localUser.LodestoneID == null);
 
@@ -95,6 +84,30 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.LabelText(AchievementAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
             ImGui.LabelText(AchievementAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
+
+            ImGui.NewLine();
+
+
+            ImGui.BeginDisabled(localUser.LodestoneID == null);
+
+            if (ImGui.Button("Aqcuire Quests"))
+            {
+                QuestAcquirer.Instance.Acquire(localUser.Data);
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.BeginDisabled(!QuestAcquirer.Instance.IsAcquiring);
+
+            if (ImGui.Button("Cancel Acquirement 2"))
+            {
+                QuestAcquirer.Instance.Cancel();
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.LabelText(QuestAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
+            ImGui.LabelText(QuestAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
         }
     }
 

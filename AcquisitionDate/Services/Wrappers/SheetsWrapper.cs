@@ -18,9 +18,9 @@ internal class SheetsWrapper : ISheets
         Achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
         Quests = [
             ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.English).ToArray(),
-            ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.German).ToArray(),
-            ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.French).ToArray(),
-            ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.Japanese).ToArray(),
+            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.German).ToArray(),
+            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.French).ToArray(),
+            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.Japanese).ToArray(),
             ];
     }
 

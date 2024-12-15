@@ -1,6 +1,5 @@
 ﻿using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.DatableUsers;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
@@ -55,7 +54,7 @@ internal unsafe class AchievementWindowHook : HookableElement
             if (titleNode == null) continue;
 
             AtkTextNode* tNode = listRendererNode.GetNode<AtkTextNode>(customDateTextNodeID);
-            if (tNode == null) CreateTextNode(tNode, &prevNode->AtkResNode, &titleNode->AtkResNode, listRendererNode);
+            if (tNode == null) CreateTextNode(ref tNode, &prevNode->AtkResNode, titleNode, listRendererNode);
             if (tNode == null) continue;
 
             string achievementName = titleNode->NodeText.ToString();
@@ -84,11 +83,16 @@ internal unsafe class AchievementWindowHook : HookableElement
                 continue;
             }
 
+            tNode->TextColor.R = titleNode->TextColor.R;
+            tNode->TextColor.G = titleNode->TextColor.G;
+            tNode->TextColor.B = titleNode->TextColor.B;
+            tNode->TextColor.A = titleNode->TextColor.A;
+
             tNode->SetText(achievementDate.Value.ToString("dd/MM/yyyy"));
         }
     }
 
-    void CreateTextNode(AtkTextNode* tNode, AtkResNode* prevNode, AtkResNode* nextNode, ComponentNode listRendererNode)
+    void CreateTextNode(ref AtkTextNode* tNode, AtkResNode* prevNode, AtkTextNode* nextNode, ComponentNode listRendererNode)
     {
         tNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
         if (tNode == null) return;
@@ -105,18 +109,13 @@ internal unsafe class AchievementWindowHook : HookableElement
         tNode->TextFlags = (byte)(TextFlags.AutoAdjustNodeSize);
         tNode->TextFlags2 = 0;
 
-        tNode->TextColor.R = 70;
-        tNode->TextColor.G = 70;
-        tNode->TextColor.B = 70;
-        tNode->TextColor.A = 255;
-
         tNode->AtkResNode.SetXFloat(nextNode->GetXFloat());
         tNode->AtkResNode.Y += 3;
 
         AtkResNode* nextSibling = prevNode->NextSiblingNode;
         tNode->AtkResNode.ParentNode = prevNode->ParentNode;
         tNode->PrevSiblingNode = prevNode;
-        tNode->NextSiblingNode = nextNode;
+        tNode->NextSiblingNode = &nextNode->AtkResNode;
 
         prevNode->NextSiblingNode = &tNode->AtkResNode;
         nextNode->PrevSiblingNode = &tNode->AtkResNode;

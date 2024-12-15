@@ -117,7 +117,6 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
     void HandleFailure(Exception ex)
     {
         QueueState = QueueState.Failure;
-        CancellationTokenSource.Cancel();
         PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex), CancellationTokenSource.Token);
     }
 
