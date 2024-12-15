@@ -17,6 +17,8 @@ internal unsafe class QuestJournalWindowHook : HookableElement
     readonly IAcquisitionServices Services;
     readonly IUserList UserList;
 
+    uint lastQuestID = 0;
+
     public QuestJournalWindowHook(IAcquisitionServices services, IUserList userList)
     {
         Services = services;
@@ -25,13 +27,11 @@ internal unsafe class QuestJournalWindowHook : HookableElement
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "Journal", JournalDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "Journal", JournalDetour);
     }
 
     void JournalDetour(AddonEvent type, AddonArgs args)
     {
-        if (!AgentQuestJournal.Instance()->IsDisplayingCompletedQuests) return;
-
         AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
         if (!addon->IsVisible) return;
 
@@ -58,15 +58,18 @@ internal unsafe class QuestJournalWindowHook : HookableElement
             break;
         }
 
-        if (tNode == null) CreateTextNode(ref tNode, ref siblingNode, ref lvlNode, ref journalDetail);
+        if (tNode == null) CreateTextNode(ref tNode, ref siblingNode, ref lvlNode, ref journalDetail, ref addon);
         if (tNode == null) return;
         tNode->ToggleVisibility(false);
+
+        if (!AgentQuestJournal.Instance()->IsDisplayingCompletedQuests) return;
 
         uint questID = AgentQuestJournal.Instance()->SelectedCompletedQuestId;
         questID += ushort.MaxValue + 1;
 
-        tNode->SetText((questID - ushort.MaxValue).ToString());
-        tNode->ToggleVisibility(true);
+        if (lastQuestID == questID) return;
+
+        lastQuestID = questID;
 
         IDatableUser? localUser = UserList.ActiveUser;
         if (localUser == null) return;
@@ -74,11 +77,12 @@ internal unsafe class QuestJournalWindowHook : HookableElement
         DateTime? questDateTime = localUser.Data.QuestList.GetDate(questID);
         if (questDateTime == null) return;
 
-        tNode->SetText(questDateTime.Value.ToString("dd/MM/yyyy"));
         tNode->ToggleVisibility(true);
+        tNode->NodeText.SetString(questDateTime.Value.ToString("dd/MM/yyyy"));
+        journalDetail->SetX((short)(journalDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 
-    unsafe void CreateTextNode(ref AtkTextNode* tNode, ref AtkTextNode* siblingNode, ref AtkTextNode* levelNode, ref AtkUnitBase* owner)
+    unsafe void CreateTextNode(ref AtkTextNode* tNode, ref AtkTextNode* siblingNode, ref AtkTextNode* levelNode, ref AtkUnitBase* owner, ref AtkUnitBase* journal)
     {
         tNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
         if (tNode == null) return;
@@ -86,29 +90,31 @@ internal unsafe class QuestJournalWindowHook : HookableElement
         tNode->AtkResNode.Type = NodeType.Text;
         tNode->AtkResNode.NodeId = customJournalTextNodeID;
 
-        tNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorBottom;
+        tNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorBottom;
         tNode->AtkResNode.DrawFlags = 0;
+        tNode->SetAlignment(AlignmentType.BottomRight);
 
         tNode->LineSpacing = 18;
-        tNode->AlignmentFontType = 0;
         tNode->FontSize = 12;
+        tNode->AlignmentFontType = 0;
         tNode->TextFlags = (byte)(TextFlags.AutoAdjustNodeSize);
         tNode->TextFlags2 = siblingNode->TextFlags2;
+
+        tNode->AtkResNode.X = 390;
+        tNode->AtkResNode.Y = 103;
 
         tNode->TextColor.R = siblingNode->TextColor.R;
         tNode->TextColor.G = siblingNode->TextColor.G;
         tNode->TextColor.B = siblingNode->TextColor.B;
         tNode->TextColor.A = siblingNode->TextColor.A;
 
-        tNode->AtkResNode.X = 34;
-        tNode->AtkResNode.Y = 100;
-
         tNode->AtkResNode.ParentNode = siblingNode->ParentNode;
         siblingNode->PrevSiblingNode = &tNode->AtkResNode;
         tNode->NextSiblingNode = &siblingNode->AtkResNode;
 
         tNode->SetText("--/--/----");
-        (&owner->UldManager)->UpdateDrawNodeList();
+        owner->UldManager.UpdateDrawNodeList();
+        journal->UldManager.UpdateDrawNodeList();
     }
 
     public override void Dispose()
