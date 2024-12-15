@@ -14,9 +14,35 @@ internal class SerializableUser
 
     public readonly SerializableList AchievementList;
     public readonly SerializableList QuestList;
+    public readonly SerializableList MinionList;
+    public readonly SerializableList MountList;
+    public readonly SerializableList FacewearList;
+    public readonly SerializableList OrchestrionList;
+    public readonly SerializableList ClassLVLList;
+    public readonly SerializableList CardList;
+    public readonly SerializableList FashionList;
+    public readonly SerializableList DutyList;
+    public readonly SerializableList FishingList;
+    public readonly SerializableList SightList;
 
     [JsonConstructor]
-    public SerializableUser(ulong contentId, ulong? lodestoneID, string name, ushort homeworld, SerializableList achievementList, SerializableList questList)
+    public SerializableUser(
+        ulong contentId, 
+        ulong? lodestoneID, 
+        string name, 
+        ushort homeworld, 
+        SerializableList achievementList, 
+        SerializableList questList, 
+        SerializableList minionList, 
+        SerializableList mountList,
+        SerializableList facewearList,
+        SerializableList orchestrionList,
+        SerializableList classLVLList,
+        SerializableList cardList,
+        SerializableList fashionList,
+        SerializableList dutyList,
+        SerializableList fishingList,
+        SerializableList sightList)
     {
         ContentID = contentId;
         LodestoneID = lodestoneID;
@@ -25,6 +51,16 @@ internal class SerializableUser
 
         AchievementList = achievementList;
         QuestList = questList;
+        MinionList = minionList;
+        MountList = mountList;
+        FacewearList = facewearList;
+        OrchestrionList = orchestrionList;
+        ClassLVLList = classLVLList;
+        CardList = cardList;
+        FashionList = fashionList;
+        DutyList = dutyList;
+        FishingList = fishingList;
+        SightList = sightList;
     }
 
     public SerializableUser(IDatableData data)
@@ -36,5 +72,16 @@ internal class SerializableUser
 
         AchievementList = new SerializableList(data.AchievementList);
         QuestList = new SerializableList(data.QuestList);
+        MinionList = new SerializableList(data.MinionList);
+        MountList = new SerializableList(data.MountList);
+
+        FacewearList = new SerializableList(data.FacewearList);
+        OrchestrionList = new SerializableList(data.OrchestrionList);
+        ClassLVLList = new SerializableList(data.ClassLVLList);
+        CardList = new SerializableList(data.CardList);
+        FashionList = new SerializableList(data.FashionList);
+        DutyList = new SerializableList(data.DutyList);
+        FishingList = new SerializableList(data.FishingList);
+        SightList = new SerializableList(data.SightList);
     }
 }
