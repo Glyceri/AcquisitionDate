@@ -24,6 +24,11 @@ internal class SerializableUser
     public readonly SerializableList DutyList;
     public readonly SerializableList FishingList;
     public readonly SerializableList SightList;
+    public readonly SerializableList FramersList;
+    public readonly SerializableList SecretRecipeBookList; //Idk what this is tbf, but im tracking it c:
+    public readonly SerializableList BuddyEquipList;
+    public readonly SerializableList UnlockLinkList; // Riding maps, blu totems, emotes/dances, hairstyles
+    public readonly SerializableList FolkloreTomeList;
 
     [JsonConstructor]
     public SerializableUser(
@@ -42,7 +47,12 @@ internal class SerializableUser
         SerializableList fashionList,
         SerializableList dutyList,
         SerializableList fishingList,
-        SerializableList sightList)
+        SerializableList sightList,
+        SerializableList framersList,
+        SerializableList secretRecipeBookList,
+        SerializableList buddyEquipList,
+        SerializableList unlockLinkList,
+        SerializableList folkloreTomeList)
     {
         ContentID = contentId;
         LodestoneID = lodestoneID;
@@ -61,6 +71,11 @@ internal class SerializableUser
         DutyList = dutyList;
         FishingList = fishingList;
         SightList = sightList;
+        FramersList = framersList;
+        SecretRecipeBookList = secretRecipeBookList;
+        BuddyEquipList = buddyEquipList;
+        UnlockLinkList = unlockLinkList;
+        FolkloreTomeList = folkloreTomeList;
     }
 
     public SerializableUser(IDatableData data)
@@ -83,5 +98,10 @@ internal class SerializableUser
         DutyList = new SerializableList(data.DutyList);
         FishingList = new SerializableList(data.FishingList);
         SightList = new SerializableList(data.SightList);
+        FramersList = new SerializableList(data.FramersList);
+        SecretRecipeBookList = new SerializableList(data.SecretRecipeBookList);
+        BuddyEquipList = new SerializableList(data.BuddyEquipList);
+        UnlockLinkList = new SerializableList(data.UnlockLinkList);
+        FolkloreTomeList = new SerializableList(data.FolkloreTomeList);
     }
 }

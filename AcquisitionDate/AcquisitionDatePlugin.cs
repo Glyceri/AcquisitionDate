@@ -55,7 +55,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
         WindowHandler = new WindowHandler(Services, pluginInterface, UserList, Database);
 
-        Services.Configuration.Initialise(Database);    
+        Services.Configuration.Initialise(Database);
     }
 
     public void Dispose()

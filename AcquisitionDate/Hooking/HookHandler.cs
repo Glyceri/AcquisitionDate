@@ -24,6 +24,7 @@ internal class HookHandler : IHookHandler
         Register(new CharacterManagerHook(UserList));
         Register(new AchievementWindowHook(Services, UserList));
         Register(new QuestJournalWindowHook(Services, UserList));
+        Register(new UnlocksHook(Services.Sheets, UserList));
     }
 
     readonly List<IHookableElement> hookableElements = new List<IHookableElement>();

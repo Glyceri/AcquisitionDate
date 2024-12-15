@@ -12,7 +12,6 @@ internal class DatableList : IDatableList
 {
     public uint[] IDs = [];
     public DateTime?[] LodestoneTimes = [];
-    public DateTime?[] CopyPasteTimes = [];
     public DateTime?[] ManualTimes = [];
 
     readonly IDirtySetter DirtySetter;
@@ -28,7 +27,6 @@ internal class DatableList : IDatableList
     {
         IDs = list.IDS;
         LodestoneTimes = list.LodestoneTimes;
-        CopyPasteTimes = list.CopyPasteTimes;
         ManualTimes = list.ManualTimes;
     }
 
@@ -36,9 +34,6 @@ internal class DatableList : IDatableList
     {
         DateTime? lodestoneTime = GetDate(ID, AcquiredDateType.Lodestone);
         if (lodestoneTime != null) return lodestoneTime;
-
-        DateTime? copyPasteTime = GetDate(ID, AcquiredDateType.CopyPaste);
-        if (copyPasteTime != null) return copyPasteTime;
 
         DateTime? manualTime = GetDate(ID, AcquiredDateType.Manual);
         if (manualTime != null) return manualTime;
@@ -52,7 +47,6 @@ internal class DatableList : IDatableList
         if (index == null) return null;
 
         if (dateType == AcquiredDateType.Lodestone) return LodestoneTimes[index.Value];
-        if (dateType == AcquiredDateType.CopyPaste) return CopyPasteTimes[index.Value];
         if (dateType == AcquiredDateType.Manual) return ManualTimes[index.Value];
 
         return null;
@@ -66,10 +60,9 @@ internal class DatableList : IDatableList
         int i = index.Value;
 
         if (dateType == AcquiredDateType.Lodestone) LodestoneTimes[i] = null;
-        if (dateType == AcquiredDateType.CopyPaste) CopyPasteTimes[i] = null;
         if (dateType == AcquiredDateType.Manual)    ManualTimes[i] = null;
 
-        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null) 
+        if (LodestoneTimes[i] != null || ManualTimes[i] != null) 
         { 
             SetDirty(); 
             return true; 
@@ -85,7 +78,6 @@ internal class DatableList : IDatableList
 
         RemoveAt(ref IDs, index.Value);
         RemoveAt(ref LodestoneTimes, index.Value);
-        RemoveAt(ref CopyPasteTimes, index.Value);
         RemoveAt(ref ManualTimes, index.Value);
 
         SetDirty();
@@ -102,7 +94,6 @@ internal class DatableList : IDatableList
 
             IDs = [.. IDs, ID];
             LodestoneTimes = [.. LodestoneTimes, dateType == AcquiredDateType.Lodestone ? value : null];
-            CopyPasteTimes = [.. CopyPasteTimes, dateType == AcquiredDateType.CopyPaste ? value : null];
             ManualTimes = [.. ManualTimes, dateType == AcquiredDateType.Manual ? value : null];
             SetDirty();
             return;
@@ -111,10 +102,9 @@ internal class DatableList : IDatableList
         int i = index.Value;
 
         if (dateType == AcquiredDateType.Lodestone) LodestoneTimes[i] = value;
-        if (dateType == AcquiredDateType.CopyPaste) CopyPasteTimes[i] = value;
         if (dateType == AcquiredDateType.Manual) ManualTimes[i] = value;
 
-        if (LodestoneTimes[i] != null || CopyPasteTimes[i] != null || ManualTimes[i] != null)
+        if (LodestoneTimes[i] != null || ManualTimes[i] != null)
         {
             SetDirty();
             return;

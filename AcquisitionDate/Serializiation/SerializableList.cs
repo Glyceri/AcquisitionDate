@@ -10,15 +10,13 @@ internal class SerializableList
 {
     public readonly uint[] IDS = [];
     public readonly DateTime?[] LodestoneTimes = [];
-    public readonly DateTime?[] CopyPasteTimes = [];
     public readonly DateTime?[] ManualTimes = [];
 
     [JsonConstructor]
-    public SerializableList(uint[] ids, DateTime?[] lodestoneTimes, DateTime?[] copyPasteTimes, DateTime?[] manualTimes)
+    public SerializableList(uint[] ids, DateTime?[] lodestoneTimes, DateTime?[] manualTimes)
     {
         IDS = ids;
         LodestoneTimes = lodestoneTimes;
-        CopyPasteTimes = copyPasteTimes;
         ManualTimes = manualTimes;
     }
 
@@ -28,7 +26,6 @@ internal class SerializableList
 
         IDS = dList.IDs;
         LodestoneTimes = dList.LodestoneTimes;
-        CopyPasteTimes = dList.CopyPasteTimes;
         ManualTimes = dList.ManualTimes;
     }
 }

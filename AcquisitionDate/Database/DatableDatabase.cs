@@ -30,7 +30,7 @@ internal class DatableDatabase : IDatabase
         {
             IDatableData newData = new DatableData(Services, DirtySetter,
                 user.Name,
-                user.Homeworld,D
+                user.Homeworld,
                 user.ContentID,
                 user.LodestoneID,
                 new DatableList(DirtySetter, user.AchievementList),
@@ -44,7 +44,12 @@ internal class DatableDatabase : IDatabase
                 new DatableList(DirtySetter, user.FashionList),
                 new DatableList(DirtySetter, user.DutyList),
                 new DatableList(DirtySetter, user.FishingList),
-                new DatableList(DirtySetter, user.SightList));
+                new DatableList(DirtySetter, user.SightList),
+                new DatableList(DirtySetter, user.FramersList),
+                new DatableList(DirtySetter, user.SecretRecipeBookList),
+                new DatableList(DirtySetter, user.BuddyEquipList),
+                new DatableList(DirtySetter, user.UnlockLinkList),
+                new DatableList(DirtySetter, user.FolkloreTomeList));
 
             _entries.Add(newData);
         }

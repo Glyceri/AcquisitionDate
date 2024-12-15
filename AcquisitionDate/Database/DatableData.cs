@@ -30,6 +30,11 @@ internal class DatableData : IDatableData
     public IDatableList DutyList { get; }
     public IDatableList FishingList { get; }
     public IDatableList SightList { get; }
+    public IDatableList FramersList { get; }
+    public IDatableList SecretRecipeBookList { get; }
+    public IDatableList BuddyEquipList { get; }
+    public IDatableList UnlockLinkList { get; }
+    public IDatableList FolkloreTomeList { get; }
 
     readonly IAcquisitionServices Services;
     readonly IDirtySetter DirtySetter;
@@ -52,9 +57,24 @@ internal class DatableData : IDatableData
         IDatableList fashionList,
         IDatableList dutyList,
         IDatableList fishingList,
-        IDatableList sightList
-        ) : this(services, dirtySetter, name, homeworld, contentID, lodestoneID)
+        IDatableList sightList,
+        IDatableList framerList,
+        IDatableList secretRecipeList,
+        IDatableList buddyEquipList,
+        IDatableList unlockLinkList,
+        IDatableList folkloreList)
     {
+        Services = services;
+        DirtySetter = dirtySetter;
+
+        SetName(name);
+        SetHomeworld(homeworld);
+        SetContentID(contentID);
+        if (lodestoneID != null)
+        {
+            SetLodestoneID(lodestoneID.Value);
+        }
+
         AchievementList = achievementList;
         QuestList = questList;
         MinionList = minionList;
@@ -67,6 +87,11 @@ internal class DatableData : IDatableData
         DutyList = dutyList;
         FishingList = fishingList;
         SightList = sightList;
+        FramersList = framerList;
+        SecretRecipeBookList = secretRecipeList;
+        BuddyEquipList = buddyEquipList;
+        UnlockLinkList = unlockLinkList;
+        FolkloreTomeList = folkloreList;
     }
 
     public DatableData(IAcquisitionServices services, IDirtySetter dirtySetter, string name, ushort homeworld, ulong contentID, ulong? lodestoneID)
@@ -94,6 +119,11 @@ internal class DatableData : IDatableData
         DutyList = new DatableList(DirtySetter);
         FishingList = new DatableList(DirtySetter);
         SightList = new DatableList(DirtySetter);
+        FramersList = new DatableList(DirtySetter);
+        SecretRecipeBookList = new DatableList(DirtySetter);
+        BuddyEquipList = new DatableList(DirtySetter);
+        UnlockLinkList = new DatableList(DirtySetter);
+        FolkloreTomeList = new DatableList(DirtySetter);
     }
 
     public void UpdateEntry(IDatableUser datableUser)

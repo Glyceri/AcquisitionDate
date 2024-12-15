@@ -3,7 +3,6 @@ using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
 using AcquisitionDate.Services.Interfaces;
 using System;
-using System.Diagnostics;
 
 namespace AcquisitionDate.Acquisition.Elements;
 

@@ -29,6 +29,12 @@ internal interface IDatableData
     IDatableList FishingList { get; }
     IDatableList SightList { get; }
 
+    IDatableList FramersList { get; }
+    IDatableList SecretRecipeBookList { get; }
+    IDatableList BuddyEquipList { get; }
+    IDatableList UnlockLinkList { get; }
+    IDatableList FolkloreTomeList { get; }
+
     void UpdateEntry(IDatableUser datableUser);
     void SetLodestoneID(ulong lodestoneID);
 

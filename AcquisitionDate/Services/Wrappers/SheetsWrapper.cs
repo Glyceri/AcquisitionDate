@@ -8,9 +8,15 @@ namespace AcquisitionDate.Services.Wrappers;
 
 internal class SheetsWrapper : ISheets
 {
+    public Quest[] AllQuests => Quests;
+    public Item[] AllItems => items.ToArray();
+
+    readonly Quest[] Quests;
+
     readonly ExcelSheet<World> worlds;
     readonly ExcelSheet<Achievement> Achievements;
-    readonly Quest[] Quests;
+    readonly ExcelSheet<Item> items;
+    readonly ExcelSheet<Companion> companions;
 
     public SheetsWrapper()
     {
@@ -22,9 +28,21 @@ internal class SheetsWrapper : ISheets
             //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.French).ToArray(),
             //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.Japanese).ToArray(),
             ];
+        items = PluginHandlers.DataManager.GetExcelSheet<Item>();
+        companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
     }
 
-    public Quest[] AllQuests => Quests;
+    public Companion? GetCompanion(ushort ID)
+    {
+        foreach (Companion companion in companions)
+        {
+            if (companion.RowId != ID) continue;
+
+            return companion;
+        }
+
+        return null;
+    }
 
     public Achievement? GetAchievement(string name)
     {
