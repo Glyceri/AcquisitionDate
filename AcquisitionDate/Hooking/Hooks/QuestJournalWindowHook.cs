@@ -62,10 +62,16 @@ internal unsafe class QuestJournalWindowHook : HookableElement
         if (tNode == null) return;
         tNode->ToggleVisibility(false);
 
-        if (!AgentQuestJournal.Instance()->IsDisplayingCompletedQuests) return;
+        if (!AgentQuestJournal.Instance()->IsDisplayingCompletedQuests)
+        {
+            lastQuestID = 0;
+            return;
+        }
 
         uint questID = AgentQuestJournal.Instance()->SelectedCompletedQuestId;
         questID += ushort.MaxValue + 1;
+
+        PluginHandlers.PluginLog.Verbose("Clicked on quest: " + Services.Sheets.GetQuest(questID)?.Name.ExtractText() ?? "");
 
         if (lastQuestID == questID) return;
 

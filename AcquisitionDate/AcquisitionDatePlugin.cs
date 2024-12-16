@@ -13,10 +13,10 @@ using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Hooking;
 using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Services;
-using AcquisitionDate.Serializiation.DirtySystem;
 using AcquisitionDate.Serializiation;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
+using AcquisitionDate.DirtySystem;
 
 namespace AcquisitionDate;
 
@@ -45,14 +45,12 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         SaveHandler = new SaveHandler(DirtyHandler, Services.Configuration);
 
         Database = new DatableDatabase(Services, DirtyHandler);
-        UserList = new UserList(Database);
+        UserList = new UserList(Database, DirtyHandler);
 
         LodestoneNetworker = new LodestoneNetworker();
-        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler);
-        HookHandler = new HookHandler(Services, UserList);
-
+        HookHandler = new HookHandler(Services, UserList, DirtyHandler);
+        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler, HookHandler.UnlocksHook);
         AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker);
-
         WindowHandler = new WindowHandler(Services, pluginInterface, UserList, Database);
 
         Services.Configuration.Initialise(Database);

@@ -1,5 +1,6 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.Serializiation;
 using AcquisitionDate.Services.Interfaces;
@@ -16,15 +17,17 @@ internal class UpdateHandler : IUpdateHandler
     readonly IUserList UserList;
     readonly IAcquisitionServices Services;
     readonly SaveHandler SaveHandler;
+    readonly IUnlocksHook UnlockHooks;
 
     readonly List<IUpdatable> _updatables = new List<IUpdatable>();
 
-    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services, SaveHandler saveHandler)
+    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services, SaveHandler saveHandler, IUnlocksHook unlockHooks)
     {
         LodestoneNetworker = lodestoneNetworker;
         UserList = userList;
         Services = services;
         SaveHandler = saveHandler;
+        UnlockHooks = unlockHooks;
 
         PluginHandlers.Framework.Update += OnUpdate;
         Setup();
@@ -35,6 +38,7 @@ internal class UpdateHandler : IUpdateHandler
         _updatables.Add(new LodestoneNetworkHelper(LodestoneNetworker));
         _updatables.Add(new LodestoneIDHelper(LodestoneNetworker, UserList, Services.Sheets));
         _updatables.Add(new SaveHandlerHelper(SaveHandler));
+        _updatables.Add(new UnlockHooksHelper(UnlockHooks));
     }
 
     public void Dispose()

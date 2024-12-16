@@ -21,6 +21,7 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<Item> items;
     readonly ExcelSheet<Companion> companions;
     readonly ExcelSheet<ContentFinderCondition> contentFinderConditions;
+    readonly ExcelSheet<ClassJob> classJobs;
 
     public SheetsWrapper()
     {
@@ -35,6 +36,19 @@ internal class SheetsWrapper : ISheets
         items = PluginHandlers.DataManager.GetExcelSheet<Item>();
         companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
         contentFinderConditions = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
+        classJobs = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
+    }
+
+    public ClassJob? GetClassJob(uint id)
+    {
+        foreach (ClassJob classJob in classJobs)
+        {
+            if (classJob.RowId != id) continue;
+
+            return classJob;
+        }
+
+        return null;
     }
 
     public ContentFinderCondition? GetContentFinderCondition(ushort id)
@@ -93,6 +107,20 @@ internal class SheetsWrapper : ISheets
                 return quest;
             }
             catch { continue; }
+        }
+
+        return null;
+    }
+
+    public Quest? GetQuest(uint id)
+    {
+        int questCount = Quests.Length;
+        for (int i = 0; i < questCount; i++)
+        {
+            Quest quest = Quests[i];
+            if (quest.RowId != id) continue;
+
+            return quest;
         }
 
         return null;

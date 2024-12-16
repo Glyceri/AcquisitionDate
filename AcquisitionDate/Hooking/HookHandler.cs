@@ -1,5 +1,7 @@
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
+using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
@@ -8,13 +10,17 @@ namespace AcquisitionDate.Hooking;
 
 internal class HookHandler : IHookHandler
 {
+    public IUnlocksHook UnlocksHook { get; private set; } = null!;
+
     readonly IUserList UserList;
     readonly IAcquisitionServices Services;
+    readonly IDirtyListener DirtyListener;
 
-    public HookHandler(IAcquisitionServices services, IUserList userList)
+    public HookHandler(IAcquisitionServices services, IUserList userList, IDirtyListener dirtyListener)
     {
         Services = services;
         UserList = userList;
+        DirtyListener = dirtyListener;
 
         _Register();
     }
@@ -24,7 +30,7 @@ internal class HookHandler : IHookHandler
         Register(new CharacterManagerHook(UserList));
         Register(new AchievementWindowHook(Services, UserList));
         Register(new QuestJournalWindowHook(Services, UserList));
-        Register(new UnlocksHook(Services.Sheets, UserList));
+        Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 
     readonly List<IHookableElement> hookableElements = new List<IHookableElement>();

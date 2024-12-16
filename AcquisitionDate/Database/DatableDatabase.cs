@@ -1,6 +1,6 @@
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
-using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
 
@@ -95,6 +95,6 @@ internal class DatableDatabase : IDatabase
 
     public void SetDirty()
     {
-        DirtySetter.NotifyDirty();
+        DirtySetter.NotifyDirtyDatabase();
     }
 }

@@ -1,7 +1,7 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
-using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -115,7 +115,7 @@ internal class DatableList : IDatableList
 
     void SetDirty()
     {
-        DirtySetter.NotifyDirty();
+        DirtySetter.NotifyDirtyDatabase();
     }
 
     int? GetIndex(uint ID)

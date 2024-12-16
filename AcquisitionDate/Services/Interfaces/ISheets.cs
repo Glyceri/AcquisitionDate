@@ -14,7 +14,9 @@ internal interface ISheets
 
     Quest? GetQuest(string name, string journalGroup);
     Quest? GetQuest(string name);
+    Quest? GetQuest(uint id);
     Achievement? GetAchievement(string name);
     Companion? GetCompanion(ushort ID);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
+    ClassJob? GetClassJob(uint id);
 }

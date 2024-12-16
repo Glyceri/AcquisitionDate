@@ -1,4 +1,4 @@
-using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 using System;
 
 namespace AcquisitionDate.Serializiation;
@@ -15,7 +15,7 @@ internal class SaveHandler : IDisposable
         DirtyListener = dirtyListener;
         Configuration = configuration;
 
-        DirtyListener.RegisterDirty(OnDirty);
+        DirtyListener.RegisterDirtyDatabase(OnDirty);
     }
 
     void OnDirty()
@@ -33,6 +33,6 @@ internal class SaveHandler : IDisposable
 
     public void Dispose()
     {
-        DirtyListener.UnregisterDirty(OnDirty);
+        DirtyListener.UnregisterDirtyDatabase(OnDirty);
     }
 }

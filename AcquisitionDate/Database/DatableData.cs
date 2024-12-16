@@ -1,7 +1,7 @@
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
-using AcquisitionDate.Serializiation.DirtySystem.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Database;
@@ -161,7 +161,7 @@ internal class DatableData : IDatableData
 
     void MarkDirty()
     {
-        DirtySetter.NotifyDirty();
+        DirtySetter.NotifyDirtyDatabase();
     }
 
     public SerializableUser SerializeEntry() => new SerializableUser(this);

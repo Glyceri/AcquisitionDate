@@ -2,28 +2,31 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
+using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Services.Enums;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.Exd;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using UIAlias = FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
-internal unsafe class UnlocksHook : HookableElement
+internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
 {
+    readonly List<uint> QuestsCompleted = new List<uint>();
     readonly List<uint> InstancedContentCompleted = new List<uint>();
     readonly List<uint> UnlockedItems = new List<uint>();
+    short[] currentClassJobLevels = [];
 
     delegate void OnAchievementUnlockDelegate(UIAlias.Achievement* achievement, uint achievementID);
     delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
@@ -32,13 +35,17 @@ internal unsafe class UnlocksHook : HookableElement
     readonly Hook<OnAchievementUnlockDelegate>? AchievementUnlockHook;
     readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
 
+    byte lastAcceptedQuestCount = 0;
+
     readonly ISheets Sheets;
     readonly IUserList UserList;
+    readonly IDirtyListener DirtyListener;
 
-    public UnlocksHook(ISheets sheets, IUserList userList)
+    public UnlocksHook(ISheets sheets, IUserList userList, IDirtyListener dirtyListener)
     {
         Sheets = sheets;
         UserList = userList;
+        DirtyListener = dirtyListener;
 
         RaptureAtkModuleUpdateHook = PluginHandlers.Hooking.HookFromFunctionPointerVariable<RaptureAtkModuleUpdateDelegate>(new nint(&RaptureAtkModule.StaticVirtualTablePointer->Update), RaptureAtkModule_UpdateDetour);
     }
@@ -46,17 +53,39 @@ internal unsafe class UnlocksHook : HookableElement
     public override void Init()
     {
         Reset();
+        DirtyListener.RegisterDirtyUser(Reset);
 
         RaptureAtkModuleUpdateHook?.Enable();
         AchievementUnlockHook?.Enable();
 
         PluginHandlers.DutyState.DutyCompleted += OnDutyCompleted;
+        PluginHandlers.ClientState.LevelChanged += OnLevelChanged;
     }
 
     public void Reset()
     {
+        HandleUnlockedQuests();
         HandleUnlockedItems();
         HandleUnlockedInstances();
+        HandleClassJobLevels();
+    }
+
+    void HandleClassJobLevels()
+    {
+        currentClassJobLevels = PlayerState.Instance()->ClassJobLevels.ToArray();
+    }
+
+    void HandleUnlockedQuests()
+    {
+        QuestsCompleted.Clear();
+        lastAcceptedQuestCount = QuestManager.Instance()->NumAcceptedQuests;
+
+        foreach (Quest quest in Sheets.AllQuests)
+        {
+            if (!QuestManager.IsQuestComplete(quest.RowId)) continue;
+
+            QuestsCompleted.Add(quest.RowId);
+        }
     }
 
     void HandleUnlockedItems()
@@ -83,6 +112,13 @@ internal unsafe class UnlocksHook : HookableElement
             
             InstancedContentCompleted.Add(contentRowID);
         }
+    }
+
+    public void Update()
+    {
+        if (UserList.ActiveUser == null) return;
+
+        HandleQuestDiffCheck();
     }
 
     public List<Item> GetNewlyUnlockedItems(bool addToList = true)
@@ -190,6 +226,8 @@ internal unsafe class UnlocksHook : HookableElement
 
         IDatableData data = localUser.Data;
 
+        PluginHandlers.PluginLog.Verbose($"Detected Item Completion with ID: {item.RowId}");
+
         switch ((ItemActionType)item.ItemAction.Value.Type)
         {
             case ItemActionType.Companion:
@@ -236,6 +274,66 @@ internal unsafe class UnlocksHook : HookableElement
                 data.FacewearList.SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
         }
+    }
+
+    void HandleQuestDiffCheck()
+    {
+        byte numAcceptedQuests = QuestManager.Instance()->NumAcceptedQuests;
+        if (numAcceptedQuests == lastAcceptedQuestCount) return;
+
+        lastAcceptedQuestCount = numAcceptedQuests;
+        CheckQuests();
+    }
+
+    void CheckQuests()
+    {
+        foreach (Quest quest in Sheets.AllQuests)
+        {
+            uint questRowID = quest.RowId;
+            if (!QuestManager.IsQuestComplete(questRowID)) continue;
+            if (QuestsCompleted.Contains(questRowID)) continue;
+
+            QuestsCompleted.Add(questRowID);
+            PluginHandlers.PluginLog.Verbose($"Quest with ID {questRowID} and name {quest.Name.ExtractText()} has been found.");
+            UserList.ActiveUser?.Data.QuestList.SetDate(questRowID, DateTime.Now, AcquiredDateType.Manual);
+        }
+    }
+
+    void OnLevelChanged(uint classJobId, uint level)
+    {
+        PluginHandlers.PluginLog.Verbose($"Detected a level change on the job: {classJobId} to level: {level}");
+
+        ClassJob? classJob = Sheets.GetClassJob(classJobId);
+        if (classJob == null)
+        {
+            PluginHandlers.PluginLog.Verbose("Couldn't find the classjob in the sheets???? HOW");
+            return;
+        }
+
+        sbyte arrayIndex = classJob.Value.ExpArrayIndex;
+        if (arrayIndex < 0 || arrayIndex >= currentClassJobLevels.Length)
+        {
+            PluginHandlers.PluginLog.Verbose($"Array index is out of range: {arrayIndex} on the classJobArray: {currentClassJobLevels.Length}");
+            return;
+        }
+
+        short currentLevel = currentClassJobLevels[arrayIndex];
+        if (currentLevel >= level)
+        {
+            PluginHandlers.PluginLog.Verbose($"This resulted in no actual change.");
+            return;
+        }
+
+        HandleClassJobLevels();
+
+        PluginHandlers.PluginLog.Verbose($"The class: {classJobId}, {classJob.Value.Name.ExtractText()} leveled up from: {currentLevel} to {level}. This has been marked.");
+
+        uint preparedClassJobID = classJobId * 10000;
+        preparedClassJobID += level;
+
+        // Because I can only have one indexer im storing multiple pieces of data in one number, the 10000 part is the class job, the small number is the level
+
+        UserList.ActiveUser?.Data.ClassLVLList.SetDate(preparedClassJobID, DateTime.Now, AcquiredDateType.Manual);
     }
 
     void OnDutyCompleted(object? sender, ushort dutyID)
@@ -300,8 +398,12 @@ internal unsafe class UnlocksHook : HookableElement
 
     public override void Dispose()
     {
+        PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
+        PluginHandlers.ClientState.LevelChanged -= OnLevelChanged;
+
+        DirtyListener.UnregisterDirtyUser(Reset);
+
         RaptureAtkModuleUpdateHook?.Dispose();
         AchievementUnlockHook?.Dispose();
-        PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
     }
 }
