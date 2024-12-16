@@ -5,11 +5,16 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Enums;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
+using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.Exd;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UIAlias = FFXIVClientStructs.FFXIV.Client.Game.UI;
 
@@ -17,9 +22,14 @@ namespace AcquisitionDate.Hooking.Hooks;
 
 internal unsafe class UnlocksHook : HookableElement
 {
+    readonly List<uint> InstancedContentCompleted = new List<uint>();
     readonly List<uint> UnlockedItems = new List<uint>();
 
-    delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float f1);
+    delegate void OnAchievementUnlockDelegate(UIAlias.Achievement* achievement, uint achievementID);
+    delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
+
+    [Signature("81 FA ?? ?? ?? ?? 0F 87 ?? ?? ?? ?? 53", DetourName = nameof(AchievementUnlockedDetour))]
+    readonly Hook<OnAchievementUnlockDelegate>? AchievementUnlockHook;
     readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
 
     readonly ISheets Sheets;
@@ -35,19 +45,43 @@ internal unsafe class UnlocksHook : HookableElement
 
     public override void Init()
     {
-        RaptureAtkModuleUpdateHook?.Enable();
+        Reset();
 
+        RaptureAtkModuleUpdateHook?.Enable();
+        AchievementUnlockHook?.Enable();
+
+        PluginHandlers.DutyState.DutyCompleted += OnDutyCompleted;
+    }
+
+    public void Reset()
+    {
         HandleUnlockedItems();
+        HandleUnlockedInstances();
     }
 
     void HandleUnlockedItems()
     {
+        UnlockedItems.Clear();
+
         foreach (Item item in Sheets.AllItems)
         {
             if (!IsUnlocked(item, out bool isUnlocked)) continue;
             if (!isUnlocked) continue;
 
             UnlockedItems.Add(item.RowId);
+        }
+    }
+
+    void HandleUnlockedInstances()
+    {
+        InstancedContentCompleted.Clear();
+
+        foreach (ContentFinderCondition iContent in Sheets.AllContentFinderConditions)
+        {
+            uint contentRowID = iContent.Content.RowId;
+            if (!UIState.IsInstanceContentCompleted(contentRowID)) continue;
+            
+            InstancedContentCompleted.Add(contentRowID);
         }
     }
 
@@ -92,7 +126,7 @@ internal unsafe class UnlocksHook : HookableElement
         itemIsUnlocked = false;
 
         if (item.ItemAction.RowId == 0) return false;
-        
+
         switch ((ItemActionType)item.ItemAction.Value.Type)
         {
             case ItemActionType.Companion:
@@ -204,25 +238,57 @@ internal unsafe class UnlocksHook : HookableElement
         }
     }
 
-    void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float delta)
+    void OnDutyCompleted(object? sender, ushort dutyID)
     {
+        ushort contentFinderConditionID = GameMain.Instance()->CurrentContentFinderConditionId;
+        bool instanceHasAlreadyBeenCompleted = true; 
+
+        ContentFinderCondition ? contentFinderCondition = Sheets.GetContentFinderCondition(contentFinderConditionID);
+        string ccName = "[ERROR]";
+        if (contentFinderCondition != null)
+        {
+            ccName = contentFinderCondition.Value.Name.ExtractText();
+            instanceHasAlreadyBeenCompleted = InstancedContentCompleted.Contains(contentFinderCondition.Value.Content.RowId);
+        }
+
+        PluginHandlers.PluginLog.Verbose($"Detected a duty completed with the ID: {dutyID} with the detected ContentFinderConditionID: {contentFinderConditionID} with the name: {ccName}");
+        if (instanceHasAlreadyBeenCompleted)
+        {
+            PluginHandlers.PluginLog.Verbose("This instance has already been completed however.");
+            return;
+        }
+
+        UserList.ActiveUser?.Data.DutyList.SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
+    }
+
+    void AchievementUnlockedDetour(UIAlias.Achievement* achievement, uint achievementID)
+    {
+        AchievementUnlockHook!.Original(achievement, achievementID);
+
+        PluginHandlers.PluginLog.Verbose($"Detected Acquired Achievement with ID: {achievementID}");
+        UserList.ActiveUser?.Data.AchievementList.SetDate(achievementID, DateTime.Now, AcquiredDateType.Manual);
+    }
+
+    void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float deltaTime)
+    {
+        RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
+
         try
         {
-            if (module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate))
-            {
-                List<Item> unlockedItems = GetNewlyUnlockedItems();
+            if (!module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate)) return;
 
-                foreach (Item item in unlockedItems)
+            List<Item> unlockedItems = GetNewlyUnlockedItems();
+
+            foreach (Item item in unlockedItems)
+            {
+                try
                 {
-                    PluginHandlers.PluginLog.Verbose("AcquiredDate detected recent unlock: " + item.Name.ExtractText());
-                    try
-                    {
-                        StoreItemUnlock(item);
-                    }
-                    catch (Exception ex)
-                    {
-                        PluginHandlers.PluginLog.Error(ex, $"Storing item: {item.Name.ExtractText()} failed.");
-                    }
+                    PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
+                    StoreItemUnlock(item);
+                }
+                catch (Exception ex)
+                {
+                    PluginHandlers.PluginLog.Error(ex, $"Storing item: {item.Name.ExtractText()} failed.");
                 }
             }
         }
@@ -230,12 +296,12 @@ internal unsafe class UnlocksHook : HookableElement
         {
             PluginHandlers.PluginLog.Error(ex, "Error during RaptureAtkModule_UpdateDetour");
         }
-
-        RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, delta);
     }
 
     public override void Dispose()
     {
         RaptureAtkModuleUpdateHook?.Dispose();
+        AchievementUnlockHook?.Dispose();
+        PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
     }
 }

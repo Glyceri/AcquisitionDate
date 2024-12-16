@@ -3,6 +3,7 @@ using AcquisitionDate.Services.Interfaces;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AcquisitionDate.Services.Wrappers;
 
@@ -10,18 +11,21 @@ internal class SheetsWrapper : ISheets
 {
     public Quest[] AllQuests => Quests;
     public Item[] AllItems => items.ToArray();
+    public Achievement[] AllAchievements => achievements.ToArray();
+    public ContentFinderCondition[] AllContentFinderConditions => contentFinderConditions.ToArray();
 
     readonly Quest[] Quests;
 
     readonly ExcelSheet<World> worlds;
-    readonly ExcelSheet<Achievement> Achievements;
+    readonly ExcelSheet<Achievement> achievements;
     readonly ExcelSheet<Item> items;
     readonly ExcelSheet<Companion> companions;
+    readonly ExcelSheet<ContentFinderCondition> contentFinderConditions;
 
     public SheetsWrapper()
     {
         worlds = PluginHandlers.DataManager.GetExcelSheet<World>();
-        Achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
+        achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
         Quests = [
             ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.English).ToArray(),
             //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.German).ToArray(),
@@ -30,6 +34,19 @@ internal class SheetsWrapper : ISheets
             ];
         items = PluginHandlers.DataManager.GetExcelSheet<Item>();
         companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
+        contentFinderConditions = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
+    }
+
+    public ContentFinderCondition? GetContentFinderCondition(ushort id)
+    {
+        foreach (ContentFinderCondition contentFinderCondition in contentFinderConditions)
+        {
+            if (contentFinderCondition.RowId != id) continue;
+
+            return contentFinderCondition;
+        }
+
+        return null;
     }
 
     public Companion? GetCompanion(ushort ID)
@@ -46,10 +63,12 @@ internal class SheetsWrapper : ISheets
 
     public Achievement? GetAchievement(string name)
     {
-        foreach (Achievement achievement in Achievements)
+        string betterName = Regex.Replace(name, @"[\r\n]+", string.Empty);
+
+        foreach (Achievement achievement in achievements)
         {
             string achiName = achievement.Name.ExtractText();
-            if (achiName != name) continue;
+            if (!string.Equals(achiName, betterName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
 
             return achievement;
         }

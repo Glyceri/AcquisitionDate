@@ -6,6 +6,8 @@ internal interface ISheets
 {
     Quest[] AllQuests { get; }
     Item[] AllItems { get; }
+    Achievement[] AllAchievements { get; }
+    ContentFinderCondition[] AllContentFinderConditions { get; }
 
     string? GetWorldName(ushort worldID);
     uint? GetWorldID(string worldName);
@@ -13,5 +15,6 @@ internal interface ISheets
     Quest? GetQuest(string name, string journalGroup);
     Quest? GetQuest(string name);
     Achievement? GetAchievement(string name);
-    Companion? GetCompanion(ushort ID);    
+    Companion? GetCompanion(ushort ID);
+    ContentFinderCondition? GetContentFinderCondition(ushort id);
 }

@@ -18,6 +18,7 @@ internal class PluginHandlers
     [PluginService] internal static IKeyState KeyState { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider Hooking { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+    [PluginService] internal static IDutyState DutyState { get; private set; } = null!;
 
     internal static void Start(ref IDalamudPluginInterface plugin, AcquisitionDatePlugin selfPlugin)
     {
