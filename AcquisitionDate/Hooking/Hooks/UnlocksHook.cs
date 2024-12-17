@@ -11,7 +11,6 @@ using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.Exd;
 using Lumina.Excel.Sheets;
 using System;
@@ -23,19 +22,20 @@ namespace AcquisitionDate.Hooking.Hooks;
 
 internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
 {
-    readonly List<uint> QuestsCompleted = new List<uint>();
+
     readonly List<uint> InstancedContentCompleted = new List<uint>();
     readonly List<uint> UnlockedItems = new List<uint>();
+    readonly List<uint> UnlockedFishies = new List<uint>();
     short[] currentClassJobLevels = [];
 
-    delegate void OnAchievementUnlockDelegate(UIAlias.Achievement* achievement, uint achievementID);
+    
     delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
+    delegate nint FishyCaughtDelegate(IntPtr module, uint fishId, bool large, ushort size, byte amount, byte level, byte unk7, byte unk8, byte unk9, byte unk10, byte unk11, byte unk12);
 
-    [Signature("81 FA ?? ?? ?? ?? 0F 87 ?? ?? ?? ?? 53", DetourName = nameof(AchievementUnlockedDetour))]
-    readonly Hook<OnAchievementUnlockDelegate>? AchievementUnlockHook;
+    [Signature("40 55 56 41 54 41 56 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 F7", DetourName = nameof(FishyCaughtDetour))]
+    readonly Hook<FishyCaughtDelegate>? FishyCaughtHook;
+    
     readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
-
-    byte lastAcceptedQuestCount = 0;
 
     readonly ISheets Sheets;
     readonly IUserList UserList;
@@ -56,7 +56,7 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         DirtyListener.RegisterDirtyUser(Reset);
 
         RaptureAtkModuleUpdateHook?.Enable();
-        AchievementUnlockHook?.Enable();
+        FishyCaughtHook?.Enable();
 
         PluginHandlers.DutyState.DutyCompleted += OnDutyCompleted;
         PluginHandlers.ClientState.LevelChanged += OnLevelChanged;
@@ -64,28 +64,28 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
 
     public void Reset()
     {
-        HandleUnlockedQuests();
         HandleUnlockedItems();
         HandleUnlockedInstances();
         HandleClassJobLevels();
+        HandleFishies();
+    }
+
+    void HandleFishies()
+    {
+        UnlockedFishies.Clear();
+
+        foreach (FishParameter fish in Sheets.AllFishies)
+        {
+            if (!fish.IsInLog) continue;
+            if (!IsFishUnlocked(fish)) continue;
+
+            UnlockedFishies.Add(fish.RowId);
+        }
     }
 
     void HandleClassJobLevels()
     {
         currentClassJobLevels = PlayerState.Instance()->ClassJobLevels.ToArray();
-    }
-
-    void HandleUnlockedQuests()
-    {
-        QuestsCompleted.Clear();
-        lastAcceptedQuestCount = QuestManager.Instance()->NumAcceptedQuests;
-
-        foreach (Quest quest in Sheets.AllQuests)
-        {
-            if (!QuestManager.IsQuestComplete(quest.RowId)) continue;
-
-            QuestsCompleted.Add(quest.RowId);
-        }
     }
 
     void HandleUnlockedItems()
@@ -114,11 +114,36 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         }
     }
 
-    public void Update()
+    bool IsFishUnlocked(FishParameter fish)
+    {
+        uint fishID = fish.RowId;
+
+        int offset = (int)fishID / 8;
+        int bit = (byte)fishID % 8;
+
+        return ((PlayerState.Instance()->CaughtFishBitmask[offset] >> bit) & 1) == 1;
+    }
+
+    bool IsSpearFishUnlocked(SpearfishingItem spearFish)
+    {
+        uint fishID = spearFish.Item.RowId;
+        fishID -= 20000;
+
+        var offset = fishID / 8;
+        var bit = (byte)fishID % 8;
+
+
+        Span<byte> span = new Span<byte>((void*)(((nint)PlayerState.Instance()) + 0x4B1), 39);
+        if (fishID >= span.Length) return false;
+        if (fishID < 0) return false;
+
+        // replace that weirdness with PlayerState.Instance()->CaughtSpearfishBitmask
+        return ((span[(int)fishID / 8] >> (byte)(fishID % 8)) & 1) == 1;
+    }
+
+    public void Update(float deltaTime)
     {
         if (UserList.ActiveUser == null) return;
-
-        HandleQuestDiffCheck();
     }
 
     public List<Item> GetNewlyUnlockedItems(bool addToList = true)
@@ -276,29 +301,6 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         }
     }
 
-    void HandleQuestDiffCheck()
-    {
-        byte numAcceptedQuests = QuestManager.Instance()->NumAcceptedQuests;
-        if (numAcceptedQuests == lastAcceptedQuestCount) return;
-
-        lastAcceptedQuestCount = numAcceptedQuests;
-        CheckQuests();
-    }
-
-    void CheckQuests()
-    {
-        foreach (Quest quest in Sheets.AllQuests)
-        {
-            uint questRowID = quest.RowId;
-            if (!QuestManager.IsQuestComplete(questRowID)) continue;
-            if (QuestsCompleted.Contains(questRowID)) continue;
-
-            QuestsCompleted.Add(questRowID);
-            PluginHandlers.PluginLog.Verbose($"Quest with ID {questRowID} and name {quest.Name.ExtractText()} has been found.");
-            UserList.ActiveUser?.Data.QuestList.SetDate(questRowID, DateTime.Now, AcquiredDateType.Manual);
-        }
-    }
-
     void OnLevelChanged(uint classJobId, uint level)
     {
         PluginHandlers.PluginLog.Verbose($"Detected a level change on the job: {classJobId} to level: {level}");
@@ -359,14 +361,6 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         UserList.ActiveUser?.Data.DutyList.SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
     }
 
-    void AchievementUnlockedDetour(UIAlias.Achievement* achievement, uint achievementID)
-    {
-        AchievementUnlockHook!.Original(achievement, achievementID);
-
-        PluginHandlers.PluginLog.Verbose($"Detected Acquired Achievement with ID: {achievementID}");
-        UserList.ActiveUser?.Data.AchievementList.SetDate(achievementID, DateTime.Now, AcquiredDateType.Manual);
-    }
-
     void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float deltaTime)
     {
         RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
@@ -396,6 +390,19 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         }
     }
 
+    nint FishyCaughtDetour(IntPtr module, uint fishId, bool large, ushort size, byte amount, byte level, byte unk7, byte unk8, byte unk9, byte unk10, byte unk11, byte unk12)
+    {
+        if (!UnlockedFishies.Contains(fishId))
+        {
+            UnlockedFishies.Add(fishId);
+
+            PluginHandlers.PluginLog.Verbose($"Fishy with ID {fishId} has been found.");
+            UserList.ActiveUser?.Data.FishingList.SetDate(fishId, DateTime.Now, AcquiredDateType.Manual);
+        }
+
+        return FishyCaughtHook!.Original(module, fishId, large, size, amount, level, unk7, unk8, unk9, unk10, unk11, unk12);
+    }
+
     public override void Dispose()
     {
         PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
@@ -404,6 +411,6 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         DirtyListener.UnregisterDirtyUser(Reset);
 
         RaptureAtkModuleUpdateHook?.Dispose();
-        AchievementUnlockHook?.Dispose();
+        FishyCaughtHook?.Dispose();
     }
 }

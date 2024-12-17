@@ -1,8 +1,9 @@
 ﻿using AcquisitionDate.Hooking.Interfaces;
+using AcquisitionDate.Updating.Interfaces;
 
 namespace AcquisitionDate.Hooking.Hooks.Interfaces;
 
-internal interface IUnlocksHook : IHookableElement
+internal interface IUnlocksHook : IHookableElement, IUpdatable
 {
-    void Update();
+    void Update(float deltaTime);
 }

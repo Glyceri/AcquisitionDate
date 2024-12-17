@@ -8,6 +8,8 @@ internal interface ISheets
     Item[] AllItems { get; }
     Achievement[] AllAchievements { get; }
     ContentFinderCondition[] AllContentFinderConditions { get; }
+    FishParameter[] AllFishies { get; }
+    SpearfishingItem[] AllSpearFishies { get; }
 
     string? GetWorldName(ushort worldID);
     uint? GetWorldID(string worldName);

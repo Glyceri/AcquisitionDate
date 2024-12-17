@@ -1,9 +1,10 @@
 using AcquisitionDate.DirtySystem.Interfaces;
+using AcquisitionDate.Updating.Interfaces;
 using System;
 
 namespace AcquisitionDate.Serializiation;
 
-internal class SaveHandler : IDisposable
+internal class SaveHandler : IDisposable, IUpdatable
 {
     readonly IDirtyListener DirtyListener;
     readonly Configuration Configuration;

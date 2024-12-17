@@ -20,7 +20,7 @@ internal class PluginHandlers
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IDutyState DutyState { get; private set; } = null!;
 
-    internal static void Start(ref IDalamudPluginInterface plugin, AcquisitionDatePlugin selfPlugin)
+    internal static void Initialise(ref IDalamudPluginInterface plugin, AcquisitionDatePlugin selfPlugin)
     {
         plugin.Create<PluginHandlers>();
         Plugin = selfPlugin;
