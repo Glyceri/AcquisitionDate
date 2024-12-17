@@ -1,7 +1,6 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.DatableUsers.Interfaces;
-using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
@@ -15,17 +14,7 @@ internal unsafe class QuestUnlockHook : UnlockHook
     readonly List<uint> QuestsCompleted = new List<uint>();
     byte lastAcceptedQuestCount = 0;
 
-    readonly ISheets Sheets;
-
-    public QuestUnlockHook(ISheets sheets, IUserList userList, IDirtyListener dirtyListener) : base(dirtyListener, userList)
-    {
-        Sheets = sheets;
-    }
-
-    public override void Init()
-    {
-        Reset();
-    }
+    public QuestUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
     public override void Reset()
     {
@@ -40,12 +29,7 @@ internal unsafe class QuestUnlockHook : UnlockHook
         }
     }
 
-    public override void OnUpdate(float deltaTime)
-    {
-        HandleQuestDiffCheck();
-    }
-
-    void HandleQuestDiffCheck()
+    public override void Update(float deltaTime)
     {
         byte numAcceptedQuests = QuestManager.Instance()->NumAcceptedQuests;
         if (numAcceptedQuests == lastAcceptedQuestCount) return;
@@ -68,5 +52,6 @@ internal unsafe class QuestUnlockHook : UnlockHook
         }
     }
 
-    public override void Dispose() { }
+    public override void Init() { } // No init needed for this one
+    public override void Dispose() { } // No dispose needed for this one
 }
