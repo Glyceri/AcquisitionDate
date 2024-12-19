@@ -15,6 +15,7 @@ internal class SheetsWrapper : ISheets
     public ContentFinderCondition[] AllContentFinderConditions => contentFinderConditions.ToArray();
     public FishParameter[] AllFishies => fishies.ToArray();
     public SpearfishingItem[] AllSpearFishies => spearFishies.ToArray();
+    public ClassJob[] AllClassJobs => classJobs.ToArray();
 
     readonly Quest[] Quests;
 
@@ -26,6 +27,7 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<ClassJob> classJobs;
     readonly ExcelSheet<FishParameter> fishies;
     readonly ExcelSheet<SpearfishingItem> spearFishies;
+    readonly ExcelSheet<Adventure> vistas;
 
     public SheetsWrapper()
     {
@@ -43,6 +45,21 @@ internal class SheetsWrapper : ISheets
         classJobs = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
         fishies = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
         spearFishies = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
+        vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
+    }
+
+    public Adventure? GetAdventureByIndex(uint index)
+    {
+        int curIndex = -1;
+        foreach (Adventure adventure in vistas)
+        {
+            curIndex++;
+            if (curIndex != index) continue;
+
+            return adventure;
+        }
+
+        return null;
     }
 
     public ClassJob? GetClassJob(uint id)

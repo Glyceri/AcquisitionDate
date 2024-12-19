@@ -23,9 +23,9 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
     delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
 
-    public ItemUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) 
+    public ItemUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets)
     {
-        RaptureAtkModuleUpdateHook = PluginHandlers.Hooking.HookFromFunctionPointerVariable<RaptureAtkModuleUpdateDelegate>(new nint(&RaptureAtkModule.StaticVirtualTablePointer->Update), RaptureAtkModule_UpdateDetour);
+        RaptureAtkModuleUpdateHook = PluginHandlers.Hooking.HookFromAddress<RaptureAtkModuleUpdateDelegate>((nint)RaptureAtkModule.StaticVirtualTablePointer->Update, RaptureAtkModule_UpdateDetour);
     }
 
     public override void Init()
@@ -203,31 +203,36 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
     void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float deltaTime)
     {
-        RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
+        try
+        {
+            RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
+        }
+        catch (Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Failed ATKModuleUpdate");
+        }
+
+        if (UserList.ActiveUser == null) return;
 
         try
         {
             if (!module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate)) return;
 
+            PluginHandlers.PluginLog.Verbose("Unlocks Update Flag got set High");
             List<Item> unlockedItems = GetNewlyUnlockedItems();
 
             foreach (Item item in unlockedItems)
             {
-                try
-                {
-                    PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
-                    StoreItemUnlock(item);
-                }
-                catch (Exception ex)
-                {
-                    PluginHandlers.PluginLog.Error(ex, $"Storing item: {item.Name.ExtractText()} failed.");
-                }
+                PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
+                StoreItemUnlock(item);
             }
         }
         catch (Exception ex)
         {
             PluginHandlers.PluginLog.Error(ex, "Error during RaptureAtkModule_UpdateDetour");
         }
+
+
     }
 
     public override void Dispose()

@@ -1,5 +1,6 @@
 ﻿using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
+using AcquisitionDate.Hooking.Hooks.ATKHooks;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Hooks.UnlockHooks;
 using AcquisitionDate.Services.Interfaces;
@@ -32,6 +33,7 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         Register(new ItemUnlockHook(UserList, Sheets));
         Register(new LevelupUnlockHook(UserList, Sheets));
         Register(new QuestUnlockHook(UserList, Sheets));
+        Register(new EorzeaIncognitaUnlockHook(UserList, Sheets));
     }
 
     void Register(UnlockHook unlockHook)
@@ -69,5 +71,12 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
     public override void Dispose()
     {
         DirtyListener.UnregisterDirtyUser(Reset);
+
+        foreach (UnlockHook unlockHook in unlockHooks)
+        {
+            unlockHook.Dispose();
+        }
+
+        unlockHooks.Clear();
     }
 }

@@ -51,9 +51,9 @@ internal unsafe class LevelupUnlockHook : UnlockHook
 
         Reset();
 
-        PluginHandlers.PluginLog.Verbose($"The class: {classJobId}, {classJob.Value.Name.ExtractText()} leveled up from: {currentLevel} to {level}. This has been marked.");
+        PluginHandlers.PluginLog.Verbose($"The class: {classJobId}, {arrayIndex}, {classJob.Value.Name.ExtractText()} leveled up from: {currentLevel} to {level}. This has been marked.");
 
-        uint preparedClassJobID = classJobId * 10000;
+        uint preparedClassJobID = (uint)arrayIndex * 10000;
         preparedClassJobID += level;
 
         // Because I can only have one indexer im storing multiple pieces of data in one number, the 10000 part is the class job, the small number is the level

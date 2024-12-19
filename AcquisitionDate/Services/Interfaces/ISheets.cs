@@ -10,6 +10,7 @@ internal interface ISheets
     ContentFinderCondition[] AllContentFinderConditions { get; }
     FishParameter[] AllFishies { get; }
     SpearfishingItem[] AllSpearFishies { get; }
+    ClassJob[] AllClassJobs { get; }
 
     string? GetWorldName(ushort worldID);
     uint? GetWorldID(string worldName);
@@ -21,4 +22,5 @@ internal interface ISheets
     Companion? GetCompanion(ushort ID);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
     ClassJob? GetClassJob(uint id);
+    Adventure? GetAdventureByIndex(uint index);
 }

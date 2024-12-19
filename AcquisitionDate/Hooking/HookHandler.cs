@@ -1,6 +1,7 @@
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
+using AcquisitionDate.Hooking.Hooks.ATKHooks;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Services.Interfaces;
@@ -28,8 +29,10 @@ internal class HookHandler : IHookHandler
     void _Register()
     {
         Register(new CharacterManagerHook(UserList));
-        Register(new AchievementWindowHook(Services, UserList));
-        Register(new QuestJournalWindowHook(Services, UserList));
+        Register(new AchievementWindowHook(UserList, Services.Sheets));
+        Register(new QuestJournalWindowHook(UserList, Services.Sheets));
+        Register(new EorzeaIncognitaWindowHook(UserList, Services.Sheets));
+        Register(new CharacterClassWindowHook(UserList, Services.Sheets));
         Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 
