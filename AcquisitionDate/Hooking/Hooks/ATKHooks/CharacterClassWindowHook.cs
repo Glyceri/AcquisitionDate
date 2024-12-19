@@ -15,8 +15,8 @@ namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
 internal unsafe class CharacterClassWindowHook : DateTextHook
 {
-    const uint customDateTextNodeID = 800;
-    const uint customLabelTextNodeID = 801;
+    const uint CustomDateTextNodeID = 800;
+    const uint CustomLabelTextNodeID = 801;
 
     readonly Hook<AddonCharacterClass.Delegates.ReceiveEvent>? ReceiveEventHook;
 
@@ -48,20 +48,10 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         AtkTextNode* baseTextNode = baseNode.GetNode<AtkTextNode>(90);
         if (baseTextNode == null) return;
 
-        AtkTextNode* tNode = null;
-        for (int i = 0; i < thisPtr->UldManager.NodeListCount; i++)
-        {
-            AtkResNode* rNode = thisPtr->UldManager.NodeList[i];
-            if (rNode == null) continue;
-            if (rNode->NodeId != customDateTextNodeID) continue;
-
-            tNode = rNode->GetAsAtkTextNode();
-            break;
-        }
-
+        AtkTextNode* tNode = GetTextNode(thisPtr, CustomDateTextNodeID);
         if (tNode == null)
         {
-            tNode = CreateTextNode(customDateTextNodeID);
+            tNode = CreateTextNode(CustomDateTextNodeID);
             if (tNode == null) return;
 
             AddSibling(tNode, &baseTextNode->AtkResNode, &thisPtr->UldManager);
@@ -79,20 +69,10 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
             tNode->SetXFloat(185);
         }
 
-        AtkTextNode* tNode2 = null;
-        for (int i = 0; i < thisPtr->UldManager.NodeListCount; i++)
-        {
-            AtkResNode* rNode = thisPtr->UldManager.NodeList[i];
-            if (rNode == null) continue;
-            if (rNode->NodeId != customLabelTextNodeID) continue;
-
-            tNode2 = rNode->GetAsAtkTextNode();
-            break;
-        }
-
+        AtkTextNode* tNode2 = GetTextNode(thisPtr, CustomLabelTextNodeID);
         if (tNode2 == null)
         {
-            tNode2 = CreateTextNode(customLabelTextNodeID);
+            tNode2 = CreateTextNode(CustomLabelTextNodeID);
             if (tNode2 == null) return;
 
             AddSibling(tNode2, &tNode->AtkResNode, &thisPtr->UldManager);
@@ -117,6 +97,20 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
 
         DrawDate(tNode, lastIndex, true);
+    }
+
+    AtkTextNode* GetTextNode(AddonCharacterClass* thisPtr, uint id)
+    {
+        for (int i = 0; i < thisPtr->UldManager.NodeListCount; i++)
+        {
+            AtkResNode* rNode = thisPtr->UldManager.NodeList[i];
+            if (rNode == null) continue;
+            if (rNode->NodeId != id) continue;
+
+            return rNode->GetAsAtkTextNode();
+        }
+
+        return null;
     }
 
     bool HandleLastIndex(AddonCharacterClass* thisPtr, int eventParam)
