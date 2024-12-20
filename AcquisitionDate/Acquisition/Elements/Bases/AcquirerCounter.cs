@@ -8,8 +8,8 @@ namespace AcquisitionDate.Acquisition.Elements.Bases;
 
 internal abstract class AcquirerCounter : AcquirerBase
 {
-    int internalCounter = 0;
-    int maxCounter = 0;
+    protected int internalCounter = 0;
+    protected int maxCounter = 0;
 
     protected AcquirerCounter(ILodestoneNetworker networker) : base(networker)
     {
@@ -29,7 +29,7 @@ internal abstract class AcquirerCounter : AcquirerBase
         ResetCounter();
     }
 
-    void ResetCounter()
+    protected virtual void ResetCounter()
     {
         internalCounter = 0;
         maxCounter = 0;
@@ -55,7 +55,7 @@ internal abstract class AcquirerCounter : AcquirerBase
         UpCounterAndActivate();
     }
 
-    void UpCounterAndActivate()
+    protected void UpCounterAndActivate()
     {
         internalCounter++;
 
@@ -76,8 +76,16 @@ internal abstract class AcquirerCounter : AcquirerBase
             return;
         }
 
+        if (ExtraCheck())
+        {
+            Success();
+            return;
+        }
+
         RegisterQueueElement(DataRequest(internalCounter));
     }
+
+    protected virtual bool ExtraCheck() => false;
 
     protected void OnPageComplete()
     {

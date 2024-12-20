@@ -32,11 +32,11 @@ internal class DatableList : IDatableList
 
     public DateTime? GetDate(uint ID)
     {
-        DateTime? lodestoneTime = GetDate(ID, AcquiredDateType.Lodestone);
-        if (lodestoneTime != null) return lodestoneTime;
-
         DateTime? manualTime = GetDate(ID, AcquiredDateType.Manual);
         if (manualTime != null) return manualTime;
+
+        DateTime? lodestoneTime = GetDate(ID, AcquiredDateType.Lodestone);
+        if (lodestoneTime != null) return lodestoneTime;
 
         return null;
     }
