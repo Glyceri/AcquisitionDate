@@ -47,7 +47,7 @@ internal unsafe class QuestUnlockHook : UnlockHook
             if (QuestsCompleted.Contains(questRowID)) continue;
 
             QuestsCompleted.Add(questRowID);
-            PluginHandlers.PluginLog.Verbose($"Quest with ID {questRowID} and name {quest.Name.ExtractText()} has been found.");
+            PluginHandlers.PluginLog.Information($"Quest with ID {questRowID} and name {quest.Name.ExtractText()} has been found.");
             UserList.ActiveUser?.Data.QuestList.SetDate(questRowID, DateTime.Now, AcquiredDateType.Manual);
         }
     }

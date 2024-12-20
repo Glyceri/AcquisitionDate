@@ -24,7 +24,7 @@ internal unsafe class EorzeaIncognitaUnlockHook : UnlockHook
 
     IntPtr OnVistaUnlockedDetour(ushort index, int a2, int a3)
     {
-        PluginHandlers.PluginLog.Verbose($"Detected a vista unlocked at index: {index}");
+        PluginHandlers.PluginLog.Information($"Detected a vista unlocked at index: {index}");
 
         UserList.ActiveUser?.Data.SightList.SetDate(index, DateTime.Now, AcquiredDateType.Manual);
 

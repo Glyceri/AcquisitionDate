@@ -6,6 +6,7 @@ using AcquisitionDate.Services.Interfaces;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System;
 using System.Linq;
+using System.Numerics;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
@@ -21,34 +22,28 @@ internal unsafe class FishyUnlockHook : UnlockHook
     public override void Reset() 
     {
         _fishStore      = PlayerState.Instance()->CaughtFishBitmask.ToArray();
-        _spearFishStore = new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39).ToArray();
-    } 
-    
+        _spearFishStore = PlayerState.Instance()->CaughtSpearfishBitmask.ToArray();
+    }
+
     public uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
     {
-        // Ensure both bitmasks are available
-        Span<byte> oldBitmask = oldStore;
-        Span<byte> newBitmask = newStore;
+        // Calculate the minimum length of both bitmasks
+        int maxLength = Math.Min(oldStore.Length, newStore.Length);
 
         // Iterate through each byte in the bitmask arrays
-        int maxLength = Math.Min(oldBitmask.Length, newBitmask.Length);
         for (int byteIndex = 0; byteIndex < maxLength; byteIndex++)
         {
-            byte oldByte = oldBitmask[byteIndex];
-            byte newByte = newBitmask[byteIndex];
+            // Get the difference between new and old byte (new byte with old byte masked out)
+            byte difference = (byte)(newStore[byteIndex] & ~oldStore[byteIndex]);
 
-            // Compare corresponding bits in the old and new byte arrays
-            byte difference = (byte)(newByte & ~oldByte); // This isolates the bits set in newByte but not in oldByte
-
-            // Iterate through each bit in the difference byte
-            for (int bitIndex = 0; bitIndex < 8; bitIndex++)
+            // If there is any difference, find the fish index
+            if (difference != 0)
             {
-                if ((difference & (1 << bitIndex)) != 0)
-                {
-                    // Calculate the global fish index
-                    int fishIndex = byteIndex * 8 + bitIndex;
-                    return (uint)fishIndex;
-                }
+                // Use a fast bit scan to find the first bit set in 'difference'
+                int bitIndex = BitOperations.TrailingZeroCount(difference);
+
+                // Return the global fish index by combining byte and bit indices
+                return (uint)(byteIndex * 8 + bitIndex);
             }
         }
 
@@ -80,17 +75,15 @@ internal unsafe class FishyUnlockHook : UnlockHook
         if (fishOutcome != null)
         {
             data.FishingList.SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
-            PluginHandlers.PluginLog.Verbose($"Found new fish caught with ID: {fishOutcome.Value}");
+            PluginHandlers.PluginLog.Information($"Found new fish caught with ID: {fishOutcome.Value}");
         }
 
-        // new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39)
-        // That should be PlayerState.Instance()->CaughtSpearFishBitmask, but it is still inaccurate in CS
-        uint? spfishOutcome = CheckFishies(ref _spearFishStore, new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39));
+        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfishBitmask);
         if (spfishOutcome != null)
         {
             spfishOutcome += SpearFishIdOffset;
             data.FishingList.SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
-            PluginHandlers.PluginLog.Verbose($"Found new spearfish caught with ID: {spfishOutcome.Value}");
+            PluginHandlers.PluginLog.Information($"Found new spearfish caught with ID: {spfishOutcome.Value}");
         }
     }
 

@@ -32,7 +32,7 @@ internal unsafe class AchievementUnlockHook : UnlockHook
     {
         AchievementUnlockingHook!.Original(achievement, achievementID);
 
-        PluginHandlers.PluginLog.Verbose($"Detected Acquired Achievement with ID: {achievementID}");
+        PluginHandlers.PluginLog.Information($"Detected Acquired Achievement with ID: {achievementID}");
         UserList.ActiveUser?.Data.AchievementList.SetDate(achievementID, DateTime.Now, AcquiredDateType.Manual);
     }
 

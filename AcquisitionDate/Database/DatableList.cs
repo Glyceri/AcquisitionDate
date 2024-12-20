@@ -18,6 +18,11 @@ internal class DatableList : IDatableList
 
     public int Length => IDs.Length;
 
+    public DateTime? LowestDateTime => GetLowestDateTime();
+
+    DateTime? lowestDateTime = null;
+    bool isDirty = true;
+
     public DatableList(IDirtySetter dirtySetter)
     {
         DirtySetter = dirtySetter;
@@ -115,7 +120,51 @@ internal class DatableList : IDatableList
 
     void SetDirty()
     {
+        isDirty = true;
         DirtySetter.NotifyDirtyDatabase();
+    }
+
+    DateTime? GetLowestDateTime()
+    {
+        if (!isDirty) return lowestDateTime;
+
+        isDirty = false;
+
+        int count = 0;
+        long totalMinTime = long.MaxValue;
+
+        for (int i = 0; i < Length; i++)
+        {
+            DateTime? lTime = LodestoneTimes[i];
+            DateTime? mTime = ManualTimes[i];
+
+            long lValue = lTime?.Ticks ?? long.MaxValue;
+            long mValue = mTime?.Ticks ?? long.MinValue;
+
+            long minTime = lValue;
+            if (mValue < minTime) minTime = mValue;
+
+            if (minTime < totalMinTime)
+            {
+                totalMinTime = minTime;
+                count = 1;
+            }
+            else if (minTime == totalMinTime)
+            {
+                count++;
+            }
+        }
+
+        if (count <= 1)
+        {
+            lowestDateTime = null;
+        }
+        else
+        {
+            lowestDateTime = new DateTime(totalMinTime);
+        }
+
+        return lowestDateTime;
     }
 
     int? GetIndex(uint ID)

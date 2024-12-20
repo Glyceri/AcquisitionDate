@@ -9,6 +9,8 @@ using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Events;
+using Dalamud.Utility;
+using PetRenamer.PetNicknames.TranslatorSystem;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -75,18 +77,72 @@ internal unsafe abstract class DateTextHook : HookableElement
         if (textNode == null) return;
 
         textNode->ToggleVisibility(stillDraw);
-        textNode->SetText("--/--/----");
+        textNode->SetText("??/??/????");
 
+        string? dateString = GetDateTimeString(listID);
+        if (dateString.IsNullOrWhitespace()) return;
+
+        textNode->ToggleVisibility(true);
+        textNode->SetText(dateString);
+    }
+
+    string? GetDateTimeString(uint ID)
+    {
         IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null) return;
+        if (localUser == null) return null;
 
         IDatableList list = GetList(localUser.Data);
 
-        DateTime? dateTime = list.GetDate(listID);
-        if (dateTime == null) return;
+        DateTime? dateTime = list.GetDate(ID);
+        if (dateTime == null) return null;
 
-        textNode->ToggleVisibility(true);
-        textNode->SetText(dateTime.Value.ToString("dd/MM/yyyy").Replace("-", "/"));
+        return dateTime.Value.ToString("dd/MM/yyyy").Replace("-", "/");
+    }
+
+    IAddonEventHandle? lastHoverOverEvent;
+    IAddonEventHandle? lastHoverOutEvent;
+
+    protected void ClearOldTooldtips()
+    {
+        if (lastHoverOutEvent != null) PluginHandlers.EventManager.RemoveEvent(lastHoverOutEvent);
+        if (lastHoverOverEvent != null) PluginHandlers.EventManager.RemoveEvent(lastHoverOverEvent);
+    }
+
+    protected void GiveTooltip(AtkUnitBase* baseAddon, AtkTextNode* baseNode, uint ID, bool hasInaccuracies = false)
+    {
+        ClearOldTooldtips();
+
+        baseNode->NodeFlags |= NodeFlags.EmitsEvents | NodeFlags.RespondToMouse | NodeFlags.HasCollision;
+        lastHoverOverEvent = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOver, (atkEventType, atkUnitBase, atkResNode) => OnTooltip(atkEventType, atkUnitBase, atkResNode, ID, hasInaccuracies));
+        lastHoverOutEvent = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOut, (atkEventType, atkUnitBase, atkResNode) => OnTooltip(atkEventType, atkUnitBase, atkResNode, ID, hasInaccuracies));
+        baseAddon->UpdateCollisionNodeList(false);
+    }
+
+    void OnTooltip(AddonEventType atkEventType, nint atkUnitBase, nint atkResNode, uint ID, bool hasInaccuracies)
+    {
+        if (atkEventType == AddonEventType.MouseOver)
+        {
+            string? dateString = GetDateTimeString(ID);
+            string newLine = string.Empty;
+            if (dateString.IsNullOrWhitespace())
+            {
+                newLine = Translator.GetLine("NoDate");
+            }
+            else
+            {
+                newLine = $"{Translator.GetLine("AchievedOn")} {dateString}";
+                if (hasInaccuracies)
+                {
+                    newLine += $"\n{Translator.GetLine("NotAccurate")}";
+                }
+            }
+
+            AtkStage.Instance()->TooltipManager.ShowTooltip((ushort)((AtkResNode*)atkResNode)->ParentNode->NodeId, (AtkResNode*)atkResNode, newLine);
+        }
+        else if (atkEventType == AddonEventType.MouseOut)
+        {
+            AtkStage.Instance()->TooltipManager.HideTooltip((ushort)((AtkResNode*)atkResNode)->ParentNode->NodeId);
+        }
     }
 
     protected abstract IDatableList GetList(IDatableData userData);
@@ -118,6 +174,8 @@ internal unsafe abstract class DateTextHook : HookableElement
 
     public sealed override void Dispose()
     {
+        ClearOldTooldtips();
+
         try
         {
             PluginHandlers.AddonLifecycle.UnregisterListener(HookDetour);
@@ -137,4 +195,19 @@ internal unsafe abstract class DateTextHook : HookableElement
     }
 
     protected abstract void OnDispose();
+
+
+    protected void TrySafeInvalidateUIElement(ref AtkTextNode* tNode)
+    {
+        try
+        {
+            if (tNode == null) return;
+            tNode->ToggleVisibility(false);
+            tNode = null;
+        }
+        catch (Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Error during safe node cleanup");
+        }
+    }
 }

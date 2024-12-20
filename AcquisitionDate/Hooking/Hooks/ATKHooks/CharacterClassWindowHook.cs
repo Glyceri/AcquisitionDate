@@ -6,9 +6,11 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
+using PetRenamer.PetNicknames.TranslatorSystem;
 using System;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
@@ -17,6 +19,9 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
 {
     const uint CustomDateTextNodeID = 800;
     const uint CustomLabelTextNodeID = 801;
+
+    AtkTextNode* tNode;
+    AtkTextNode* tNode2;
 
     readonly Hook<AddonCharacterClass.Delegates.ReceiveEvent>? ReceiveEventHook;
 
@@ -48,7 +53,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         AtkTextNode* baseTextNode = baseNode.GetNode<AtkTextNode>(90);
         if (baseTextNode == null) return;
 
-        AtkTextNode* tNode = GetTextNode(thisPtr, CustomDateTextNodeID);
+        tNode = GetTextNode(thisPtr, CustomDateTextNodeID);
         if (tNode == null)
         {
             tNode = CreateTextNode(CustomDateTextNodeID);
@@ -69,7 +74,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
             tNode->SetXFloat(185);
         }
 
-        AtkTextNode* tNode2 = GetTextNode(thisPtr, CustomLabelTextNodeID);
+        tNode2 = GetTextNode(thisPtr, CustomLabelTextNodeID);
         if (tNode2 == null)
         {
             tNode2 = CreateTextNode(CustomLabelTextNodeID);
@@ -91,11 +96,10 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
 
             tNode2->SetYFloat(baseTextNode->Y + 18);
             tNode2->SetXFloat(7);
-            tNode2->SetText("Achieved On:");
+            tNode2->SetText(Translator.GetLine("AchievedOn"));
         }
 
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-
         DrawDate(tNode, lastIndex, true);
     }
 
@@ -206,5 +210,8 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         ReceiveEventHook?.Dispose();
 
         PluginHandlers.AddonLifecycle.UnregisterListener(CharacterHookDetour);
+
+        TrySafeInvalidateUIElement(ref tNode);
+        TrySafeInvalidateUIElement(ref tNode2);
     }
 }

@@ -12,6 +12,8 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 {
     const uint customDateTextNodeID = 80;
 
+    AtkTextNode* tNode;
+
     public EorzeaIncognitaWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
     public override void Init()
@@ -21,7 +23,10 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData) => userData.SightList;
 
-    protected override void OnDispose() { }
+    protected override void OnDispose() 
+    {
+        TrySafeInvalidateUIElement(ref tNode);
+    }
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
     {
@@ -33,7 +38,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
         AtkImageNode* nextNode = baseNode.GetNode<AtkImageNode>(60);
         if (nextNode == null) return;
 
-        AtkTextNode* tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
+        tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
         if (tNode == null)
         {
             tNode = CreateTextNode(customDateTextNodeID);
@@ -51,6 +56,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Adventure notebook clicked index: {selectedIndex}");
 
-        DrawDate(tNode, selectedIndex);
+        GiveTooltip(baseAddon, tNode, selectedIndex);
+        DrawDate(tNode, selectedIndex, true);
     }
 }

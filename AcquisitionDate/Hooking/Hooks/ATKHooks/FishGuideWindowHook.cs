@@ -13,6 +13,8 @@ internal unsafe class FishGuideWindowHook : DateTextHook
 {
     const uint customDateTextNodeID = 800;
 
+    AtkTextNode* tNode;
+
     uint lastID = 0;
 
     public FishGuideWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) 
@@ -30,7 +32,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
 
     protected override void OnDispose() 
     {
-        
+        TrySafeInvalidateUIElement(ref tNode);
     }
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
@@ -42,7 +44,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
             {
                 if (fish.Item.RowId != fishItemID) continue;
 
-                lastID = fishItemID;
+                lastID = fish.RowId;
                 break;
             }
 
@@ -71,7 +73,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
             AtkTextNode* standortNode = baseNode.GetNode<AtkTextNode>(139);
             if (standortNode == null) return;
 
-            AtkTextNode* tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
+            tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
             if (tNode == null)
             {
                 tNode = CreateTextNode(customDateTextNodeID);
@@ -102,6 +104,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 return;
             }
 
+            GiveTooltip(baseAddon, tNode, lastID);
             DrawDate(tNode, lastID, true);
         }
     }

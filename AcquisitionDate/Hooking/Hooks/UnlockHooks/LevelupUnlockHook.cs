@@ -31,27 +31,27 @@ internal unsafe class LevelupUnlockHook : UnlockHook
         ClassJob? classJob = Sheets.GetClassJob(classJobId);
         if (classJob == null)
         {
-            PluginHandlers.PluginLog.Verbose("Couldn't find the classjob in the sheets???? HOW");
+            PluginHandlers.PluginLog.Information("Couldn't find the classjob in the sheets???? HOW");
             return;
         }
 
         sbyte arrayIndex = classJob.Value.ExpArrayIndex;
         if (arrayIndex < 0 || arrayIndex >= currentClassJobLevels.Length)
         {
-            PluginHandlers.PluginLog.Verbose($"Array index is out of range: {arrayIndex} on the classJobArray: {currentClassJobLevels.Length}");
+            PluginHandlers.PluginLog.Information($"Array index is out of range: {arrayIndex} on the classJobArray: {currentClassJobLevels.Length}");
             return;
         }
 
         short currentLevel = currentClassJobLevels[arrayIndex];
         if (currentLevel >= level)
         {
-            PluginHandlers.PluginLog.Verbose($"This resulted in no actual change.");
+            PluginHandlers.PluginLog.Information($"This resulted in no actual change.");
             return;
         }
 
         Reset();
 
-        PluginHandlers.PluginLog.Verbose($"The class: {classJobId}, {arrayIndex}, {classJob.Value.Name.ExtractText()} leveled up from: {currentLevel} to {level}. This has been marked.");
+        PluginHandlers.PluginLog.Information($"The class: {classJobId}, {arrayIndex}, {classJob.Value.Name.ExtractText()} leveled up from: {currentLevel} to {level}. This has been marked.");
 
         uint preparedClassJobID = (uint)arrayIndex * 10000;
         preparedClassJobID += level;

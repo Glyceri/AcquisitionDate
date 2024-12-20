@@ -47,10 +47,10 @@ internal unsafe class InstanceContentUnlockHook : UnlockHook
             instanceHasAlreadyBeenCompleted = InstancedContentCompleted.Contains(contentFinderCondition.Value.Content.RowId);
         }
 
-        PluginHandlers.PluginLog.Verbose($"Detected a duty completed with the ID: {dutyID} with the detected ContentFinderConditionID: {contentFinderConditionID} with the name: {ccName}");
+        PluginHandlers.PluginLog.Information($"Detected a duty completed with the ID: {dutyID} with the detected ContentFinderConditionID: {contentFinderConditionID} with the name: {ccName}");
         if (instanceHasAlreadyBeenCompleted)
         {
-            PluginHandlers.PluginLog.Verbose("This instance has already been completed however.");
+            PluginHandlers.PluginLog.Information("This instance has already been completed however.");
             return;
         }
 

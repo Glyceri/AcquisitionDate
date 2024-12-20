@@ -6,6 +6,7 @@ namespace AcquisitionDate.Database.Interfaces;
 internal interface IDatableList
 {
     int Length { get; }
+    DateTime? LowestDateTime { get; }
 
     // Get's the prefferred most accurate date!
     DateTime? GetDate(uint ID);

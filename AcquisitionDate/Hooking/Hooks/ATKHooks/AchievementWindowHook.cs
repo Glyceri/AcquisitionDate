@@ -21,7 +21,7 @@ internal unsafe class AchievementWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData) => userData.AchievementList;
 
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseaddon)
+    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
     {
         ComponentNode cNode = baseNode.GetComponentNode(39);
         if (cNode == null) return;
@@ -52,6 +52,7 @@ internal unsafe class AchievementWindowHook : DateTextHook
                 tNode->TextColor.R = 76;
                 tNode->TextColor.G = 52;
                 tNode->TextColor.B = 47;
+                GiveTooltip(baseAddon, tNode, 0);
             }
 
             string achievementName = titleNode->NodeText.ToString();
@@ -66,7 +67,9 @@ internal unsafe class AchievementWindowHook : DateTextHook
                 continue;
             }
 
-            DrawDate(tNode, achievement.Value.RowId);
+            uint ID = achievement.Value.RowId;
+
+            DrawDate(tNode, ID);
         }
     }
 

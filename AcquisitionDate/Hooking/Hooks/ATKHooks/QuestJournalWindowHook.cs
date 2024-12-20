@@ -12,6 +12,8 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 {
     const uint customJournalTextNodeID = 80;
 
+    AtkTextNode* tNode;
+
     uint lastQuestID = 0;
 
     public QuestJournalWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) {}
@@ -23,7 +25,10 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData) => userData.QuestList;
 
-    protected override void OnDispose() { } // Unused
+    protected override void OnDispose() 
+    {
+        TrySafeInvalidateUIElement(ref tNode);
+    } 
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseaddon)
     {
@@ -35,7 +40,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
         AtkTextNode* siblingNode = newBaseNode.GetNode<AtkTextNode>(38);
         if (siblingNode == null) return;
 
-        AtkTextNode* tNode = null;
+        tNode = null;
         for (int i = 0; i < journalDetail->UldManager.NodeListCount; i++)
         {
             AtkResNode* rNode = journalDetail->UldManager.NodeList[i];
@@ -82,6 +87,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
         lastQuestID = questID;
 
         DrawDate(tNode, questID);
+        GiveTooltip(journalDetail, tNode, questID, true);
         journalDetail->SetX((short)(journalDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 }
