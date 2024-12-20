@@ -1,49 +1,99 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
-using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System;
+using System.Linq;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class FishyUnlockHook : UnlockHook
 {
-    delegate IntPtr FishyCaughtDelegate(IntPtr module, uint fishId, bool large, ushort size, byte amount, byte level, byte unk7, byte unk8, bool gaveMooch, bool gaveData, byte unk11, byte unk12);
+    public const uint SpearFishIdOffset = 20000;
 
-    [Signature("40 55 56 41 54 41 56 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 F7", DetourName = nameof(FishyCaughtDetour))]
-    readonly Hook<FishyCaughtDelegate>? FishyCaughtHook;
+    byte[] _fishStore       = [];
+    byte[] _spearFishStore  = [];
 
     public FishyUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
-    public override void Init()
+    public override void Reset() 
     {
-        FishyCaughtHook?.Enable();
-    }
-
-    IntPtr FishyCaughtDetour(IntPtr module, uint fishId, bool large, ushort size, byte amount, byte level, byte unk7, byte unk8, bool gaveMooch, bool gaveData, byte unk11, byte unk12)
+        _fishStore      = PlayerState.Instance()->CaughtFishBitmask.ToArray();
+        _spearFishStore = new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39).ToArray();
+    } 
+    
+    public uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
     {
-        PluginHandlers.PluginLog.Verbose($"Fishy: {fishId}, large: {large}, Size: {size}, amount: {amount}, level: {level}, unk7: {unk7}, unk8: {unk8}, Mooch: {gaveMooch}, Gave Data: {gaveData}, unk11: {unk11}, unk12: {unk12}");
+        // Ensure both bitmasks are available
+        Span<byte> oldBitmask = oldStore;
+        Span<byte> newBitmask = newStore;
 
-        if (gaveData)
+        // Iterate through each byte in the bitmask arrays
+        int maxLength = Math.Min(oldBitmask.Length, newBitmask.Length);
+        for (int byteIndex = 0; byteIndex < maxLength; byteIndex++)
         {
-            DateTime? dateTime = UserList.ActiveUser?.Data.FishingList.GetDate(fishId);
-            if (dateTime == null)
+            byte oldByte = oldBitmask[byteIndex];
+            byte newByte = newBitmask[byteIndex];
+
+            // Compare corresponding bits in the old and new byte arrays
+            byte difference = (byte)(newByte & ~oldByte); // This isolates the bits set in newByte but not in oldByte
+
+            // Iterate through each bit in the difference byte
+            for (int bitIndex = 0; bitIndex < 8; bitIndex++)
             {
-                PluginHandlers.PluginLog.Verbose("As far as I'm aware this fishy hasnt been caught before. It has now been added");
-                UserList.ActiveUser?.Data.FishingList.SetDate(fishId, DateTime.Now, AcquiredDateType.Manual);
+                if ((difference & (1 << bitIndex)) != 0)
+                {
+                    // Calculate the global fish index
+                    int fishIndex = byteIndex * 8 + bitIndex;
+                    return (uint)fishIndex;
+                }
             }
         }
 
-        return FishyCaughtHook!.Original(module, fishId, large, size, amount, level, unk7, unk8, gaveMooch, gaveData, unk11, unk12);
+        return null;
     }
 
-    public override void Dispose()
+    uint? CheckFishies(ref byte[] store, Span<byte> bitmask)
     {
-        FishyCaughtHook?.Dispose();
+        Span<byte> span = bitmask;
+
+        bool fishyEquals = new Span<byte>(store, 0, store.Length).SequenceEqual(span);
+        if (fishyEquals) return null;
+
+        uint? outcome = GetCaughtFishIndices(store, span);
+
+        store = span.ToArray();
+
+        return outcome;
     }
 
-    public override void Update(float deltaTime) { } // No update needed for this one
-    public override void Reset() { } // No reset needed for this one
+    public override void Update(float deltaTime) 
+    {
+        IDatableUser? localUser = UserList.ActiveUser;
+        if (localUser == null) return;
+
+        IDatableData data = localUser.Data;
+
+        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFishBitmask);
+        if (fishOutcome != null)
+        {
+            data.FishingList.SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            PluginHandlers.PluginLog.Verbose($"Found new fish caught with ID: {fishOutcome.Value}");
+        }
+
+        // new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39)
+        // That should be PlayerState.Instance()->CaughtSpearFishBitmask, but it is still inaccurate in CS
+        uint? spfishOutcome = CheckFishies(ref _spearFishStore, new Span<byte>((void*)((nint)PlayerState.Instance() + 0x4B1), 39));
+        if (spfishOutcome != null)
+        {
+            spfishOutcome += SpearFishIdOffset;
+            data.FishingList.SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            PluginHandlers.PluginLog.Verbose($"Found new spearfish caught with ID: {spfishOutcome.Value}");
+        }
+    }
+
+    public override void Init() { }     // Init is unused
+    public override void Dispose() { }  // Dispose is unsued
 }

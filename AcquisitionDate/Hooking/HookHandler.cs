@@ -33,6 +33,7 @@ internal class HookHandler : IHookHandler
         Register(new QuestJournalWindowHook(UserList, Services.Sheets));
         Register(new EorzeaIncognitaWindowHook(UserList, Services.Sheets));
         Register(new CharacterClassWindowHook(UserList, Services.Sheets));
+        Register(new FishGuideWindowHook(UserList, Services.Sheets));
         Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 

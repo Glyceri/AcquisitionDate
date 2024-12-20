@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
+using Dalamud.Game.Addon.Events;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -15,6 +16,8 @@ internal unsafe abstract class DateTextHook : HookableElement
 {
     protected readonly IUserList UserList;
     protected readonly ISheets Sheets;
+
+    protected AddonEvent _lastEventType;
 
     public DateTextHook(IUserList userList, ISheets sheets)
     {
@@ -24,6 +27,8 @@ internal unsafe abstract class DateTextHook : HookableElement
 
     protected void HookDetour(AddonEvent type, AddonArgs args)
     {
+        _lastEventType = type;
+
         AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
         if (!addon->IsVisible) return;
 

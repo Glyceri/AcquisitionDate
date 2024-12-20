@@ -17,7 +17,6 @@ using AcquisitionDate.Serializiation;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
-using System;
 
 namespace AcquisitionDate;
 
