@@ -28,7 +28,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public LodestoneNetworker()
     {
-        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=8c97fe5f21c46e720c40d6125c5fae7b41d54b4b");
+        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=");
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)

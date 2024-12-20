@@ -1,5 +1,4 @@
-﻿using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
-using AcquisitionDate.Core.Handlers;
+﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
@@ -98,6 +97,7 @@ internal class MinionAcquirer : AcquirerBase
 
     void OnFailure(Exception e)
     {
+        PluginHandlers.PluginLog.Error(e, "Acquirer encountered an error.");
         Failed();
     }
 

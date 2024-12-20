@@ -1,4 +1,5 @@
-﻿using AcquisitionDate.LodestoneData;
+﻿using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using System;
@@ -85,6 +86,7 @@ internal abstract class AcquirerCounter : AcquirerBase
 
     protected void OnFailure(Exception e)
     {
+        PluginHandlers.PluginLog.Error(e, "Acquirer encountered an error.");
         Failed();
     }
 }

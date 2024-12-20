@@ -49,6 +49,7 @@ internal abstract class AcquirerBase : IAcquirer
     protected void Failed()
     {
         IsAcquiring = false;
+        Cancel();
     }
 
     protected void Success()

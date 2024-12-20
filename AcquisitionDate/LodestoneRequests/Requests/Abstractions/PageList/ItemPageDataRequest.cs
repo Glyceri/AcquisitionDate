@@ -43,11 +43,23 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
         if (itemID == null) return;
 
         HtmlNode? timeNode = HtmlParserHelper.GetNode(rootNode, $"{BaseName}__header__data");
-        if (timeNode == null) return;
-        if (timeNode.ChildNodes.Count == 0) return;
+        if (timeNode == null)
+        {
+            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
+            return;
+        }
+        if (timeNode.ChildNodes.Count == 0)
+        {
+            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
+            return;
+        }
 
         DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
-        if (acquiredTime == null) return;
+        if (acquiredTime == null)
+        {
+            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
+            return;
+        }
 
         PluginHandlers.Framework.Run(() => OnItemData?.Invoke(new ItemData(itemID.Value, acquiredTime.Value)));
     }

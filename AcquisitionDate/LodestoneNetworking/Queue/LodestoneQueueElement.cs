@@ -152,6 +152,12 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
     public void Cancel()
     {
         QueueState = QueueState.Cancelled;
-        CancellationTokenSource.Cancel();
+        try
+        {
+            CancellationTokenSource.Cancel();
+        }catch(Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Failed to cancel cancellationTokenSource.");
+        }
     }
 }
