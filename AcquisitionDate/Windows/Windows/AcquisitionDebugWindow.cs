@@ -132,6 +132,54 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.LabelText(MinionAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
             ImGui.LabelText(MinionAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
+
+            ImGui.NewLine();
+
+
+            ImGui.BeginDisabled(localUser.LodestoneID == null);
+
+            if (ImGui.Button("Aqcuire Mounts"))
+            {
+                MountAcquirer.Instance.Acquire(localUser.Data);
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.BeginDisabled(!MountAcquirer.Instance.IsAcquiring);
+
+            if (ImGui.Button("Cancel Acquirement 4"))
+            {
+                MountAcquirer.Instance.Cancel();
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.LabelText(MountAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
+            ImGui.LabelText(MountAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
+
+            ImGui.NewLine();
+
+
+            ImGui.BeginDisabled(localUser.LodestoneID == null);
+
+            if (ImGui.Button("Aqcuire Facewear"))
+            {
+                FacewearAcquirer.Instance.Acquire(localUser.Data);
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.BeginDisabled(!FacewearAcquirer.Instance.IsAcquiring);
+
+            if (ImGui.Button("Cancel Acquirement 5"))
+            {
+                FacewearAcquirer.Instance.Cancel();
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.LabelText(FacewearAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
+            ImGui.LabelText(FacewearAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
         }
     }
 

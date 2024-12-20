@@ -9,7 +9,7 @@ namespace AcquisitionDate.LodestoneNetworking.Interfaces;
 
 internal interface ILodestoneNetworker : IDisposable, IUpdatable
 {
-    LodestoneRegion PreferredRegion { get; set; }
+    LodestoneRegion PreferredRegion { get; }
 
     ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request);
     ILodestoneQueueElement AddElementToQueue(Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string URL);

@@ -7,7 +7,6 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Component.Exd;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -135,10 +134,6 @@ internal unsafe class ItemUnlockHook : UnlockHook
                 return true;
         }
 
-        void* row = ExdModule.GetItemRowById(item.RowId);
-        if (row == null) return false;
-
-        itemIsUnlocked = UIState.Instance()->IsItemActionUnlocked(row) == 1;
         return true;
     }
 
@@ -203,6 +198,29 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
     void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float deltaTime)
     {
+        if (UserList.ActiveUser != null)
+        {
+            try
+            {
+                if (module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate) || 
+                    module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.InventoryUpdate))
+                {
+                    PluginHandlers.PluginLog.Verbose($"Unlocks Update Flag got set High: {module->AgentUpdateFlag}");
+                    List<Item> unlockedItems = GetNewlyUnlockedItems();
+
+                    foreach (Item item in unlockedItems)
+                    {
+                        PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
+                        StoreItemUnlock(item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginHandlers.PluginLog.Error(ex, "Error during RaptureAtkModule_UpdateDetour");
+            }
+        }
+
         try
         {
             RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
@@ -211,28 +229,6 @@ internal unsafe class ItemUnlockHook : UnlockHook
         {
             PluginHandlers.PluginLog.Error(e, "Failed ATKModuleUpdate");
         }
-
-        if (UserList.ActiveUser == null) return;
-
-        try
-        {
-            if (!module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate)) return;
-
-            PluginHandlers.PluginLog.Verbose("Unlocks Update Flag got set High");
-            List<Item> unlockedItems = GetNewlyUnlockedItems();
-
-            foreach (Item item in unlockedItems)
-            {
-                PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
-                StoreItemUnlock(item);
-            }
-        }
-        catch (Exception ex)
-        {
-            PluginHandlers.PluginLog.Error(ex, "Error during RaptureAtkModule_UpdateDetour");
-        }
-
-
     }
 
     public override void Dispose()

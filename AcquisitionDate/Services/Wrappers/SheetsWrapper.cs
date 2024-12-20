@@ -1,6 +1,7 @@
 using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Services.Structs;
 using Dalamud.Utility;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -14,8 +15,9 @@ namespace AcquisitionDate.Services.Wrappers;
 internal class SheetsWrapper : ISheets
 {
     readonly List<IPetSheetData> petSheetCache = new List<IPetSheetData>();
+    readonly List<IGlassesSheetData> glassesSheetCache = new List<IGlassesSheetData>();
 
-    public Quest[] AllQuests => Quests;
+    public Quest[] AllQuests => quests.ToArray();
     public Item[] AllItems => items.ToArray();
     public Achievement[] AllAchievements => achievements.ToArray();
     public ContentFinderCondition[] AllContentFinderConditions => contentFinderConditions.ToArray();
@@ -23,9 +25,8 @@ internal class SheetsWrapper : ISheets
     public SpearfishingItem[] AllSpearFishies => spearFishies.ToArray();
     public ClassJob[] AllClassJobs => classJobs.ToArray();
 
-    readonly Quest[] Quests;
-
     readonly ExcelSheet<World> worlds;
+    readonly ExcelSheet<Quest> quests;
     readonly ExcelSheet<Achievement> achievements;
     readonly ExcelSheet<Item> items;
     readonly ExcelSheet<Companion> companions;
@@ -34,17 +35,14 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<FishParameter> fishies;
     readonly ExcelSheet<SpearfishingItem> spearFishies;
     readonly ExcelSheet<Adventure> vistas;
+    readonly ExcelSheet<Mount> mounts;
+    readonly ExcelSheet<Glasses> glasses;
 
     public SheetsWrapper()
     {
         worlds = PluginHandlers.DataManager.GetExcelSheet<World>();
         achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
-        Quests = [
-            ..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.English).ToArray(),
-            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.German).ToArray(),
-            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.French).ToArray(),
-            //..PluginHandlers.DataManager.GetExcelSheet<Quest>(Dalamud.Game.ClientLanguage.Japanese).ToArray(),
-            ];
+        quests = PluginHandlers.DataManager.GetExcelSheet<Quest>();
         items = PluginHandlers.DataManager.GetExcelSheet<Item>();
         companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
         contentFinderConditions = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
@@ -52,12 +50,33 @@ internal class SheetsWrapper : ISheets
         fishies = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
         spearFishies = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
         vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
+        mounts = PluginHandlers.DataManager.GetExcelSheet<Mount>();
+        glasses = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
 
         SetupSheetDataCache();
     }
 
     void SetupSheetDataCache()
     {
+        foreach (Glasses glass in glasses)
+        {
+            if(glass.RowId == 0) continue;
+
+            uint rowId = glass.RowId;
+
+            string singular = glass.Singular.ExtractText();
+
+            if (singular.IsNullOrWhitespace()) continue;
+
+            singular = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(singular);
+
+            string plural = glass.Plural.ExtractText();
+
+            sbyte pronoun = glass.Unknown_70_5;
+
+            glassesSheetCache.Add(new GlassesSheetData((int)rowId, pronoun, singular, plural));
+        }
+
         foreach (Companion companion in companions)
         {
             if (!companion.Model.IsValid) continue;
@@ -71,13 +90,13 @@ internal class SheetsWrapper : ISheets
 
             if (legacyModelID == 0) continue;
 
-            string singular = companion.Singular.ToDalamudString().TextValue;
+            string singular = companion.Singular.ExtractText();
 
             if (singular.IsNullOrWhitespace()) continue;
 
             singular = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(singular);
 
-            string plural = companion.Plural.ToDalamudString().TextValue;
+            string plural = companion.Plural.ExtractText();
             uint icon = companion.Icon;
 
             sbyte pronoun = companion.Pronoun;
@@ -170,12 +189,10 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(string name, string journalGroup)
     {
-        int questCount = Quests.Length;
-        for (int i = 0; i < questCount; i++)
+        foreach (Quest quest in quests)
         {
             try
             {
-                Quest quest = Quests[i];
                 string journalGenre = quest.JournalGenre.Value.Name.ExtractText();
                 string questName = quest.Name.ExtractText();
 
@@ -192,10 +209,8 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(uint id)
     {
-        int questCount = Quests.Length;
-        for (int i = 0; i < questCount; i++)
+        foreach (Quest quest in quests)
         {
-            Quest quest = Quests[i];
             if (quest.RowId != id) continue;
 
             return quest;
@@ -206,12 +221,10 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(string name)
     {
-        int questCount = Quests.Length;
-        for (int i = 0; i < questCount; i++)
+        foreach (Quest quest in quests)
         {
             try
             {
-                Quest quest = Quests[i];
                 string questName = quest.Name.ExtractText();
 
                 if (!name.Equals(questName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -243,5 +256,30 @@ internal class SheetsWrapper : ISheets
         if (world == null) return null;
 
         return world.Value.InternalName.ExtractText();
+    }
+
+    public Mount? GetMountByName(string name)
+    {
+        foreach (Mount mount in mounts)
+        {
+            string mName = mount.Singular.ExtractText();
+            if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
+
+            return mount;
+        }
+
+        return null;
+    }
+
+    public IGlassesSheetData? GetGlassesByName(string name)
+    {
+        foreach (IGlassesSheetData glass in glassesSheetCache)
+        {
+            if (!glass.IsGlass(name)) continue;
+
+            return glass;
+        }
+
+        return null;
     }
 }

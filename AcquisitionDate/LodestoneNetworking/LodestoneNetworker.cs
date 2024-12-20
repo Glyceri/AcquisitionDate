@@ -5,7 +5,9 @@ using AcquisitionDate.LodestoneNetworking.Queue;
 using AcquisitionDate.LodestoneNetworking.Queue.Enums;
 using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
+using Dalamud.Game;
 using HtmlAgilityPack;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -20,7 +22,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     readonly HttpClient HttpClient = new HttpClient();
 
-    public LodestoneRegion PreferredRegion { get; set; } = LodestoneRegion.Germany;
+    public LodestoneRegion PreferredRegion { get; private set; } = LodestoneRegion.Germany;
 
     List<ILodestoneQueueElement> _queueElements = new List<ILodestoneQueueElement>();
 
@@ -29,6 +31,24 @@ internal class LodestoneNetworker : ILodestoneNetworker
     public LodestoneNetworker()
     {
         HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=");
+
+        PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
+        {
+            ClientLanguage.Japanese => LodestoneRegion.Japan,
+            ClientLanguage.German => LodestoneRegion.Germany,
+            ClientLanguage.French => LodestoneRegion.France,
+            ClientLanguage.English => GetLodestoneRegion(),
+            _ => LodestoneRegion.Germany,
+        };
+    }
+
+    LodestoneRegion GetLodestoneRegion()
+    {
+        World? currentWorld = PluginHandlers.ClientState.LocalPlayer?.CurrentWorld.Value;
+        if (currentWorld == null) return LodestoneRegion.America;
+        if (currentWorld.Value.DataCenter.Value.PvPRegion == 3) return LodestoneRegion.Europe;
+
+        return LodestoneRegion.America;
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)
