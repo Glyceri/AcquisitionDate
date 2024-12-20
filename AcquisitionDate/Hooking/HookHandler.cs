@@ -38,6 +38,8 @@ internal class HookHandler : IHookHandler
         Register(new FishGuideWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(new MountWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(new MinionWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new OrnamentWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new GlassSelectWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 

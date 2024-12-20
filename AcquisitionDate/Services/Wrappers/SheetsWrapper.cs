@@ -37,6 +37,7 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<Adventure> vistas;
     readonly ExcelSheet<Mount> mounts;
     readonly ExcelSheet<Glasses> glasses;
+    readonly ExcelSheet<Ornament> ornaments;
 
     public SheetsWrapper()
     {
@@ -52,6 +53,7 @@ internal class SheetsWrapper : ISheets
         vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
         mounts = PluginHandlers.DataManager.GetExcelSheet<Mount>();
         glasses = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
+        ornaments = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
 
         SetupSheetDataCache();
     }
@@ -290,6 +292,19 @@ internal class SheetsWrapper : ISheets
             if (!glass.IsGlass(name)) continue;
 
             return glass;
+        }
+
+        return null;
+    }
+
+    public Ornament? GetOrnamentByName(string name)
+    {
+        foreach (Ornament ornament in ornaments)
+        {
+            string mName = ornament.Singular.ExtractText();
+            if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
+
+            return ornament;
         }
 
         return null;

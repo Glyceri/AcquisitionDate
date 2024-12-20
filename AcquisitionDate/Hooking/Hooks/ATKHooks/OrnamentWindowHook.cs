@@ -1,0 +1,68 @@
+﻿using AcquisitionDate.Core.Handlers;
+using Dalamud.Game.Addon.Lifecycle;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Database.Interfaces;
+using Acquisition.PetNicknames.Hooking;
+using Lumina.Excel.Sheets;
+using System.Runtime.InteropServices;
+
+namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
+
+internal unsafe class OrnamentWindowHook : DateTextHook
+{
+    const uint customDateTextNodeID = 800;
+
+    AtkTextNode* tNode;
+
+    public OrnamentWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+
+    public override void Init()
+    {
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "OrnamentNoteBook", HookDetour);
+    }
+
+    protected override IDatableList GetList(IDatableData userData) => userData.FashionList;
+
+    protected override void OnDispose()
+    {
+        TrySafeInvalidateUIElement(ref tNode);
+    }
+
+    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+    {
+        AtkTextNode* titleNode = baseNode.GetNode<AtkTextNode>(60);
+        if (titleNode == null) return;
+
+        tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
+        if (tNode == null)
+        {
+            tNode = CreateTextNode(customDateTextNodeID);
+            if (tNode == null) return;
+
+            AddSibling(tNode, &titleNode->AtkResNode, &baseAddon->UldManager);
+
+            tNode->SetYFloat(-37);
+            tNode->SetXFloat(210);
+
+            tNode->TextColor = titleNode->TextColor;
+            tNode->EdgeColor = titleNode->EdgeColor;
+            tNode->BackgroundColor = titleNode->BackgroundColor;
+        }
+                
+        Ornament? ornament = Sheets.GetOrnamentByName(Marshal.PtrToStringUTF8((nint)titleNode->OriginalTextPointer) ?? string.Empty);
+        if (ornament == null)
+        {
+            tNode->ToggleVisibility(false);
+            return;
+        }
+
+        uint ornamentID = ornament.Value.RowId;
+
+        PluginHandlers.PluginLog.Verbose($"Ornament Notebook clicked ID: {ornamentID}");
+
+        GiveTooltip(baseAddon, tNode, ornamentID);
+        DrawDate(tNode, ornamentID, true);
+    }
+}
