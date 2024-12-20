@@ -31,11 +31,11 @@ internal class HookHandler : IHookHandler
     void _Register()
     {
         Register(new CharacterManagerHook(UserList));
-        Register(new AchievementWindowHook(UserList, Services.Sheets));
-        Register(new QuestJournalWindowHook(UserList, Services.Sheets));
-        Register(new EorzeaIncognitaWindowHook(UserList, Services.Sheets));
-        Register(new CharacterClassWindowHook(UserList, Services.Sheets));
-        Register(new FishGuideWindowHook(UserList, Services.Sheets));
+        Register(new AchievementWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new QuestJournalWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new EorzeaIncognitaWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new CharacterClassWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new FishGuideWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 

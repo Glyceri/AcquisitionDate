@@ -6,7 +6,6 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Hooking;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -27,7 +26,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
 
     uint lastIndex = 0;
 
-    public CharacterClassWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) 
+    public CharacterClassWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
     {
         ReceiveEventHook = PluginHandlers.Hooking.HookFromAddress<AddonCharacterClass.Delegates.ReceiveEvent>((nint)AddonCharacterClass.StaticVirtualTablePointer->ReceiveEvent, ReceiveEventDetour);
     }

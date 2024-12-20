@@ -1,4 +1,5 @@
 using Acquisition.PetNicknames.Hooking;
+using AcquisitionDate;
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
@@ -16,7 +17,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
     uint lastQuestID = 0;
 
-    public QuestJournalWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) {}
+    public QuestJournalWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) {}
 
     public override void Init()
     {

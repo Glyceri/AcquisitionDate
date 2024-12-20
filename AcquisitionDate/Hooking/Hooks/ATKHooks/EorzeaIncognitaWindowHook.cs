@@ -14,7 +14,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public EorzeaIncognitaWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public EorzeaIncognitaWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
 
     public override void Init()
     {

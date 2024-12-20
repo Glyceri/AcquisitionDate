@@ -16,13 +16,15 @@ namespace AcquisitionDate.Hooking.Hooks;
 
 internal unsafe abstract class DateTextHook : HookableElement
 {
+    protected readonly Configuration Configuration;
     protected readonly IUserList UserList;
     protected readonly ISheets Sheets;
 
     protected AddonEvent _lastEventType;
 
-    public DateTextHook(IUserList userList, ISheets sheets)
+    public DateTextHook(IUserList userList, ISheets sheets, Configuration configuration)
     {
+        Configuration = configuration;
         UserList = userList;
         Sheets = sheets;
     }
@@ -96,7 +98,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         DateTime? dateTime = list.GetDate(ID);
         if (dateTime == null) return null;
 
-        return dateTime.Value.ToString("dd/MM/yyyy").Replace("-", "/");
+        return dateTime.Value.ToString(Configuration.DateParseString()).Replace("-", "/");
     }
 
     IAddonEventHandle? lastHoverOverEvent;

@@ -1,15 +1,10 @@
 using AcquisitionDate.Acquisition.Elements;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.StructTests;
 using Dalamud.Interface.Utility;
-using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
-using Lumina.Excel.Sheets;
+using PetRenamer.PetNicknames.TranslatorSystem;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -18,6 +13,7 @@ namespace AcquisitionDate.Windows.Windows;
 
 internal class AcquisitionDebugWindow : AcquisitionWindow
 {
+    readonly Configuration Configuration;
     readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquisitionServices Services;
@@ -34,6 +30,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
         Services = services;
         UserList = userList;
         Database = database;
+        Configuration = services.Configuration;
 
         devStructList.Add(new DevStruct("User List", DrawUserList));
         devStructList.Add(new DevStruct("User Database", DrawUserDatabase));
@@ -44,9 +41,40 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     int current = 1480;
     bool stopPrint = false;
 
+    void DrawMenu(string title, string[] elements, ref int configurationInt, float width = 0)
+    {
+        if (configurationInt < 0 || configurationInt >= elements.Length)
+        {
+            configurationInt = 0;
+        }
+
+        if (width <= 0) width = ImGui.GetContentRegionAvail().X;
+
+        ImGui.SetNextItemWidth(width);
+
+        if (ImGui.BeginCombo(title, elements[configurationInt], ImGuiComboFlags.PopupAlignLeft))
+        {
+            for (int i = 0; i < elements.Length; i++)
+            {
+                if (ImGui.Selectable(elements[i], i == configurationInt, ImGuiSelectableFlags.AllowDoubleClick))
+                {
+                    configurationInt = i;
+                    Configuration.Save();
+                }
+            }
+
+            ImGui.EndCombo();
+        }
+    }
+
     unsafe void DrawUserList()
     {
         Vector2 size = new Vector2(ImGui.GetContentRegionAvail().X, 30 * ImGuiHelpers.GlobalScale);
+
+        DrawMenu(Translator.GetLine("DateFormat"), Configuration.DateFormatString, ref Configuration.DateType, 120);
+        DrawMenu(Translator.GetLine("PluginLanguage"), Configuration.Languages, ref Configuration.AcquisitionLanuage, 120);
+
+        ImGui.NewLine();
 
         IDatableUser? localUser = UserList.ActiveUser;
         if (localUser == null)
@@ -63,6 +91,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.NewLine();
 
+            
 
             ImGui.BeginDisabled(localUser.LodestoneID == null);
 

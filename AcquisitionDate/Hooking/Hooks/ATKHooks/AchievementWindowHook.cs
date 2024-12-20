@@ -15,7 +15,7 @@ internal unsafe class AchievementWindowHook : DateTextHook
     readonly string[] achievementNames = new string[9]; // the 9 is there because list renderers has 9 entries c: c: c: c: c:
     const uint customDateTextNodeID = 80;
 
-    public AchievementWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public AchievementWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
 
     public override void Init() =>  PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "Achievement", HookDetour);
 

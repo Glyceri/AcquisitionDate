@@ -17,6 +17,7 @@ using AcquisitionDate.Serializiation;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
+using PetRenamer.PetNicknames.TranslatorSystem;
 
 namespace AcquisitionDate;
 
@@ -40,6 +41,8 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
     {
         PluginHandlers.Initialise(ref pluginInterface, this);
         Services = new AcquisitionSevices();
+
+        Translator.Initialise(Services.Configuration);
 
         DirtyHandler = new DirtyHandler();
         SaveHandler = new SaveHandler(DirtyHandler, Services.Configuration);

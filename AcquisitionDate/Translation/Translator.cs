@@ -1,4 +1,5 @@
-﻿using AcquisitionDate.Core.Handlers;
+﻿using AcquisitionDate;
+using AcquisitionDate.Core.Handlers;
 using Dalamud.Game;
 using System.Collections.Generic;
 
@@ -7,12 +8,24 @@ namespace PetRenamer.PetNicknames.TranslatorSystem;
 // Trying to stay away from statics, but in this case it just made MUCH more sense.
 internal static class Translator
 {
+    static Configuration? Configuration;
+
     static Dictionary<string, string> EnglishTranslations = new Dictionary<string, string>()
     {
         { "...", "..." },
         { "AchievedOn", "Acquired:" },
         { "NoDate", "Date unavailable." },
         { "NotAccurate", "May not be accurate." },
+        { "Day", "Day" },
+        { "Month", "Month" },
+        { "Year", "Year" },
+        { "DateFormat", "Date Format" },
+        { "Default", "Default" },
+        { "English", "English" },
+        { "German", "German" },
+        { "French", "French" },
+        { "Japanese", "Japanese" },
+        { "PluginLanguage", "Plugin Language" },
     };
 
     static Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
@@ -20,6 +33,16 @@ internal static class Translator
         { "AchievedOn", "Erhalten:" },
         { "NoDate", "Datum nicht verfügbar." },
         { "NotAccurate", "Möglicherweise nicht genau." },
+        { "Day", "Tag" },
+        { "Month", "Monat" },
+        { "Year", "Jahr" },
+        { "DateFormat", "Datumsformat" },
+        { "Default", "Standard" },
+        { "English", "Englisch" },
+        { "German", "Deutsch" },
+        { "French", "Französisch" },
+        { "Japanese", "Japanisch" },
+        { "PluginLanguage", "Plugin-Sprache" },
     };
 
     static Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()
@@ -27,6 +50,16 @@ internal static class Translator
         { "AchievedOn", "Date d'obtention :" },
         { "NoDate", "Date indisponible." },
         { "NotAccurate", "Ce n'est peut-être pas exact." },
+        { "Day", "Jour" },
+        { "Month", "Mois" },
+        { "Year", "Année" },        
+        { "DateFormat", "Format de date" },
+        { "Default", "Défaut" },
+        { "English", "Anglais" },
+        { "German", "Allemande" },
+        { "French", "Français" },
+        { "Japanese", "Japonaise" },
+        { "PluginLanguage", "Langue du plug-in" },
     };
 
     static Dictionary<string, string> JapaneseTranslations = new Dictionary<string, string>()
@@ -34,14 +67,28 @@ internal static class Translator
         { "AchievedOn", "修得日:" },
         { "NoDate", "日付が利用できません。" },
         { "NotAccurate", "正確ではない可能性があります。" },
+        { "Day", "日" },
+        { "Month", "月" },
+        { "Year", "年" },        
+        { "DateFormat", "日付形式" },
+        { "Default", "既定" },
+        { "English", "英語" },
+        { "German", "ドイツ語" },
+        { "French", "フランス語" },
+        { "Japanese", "日本語" },
+        { "PluginLanguage", "プラグイン言語" },
     };
 
+    public static void Initialise(Configuration configuration)
+    {
+        Configuration = configuration;
+    }
 
     internal static string GetLine(string identifier)
     {
         ClientLanguage language = PluginHandlers.ClientState.ClientLanguage;
 
-        AcquisitionDateLanguage Language = AcquisitionDateLanguage.Default;
+        AcquisitionDateLanguage Language = Configuration?.GetLanguage ?? AcquisitionDateLanguage.Default;
 
         if (Language != AcquisitionDateLanguage.Default)
         {

@@ -17,7 +17,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
 
     uint lastID = 0;
 
-    public FishGuideWindowHook(IUserList userList, ISheets sheets) : base(userList, sheets) 
+    public FishGuideWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
     {
 
     }
