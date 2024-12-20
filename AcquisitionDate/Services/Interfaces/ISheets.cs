@@ -21,6 +21,7 @@ internal interface ISheets
     Quest? GetQuest(uint id);
     Achievement? GetAchievement(string name);
     IPetSheetData? GetCompanion(ushort ID);
+    IPetSheetData? GetCompanionByIcon(uint icon);
     IPetSheetData? GetCompanionByName(string name);
     Mount? GetMountByName(string name);
     IGlassesSheetData? GetGlassesByName(string name);

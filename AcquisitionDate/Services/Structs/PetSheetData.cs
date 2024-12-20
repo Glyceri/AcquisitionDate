@@ -7,6 +7,7 @@ using System.Linq;
 
 internal struct PetSheetData : IPetSheetData
 {
+    public uint ID { get; private set; }
     public int Model { get; private set; }
     public uint Icon { get; private set; }
     public sbyte Pronoun { get; private set; }
@@ -28,24 +29,25 @@ internal struct PetSheetData : IPetSheetData
     public uint FootstepIcon { get; private set; } = 0;
 
 
-    public PetSheetData(int Model, int legacyModelID, uint Icon, string? raceName, uint raceID, string? behaviourName, sbyte Pronoun, string Singular, string Plural, string actionName, uint actionID)
-        : this(Model, legacyModelID, Icon, Pronoun, Singular, Plural, actionName, actionID)
+    public PetSheetData(uint ID, int Model, int legacyModelID, uint Icon, string? raceName, uint raceID, string? behaviourName, sbyte Pronoun, string Singular, string Plural, string actionName, uint actionID)
+        : this(ID, Model, legacyModelID, Icon, Pronoun, Singular, Plural, actionName, actionID)
     {
         this.RaceName = raceName;
         this.BehaviourName = behaviourName;
         this.RaceID = raceID;
     }
 
-    public PetSheetData(int Model, int legacyModelID, uint Icon, sbyte Pronoun, string Singular, string Plural, string actionName, uint actionID)
-        : this(Model, Icon, Pronoun, Singular, Plural)
+    public PetSheetData(uint ID, int Model, int legacyModelID, uint Icon, sbyte Pronoun, string Singular, string Plural, string actionName, uint actionID)
+        : this(ID, Model, Icon, Pronoun, Singular, Plural)
     {
         ActionID = actionID;
         ActionName = actionName;
         LegacyModelID = legacyModelID;
     }
 
-    public PetSheetData(int model, uint icon, sbyte pronoun, string singular, string plural)
+    public PetSheetData(uint ID, int model, uint icon, sbyte pronoun, string singular, string plural)
     {
+        this.ID = ID;
         Model = model;
         Icon = icon;
         Pronoun = pronoun;

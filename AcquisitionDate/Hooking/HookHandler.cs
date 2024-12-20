@@ -36,6 +36,8 @@ internal class HookHandler : IHookHandler
         Register(new EorzeaIncognitaWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(new CharacterClassWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(new FishGuideWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new MountWindowHook(UserList, Services.Sheets, Services.Configuration));
+        Register(new MinionWindowHook(UserList, Services.Sheets, Services.Configuration));
         Register(UnlocksHook = new UnlocksHook(Services.Sheets, UserList, DirtyListener));
     }
 

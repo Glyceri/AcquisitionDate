@@ -2,6 +2,7 @@
 
 internal interface IPetSheetData
 {
+    uint ID { get; }
     int Model { get;  }
     uint Icon { get; }
     sbyte Pronoun { get; }

@@ -105,7 +105,7 @@ internal class SheetsWrapper : ISheets
             string raceName = companion.MinionRace.ValueNullable?.Name.ExtractText() ?? string.Empty;
             string behaviourName = companion.Behavior.ValueNullable?.Name.ExtractText() ?? string.Empty;
 
-            petSheetCache.Add(new PetSheetData(modelID, legacyModelID, icon, raceName, raceID, behaviourName, pronoun, singular, plural, singular, companionIndex));
+            petSheetCache.Add(new PetSheetData(companionIndex, modelID, legacyModelID, icon, raceName, raceID, behaviourName, pronoun, singular, plural, singular, companionIndex));
         }
     }
 
@@ -151,7 +151,19 @@ internal class SheetsWrapper : ISheets
     {
         foreach (IPetSheetData companion in petSheetCache)
         {
-            if (companion.Model != ID) continue;
+            if (companion.ID != ID) continue;
+
+            return companion;
+        }
+
+        return null;
+    }
+
+    public IPetSheetData? GetCompanionByIcon(uint icon)
+    {
+        foreach (IPetSheetData companion in petSheetCache)
+        {
+            if (companion.Icon != icon) continue;
 
             return companion;
         }
