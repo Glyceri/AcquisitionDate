@@ -1,7 +1,11 @@
+using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Services.Interfaces;
+using Dalamud.Utility;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -9,6 +13,8 @@ namespace AcquisitionDate.Services.Wrappers;
 
 internal class SheetsWrapper : ISheets
 {
+    readonly List<IPetSheetData> petSheetCache = new List<IPetSheetData>();
+
     public Quest[] AllQuests => Quests;
     public Item[] AllItems => items.ToArray();
     public Achievement[] AllAchievements => achievements.ToArray();
@@ -46,6 +52,42 @@ internal class SheetsWrapper : ISheets
         fishies = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
         spearFishies = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
         vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
+
+        SetupSheetDataCache();
+    }
+
+    void SetupSheetDataCache()
+    {
+        foreach (Companion companion in companions)
+        {
+            if (!companion.Model.IsValid) continue;
+
+            ModelChara? model = companion.Model.ValueNullable;
+            if (model == null) continue;
+
+            uint companionIndex = companion.RowId;
+            int modelID = (int)model.Value.RowId;
+            int legacyModelID = (int)model.Value.Model;
+
+            if (legacyModelID == 0) continue;
+
+            string singular = companion.Singular.ToDalamudString().TextValue;
+
+            if (singular.IsNullOrWhitespace()) continue;
+
+            singular = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(singular);
+
+            string plural = companion.Plural.ToDalamudString().TextValue;
+            uint icon = companion.Icon;
+
+            sbyte pronoun = companion.Pronoun;
+
+            uint raceID = companion.MinionRace.ValueNullable?.RowId ?? 0;
+            string raceName = companion.MinionRace.ValueNullable?.Name.ExtractText() ?? string.Empty;
+            string behaviourName = companion.Behavior.ValueNullable?.Name.ExtractText() ?? string.Empty;
+
+            petSheetCache.Add(new PetSheetData(modelID, legacyModelID, icon, raceName, raceID, behaviourName, pronoun, singular, plural, singular, companionIndex));
+        }
     }
 
     public Adventure? GetAdventureByIndex(uint index)
@@ -86,13 +128,26 @@ internal class SheetsWrapper : ISheets
         return null;
     }
 
-    public Companion? GetCompanion(ushort ID)
+    public IPetSheetData? GetCompanion(ushort ID)
     {
-        foreach (Companion companion in companions)
+        foreach (IPetSheetData companion in petSheetCache)
         {
-            if (companion.RowId != ID) continue;
+            if (companion.Model != ID) continue;
 
             return companion;
+        }
+
+        return null;
+    }
+
+    public IPetSheetData? GetCompanionByName(string name)
+    {
+        int sheetCount = petSheetCache.Count;
+        for (int i = 0; i < sheetCount; i++)
+        {
+            IPetSheetData pet = petSheetCache[i];
+            if (!pet.IsPet(name)) continue;
+            return pet;
         }
 
         return null;

@@ -183,7 +183,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
 
     void CharacterHookDetour(AddonEvent type, AddonArgs args)
     {
-        PluginHandlers.PluginLog.Verbose("Setup");
+        PluginHandlers.PluginLog.Verbose("Character Panel Setup");
         AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
 
         BaseNode baseNode = new BaseNode(addon);

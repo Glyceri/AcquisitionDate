@@ -122,11 +122,30 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
     public void Dispose()
     {
-        CancellationTokenSource.Cancel();
-        CancellationTokenSource.Dispose();
-
-        MessageRequest.Dispose();
-
+        try
+        {
+            CancellationTokenSource.Cancel();
+        }
+        catch (Exception ex)
+        {
+            PluginHandlers.PluginLog.Error(ex, "Couldn't cancel token");
+        }
+        try
+        {
+            CancellationTokenSource.Dispose();
+        }
+        catch (Exception ex)
+        {
+            PluginHandlers.PluginLog.Error(ex, "Couldn't Dispose token");
+        }
+        try
+        {
+            MessageRequest.Dispose();
+        }
+        catch (Exception ex)
+        {
+            PluginHandlers.PluginLog.Error(ex, "Couldn't Dispose Message");
+        }
         DISPOSED = true;
     }
 

@@ -61,8 +61,8 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         HookHandler?.Dispose();
         WindowHandler?.Dispose();
         UpdateHandler?.Dispose();
-        LodestoneNetworker?.Dispose();
         SaveHandler?.Dispose();
         AcquirerHandler?.Dispose();
+        LodestoneNetworker?.Dispose();
     }
 }

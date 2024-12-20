@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
@@ -5,6 +6,7 @@ using AcquisitionDate.Hooking.Hooks.ATKHooks;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace AcquisitionDate.Hooking;
@@ -49,7 +51,14 @@ internal class HookHandler : IHookHandler
     {
         foreach (IHookableElement hookableElement in hookableElements)
         {
-            hookableElement.Dispose();
+            try
+            {
+                hookableElement.Dispose();
+            }
+            catch (Exception e)
+            {
+                PluginHandlers.PluginLog.Error(e, "Failed to dispose of a hook.");
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
 using Lumina.Excel.Sheets;
 
 namespace AcquisitionDate.Services.Interfaces;
@@ -19,7 +20,8 @@ internal interface ISheets
     Quest? GetQuest(string name);
     Quest? GetQuest(uint id);
     Achievement? GetAchievement(string name);
-    Companion? GetCompanion(ushort ID);
+    IPetSheetData? GetCompanion(ushort ID);
+    IPetSheetData? GetCompanionByName(string name);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
     ClassJob? GetClassJob(uint id);
     Adventure? GetAdventureByIndex(uint index);

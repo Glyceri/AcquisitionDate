@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue;
@@ -19,7 +20,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     readonly HttpClient HttpClient = new HttpClient();
 
-    public LodestoneRegion PreferredRegion { get; set; } = LodestoneRegion.Europe;
+    public LodestoneRegion PreferredRegion { get; set; } = LodestoneRegion.Germany;
 
     List<ILodestoneQueueElement> _queueElements = new List<ILodestoneQueueElement>();
 
@@ -27,7 +28,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public LodestoneNetworker()
     {
-        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=aed89958903acfef857e323aac073d8e7061e900");
+        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=8c97fe5f21c46e720c40d6125c5fae7b41d54b4b");
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)
@@ -100,7 +101,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
         for (int i = _queueElements.Count - 1; i >= 0; i--)
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
-            if (queueElement.QueueState != QueueState.Failure && 
+            if (queueElement.QueueState != QueueState.Failure &&
                 queueElement.QueueState != QueueState.Success &&
                 queueElement.QueueState != QueueState.Cancelled) continue;
 
@@ -121,7 +122,21 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
         _queueElements.Clear();
 
-        HttpClient.CancelPendingRequests();
-        HttpClient.Dispose();
+        try
+        {
+            HttpClient.CancelPendingRequests();
+        }
+        catch (Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Couldn't cancel pending requests.");
+        }
+        try
+        {
+            HttpClient.Dispose();
+        }
+        catch (Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Couldn't dispose HTTP client :c.");
+        }
     }
 }

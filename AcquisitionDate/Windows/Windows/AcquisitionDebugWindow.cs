@@ -108,6 +108,30 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             ImGui.LabelText(QuestAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
             ImGui.LabelText(QuestAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
+
+            ImGui.NewLine();
+
+
+            ImGui.BeginDisabled(localUser.LodestoneID == null);
+
+            if (ImGui.Button("Aqcuire Minios"))
+            {
+                MinionAcquirer.Instance.Acquire(localUser.Data);
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.BeginDisabled(!MinionAcquirer.Instance.IsAcquiring);
+
+            if (ImGui.Button("Cancel Acquirement 3"))
+            {
+                MinionAcquirer.Instance.Cancel();
+            }
+
+            ImGui.EndDisabled();
+
+            ImGui.LabelText(MinionAcquirer.Instance.IsAcquiring.ToString(), "Is Acquiring: ");
+            ImGui.LabelText(MinionAcquirer.Instance.CompletionRate.ToString(), "Percentage Complete: ");
         }
     }
 

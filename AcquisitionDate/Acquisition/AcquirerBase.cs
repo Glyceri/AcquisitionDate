@@ -14,7 +14,7 @@ internal abstract class AcquirerBase : IAcquirer
 
     protected readonly ILodestoneNetworker Networker;
 
-    protected IDatableData _currentUser;
+    protected IDatableData _currentUser = null!;
 
     List<ILodestoneQueueElement> queueElements = new List<ILodestoneQueueElement>();
 

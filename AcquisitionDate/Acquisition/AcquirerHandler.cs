@@ -23,6 +23,7 @@ internal class AcquirerHandler : IAcquirerHandler
 
     void Setup()
     {
+        AddAcquirer(new MinionAcquirer(Services.Sheets, LodestoneNetworker));    
         AddAcquirer(new AchievementAcquirer(LodestoneNetworker));
         AddAcquirer(new QuestAcquirer(Services, LodestoneNetworker));
     }

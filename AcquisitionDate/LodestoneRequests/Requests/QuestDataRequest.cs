@@ -26,7 +26,7 @@ internal class QuestDataRequest : CharacterRequest
 
     readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-    public QuestDataRequest(ISheets sheets, IDatableData data, int page, Action<QuestData> continuousSuccessCallback, System.Action successCallback = null, Action<Exception> failureCallback = null) : base(data)
+    public QuestDataRequest(ISheets sheets, IDatableData data, int page, Action<QuestData> continuousSuccessCallback, System.Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
     {
         Sheets = sheets;
 

@@ -18,7 +18,7 @@ internal class AchievementDateRequest : CharacterRequest
     readonly Action<AchievementData> ContinuousSuccessCallback;
     readonly int Page;
 
-    public AchievementDateRequest(IDatableData data, int page, Action<AchievementData> continuousSuccessCallback, Action successCallback = null, Action<Exception> failureCallback = null) : base(data)
+    public AchievementDateRequest(IDatableData data, int page, Action<AchievementData> continuousSuccessCallback, Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
     {
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
