@@ -46,13 +46,13 @@ internal unsafe class AchievementWindowHook : DateTextHook
 
                 MergeTextBetweenElements(tNode, &prevNode->AtkResNode, &titleNode->AtkResNode, &listRendererNode.GetPointer()->Component->UldManager);
 
-                tNode->AtkResNode.SetXFloat(titleNode->GetXFloat());
-                tNode->AtkResNode.Y += 3;
+                tNode->AtkResNode.X = 46;
+                tNode->AtkResNode.Y = -2;
 
                 tNode->TextColor.R = 76;
                 tNode->TextColor.G = 52;
                 tNode->TextColor.B = 47;
-                GiveTooltip(baseAddon, tNode, 0);
+                
             }
 
             string achievementName = titleNode->NodeText.ToString();

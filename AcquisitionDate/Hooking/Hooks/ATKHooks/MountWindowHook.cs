@@ -54,17 +54,11 @@ internal unsafe class MountWindowHook : DateTextHook
         }
 
         Mount? mount = Sheets.GetMountByName(titleNode->NodeText.ToString());
-        if (mount == null)
-        {
-            tNode->ToggleVisibility(false);
-            return;
-        }
-
-        uint mountID = mount.Value.RowId;
+        uint mountID = mount?.RowId ?? 0;
 
         PluginHandlers.PluginLog.Verbose($"Mount Notebook notebook clicked ID: {mountID}");
 
         GiveTooltip(baseAddon, tNode, mountID);
-        DrawDate(tNode, mountID);
+        DrawDate(tNode, mountID, true);
     }
 }

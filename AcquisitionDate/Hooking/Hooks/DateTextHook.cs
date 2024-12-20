@@ -80,7 +80,7 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (textNode == null) return;
 
-        textNode->ToggleVisibility(stillDraw);
+        textNode->ToggleVisibility(stillDraw && Configuration.ShowPlaceholderDates);
         textNode->SetText("??/??/????");
 
         string? dateString = GetDateTimeString(listID);

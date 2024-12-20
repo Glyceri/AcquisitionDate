@@ -14,6 +14,7 @@ internal class Configuration : IPluginConfiguration
 
     public int DateType = 0;
     public int AcquisitionLanuage = 0;
+    public bool ShowPlaceholderDates = true;
 
     public SerializableUser[]? SerializableUsers { get; set; } = null;
 
