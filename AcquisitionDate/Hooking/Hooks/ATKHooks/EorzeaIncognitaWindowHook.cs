@@ -56,7 +56,9 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Adventure notebook clicked index: {selectedIndex}");
 
-        GiveTooltip(baseAddon, tNode, selectedIndex);
-        DrawDate(tNode, selectedIndex, true);
+        if (DrawDate(tNode, selectedIndex, true))
+        {
+            GiveTooltip(baseAddon, tNode, selectedIndex);
+        }
     }
 }

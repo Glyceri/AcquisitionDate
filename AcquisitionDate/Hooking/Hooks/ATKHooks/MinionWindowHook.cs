@@ -66,7 +66,9 @@ internal unsafe class MinionWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Minion Notebook notebook clicked ID: {minionID}");
 
-        GiveTooltip(baseAddon, tNode, minionID);
-        DrawDate(tNode, minionID, true);
+        if (DrawDate(tNode, minionID, true))
+        {
+            GiveTooltip(baseAddon, tNode, minionID);
+        }
     }
 }

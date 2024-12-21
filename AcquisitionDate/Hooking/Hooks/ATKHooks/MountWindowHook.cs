@@ -58,7 +58,9 @@ internal unsafe class MountWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Mount Notebook notebook clicked ID: {mountID}");
 
-        GiveTooltip(baseAddon, tNode, mountID);
-        DrawDate(tNode, mountID, true);
+        if (DrawDate(tNode, mountID, true))
+        {
+            GiveTooltip(baseAddon, tNode, mountID);
+        }
     }
 }

@@ -50,7 +50,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
             tNode->EdgeColor = titleNode->EdgeColor;
             tNode->BackgroundColor = titleNode->BackgroundColor;
         }
-                
+
         Ornament? ornament = Sheets.GetOrnamentByName(Marshal.PtrToStringUTF8((nint)titleNode->OriginalTextPointer) ?? string.Empty);
         if (ornament == null)
         {
@@ -62,7 +62,9 @@ internal unsafe class OrnamentWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Ornament Notebook clicked ID: {ornamentID}");
 
-        GiveTooltip(baseAddon, tNode, ornamentID);
-        DrawDate(tNode, ornamentID, true);
+        if (DrawDate(tNode, ornamentID, true))
+        {
+            GiveTooltip(baseAddon, tNode, ornamentID);
+        }
     }
 }

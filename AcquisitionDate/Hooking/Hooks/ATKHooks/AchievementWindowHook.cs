@@ -52,7 +52,6 @@ internal unsafe class AchievementWindowHook : DateTextHook
                 tNode->TextColor.R = 76;
                 tNode->TextColor.G = 52;
                 tNode->TextColor.B = 47;
-                
             }
 
             string achievementName = titleNode->NodeText.ToString();

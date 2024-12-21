@@ -104,8 +104,10 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 return;
             }
 
-            GiveTooltip(baseAddon, tNode, lastID);
-            DrawDate(tNode, lastID, true);
+            if (DrawDate(tNode, lastID, true))
+            {
+                GiveTooltip(baseAddon, tNode, lastID);
+            }
         }
     }
 }

@@ -78,6 +78,20 @@ internal unsafe abstract class DateTextHook : HookableElement
         return tNode;
     }
 
+    protected AtkTextNode* AccurateGrabTextNode(AtkUnitBase* unitBase, uint ID)
+    {
+        for (int i = 0; i < unitBase->UldManager.NodeListCount; i++)
+        {
+            AtkResNode* rNode = unitBase->UldManager.NodeList[i];
+            if (rNode == null) continue;
+            if (rNode->NodeId != ID) continue;
+
+            return rNode->GetAsAtkTextNode();
+        }
+
+        return null;
+    }
+
     protected bool DrawDate(AtkTextNode* textNode, uint listID, bool stillDraw = false)
     {
         if (textNode == null) return false;
@@ -86,7 +100,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         textNode->SetText("??/??/????");
 
         string? dateString = GetDateTimeString(listID);
-        if (dateString.IsNullOrWhitespace()) return false;
+        if (dateString.IsNullOrWhitespace()) return stillDraw;
 
         textNode->ToggleVisibility(true);
         textNode->SetText(dateString);

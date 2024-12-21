@@ -67,8 +67,10 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
 
             uint glassesModel = (uint)(lastGlasses?.Model ?? 0);
 
-            GiveTooltip(baseAddon, tNode, glassesModel);
-            DrawDate(tNode, glassesModel, true);
+            if (DrawDate(tNode, glassesModel, true))
+            {
+                GiveTooltip(baseAddon, tNode, glassesModel);
+            }
         }
 
         if (_lastEventType == AddonEvent.PreRequestedUpdate && _lastAddonName == "Tooltip")

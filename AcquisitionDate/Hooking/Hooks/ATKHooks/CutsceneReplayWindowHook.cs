@@ -50,16 +50,7 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
         AtkResNode* prevNode = newBaseNode.GetNode<AtkResNode>(7);
         if (prevNode == null) return;
 
-        tNode = null;
-        for (int i = 0; i < cutsceneReplayDetail->UldManager.NodeListCount; i++)
-        {
-            AtkResNode* rNode = cutsceneReplayDetail->UldManager.NodeList[i];
-            if (rNode == null) continue;
-            if (rNode->NodeId != customJournalTextNodeID) continue;
-
-            tNode = rNode->GetAsAtkTextNode();
-            break;
-        }
+        tNode = AccurateGrabTextNode(cutsceneReplayDetail, customJournalTextNodeID);
         if (tNode == null)
         {
             tNode = CreateTextNode(customJournalTextNodeID);
@@ -102,8 +93,10 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {questID}");
 
-        DrawDate(tNode, questID);
-        GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
-        cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
+        if (DrawDate(tNode, questID, true))
+        {
+            GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
+            cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
+        }
     }
 }
