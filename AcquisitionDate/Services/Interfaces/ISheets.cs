@@ -26,6 +26,7 @@ internal interface ISheets
     Mount? GetMountByName(string name);
     IGlassesSheetData? GetGlassesByName(string name);
     Ornament? GetOrnamentByName(string name);
+    Orchestrion? GetOrchestrionByName(string name);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
     ClassJob? GetClassJob(uint id);
     Adventure? GetAdventureByIndex(uint index);

@@ -76,18 +76,20 @@ internal unsafe abstract class DateTextHook : HookableElement
         return tNode;
     }
 
-    protected void DrawDate(AtkTextNode* textNode, uint listID, bool stillDraw = false)
+    protected bool DrawDate(AtkTextNode* textNode, uint listID, bool stillDraw = false)
     {
-        if (textNode == null) return;
+        if (textNode == null) return false;
 
         textNode->ToggleVisibility(stillDraw && Configuration.ShowPlaceholderDates);
         textNode->SetText("??/??/????");
 
         string? dateString = GetDateTimeString(listID);
-        if (dateString.IsNullOrWhitespace()) return;
+        if (dateString.IsNullOrWhitespace()) return false;
 
         textNode->ToggleVisibility(true);
         textNode->SetText(dateString);
+
+        return true;
     }
 
     string? GetDateTimeString(uint ID)

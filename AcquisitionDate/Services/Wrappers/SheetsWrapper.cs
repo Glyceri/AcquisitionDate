@@ -38,6 +38,7 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<Mount> mounts;
     readonly ExcelSheet<Glasses> glasses;
     readonly ExcelSheet<Ornament> ornaments;
+    readonly ExcelSheet<Orchestrion> orchestrions;
 
     public SheetsWrapper()
     {
@@ -54,6 +55,7 @@ internal class SheetsWrapper : ISheets
         mounts = PluginHandlers.DataManager.GetExcelSheet<Mount>();
         glasses = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
         ornaments = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
+        orchestrions = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
 
         SetupSheetDataCache();
     }
@@ -305,6 +307,19 @@ internal class SheetsWrapper : ISheets
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
 
             return ornament;
+        }
+
+        return null;
+    }
+
+    public Orchestrion? GetOrchestrionByName(string name)
+    {
+        foreach (Orchestrion orchestrion in orchestrions)
+        {
+            string mName = orchestrion.Name.ExtractText();
+            if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
+
+            return orchestrion;
         }
 
         return null;
