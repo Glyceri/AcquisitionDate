@@ -22,6 +22,7 @@ internal unsafe abstract class DateTextHook : HookableElement
 
     protected AddonEvent _lastEventType;
     protected string _lastAddonName = string.Empty;
+    protected uint _lastId = 0;
 
     public DateTextHook(IUserList userList, ISheets sheets, Configuration configuration)
     {
@@ -36,6 +37,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         _lastAddonName = args.AddonName;
 
         AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
+        _lastId = addon->Id;
         if (!addon->IsVisible) return;
 
         BaseNode baseNode = new BaseNode(addon);
