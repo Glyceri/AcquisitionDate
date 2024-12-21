@@ -6,7 +6,6 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 
@@ -18,14 +17,20 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
     uint lastQuestID = 0;
 
+    bool isQuest = false;
+
     public CutsceneReplayWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "CutSceneReplay", HookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "CutSceneReplay", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.QuestList;
+    protected override IDatableList GetList(IDatableData userData)
+    {
+        if (isQuest) return userData.QuestList;
+        return userData.DutyList;
+    }
 
     protected override void OnDispose()
     {
@@ -74,18 +79,31 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
             tNode->TextColor.B = 51;
         }
 
-        Quest? quest = Sheets.GetQuest(siblingNode->NodeText.ToString().Trim());
+        string contentName = siblingNode->NodeText.ToString().Trim();
+
+        Quest? quest = Sheets.GetQuest(contentName);
 
         uint questID = quest?.RowId ?? 0;
+
+        if (questID != 0)
+        {
+            isQuest = true;
+        }
+        else
+        {
+            isQuest = false;
+            ContentFinderCondition? contentFinder = Sheets.GetContentFinderConditionByName(contentName);
+            questID = contentFinder?.RowId ?? 0;
+        }
 
         if (lastQuestID == questID) return;
 
         lastQuestID = questID;
 
-        PluginHandlers.PluginLog.Verbose($"Clicked on quest: {questID}");
+        PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {questID}");
 
         DrawDate(tNode, questID);
-        GiveTooltip(cutsceneReplayDetail, tNode, questID, true);
+        GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
         cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 }

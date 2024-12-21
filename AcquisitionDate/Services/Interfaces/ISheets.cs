@@ -28,6 +28,7 @@ internal interface ISheets
     Ornament? GetOrnamentByName(string name);
     Orchestrion? GetOrchestrionByName(string name);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
+    ContentFinderCondition? GetContentFinderConditionByName(string name);
     ClassJob? GetClassJob(uint id);
     Adventure? GetAdventureByIndex(uint index);
 }

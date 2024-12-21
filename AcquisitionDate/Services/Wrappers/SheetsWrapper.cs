@@ -324,4 +324,17 @@ internal class SheetsWrapper : ISheets
 
         return null;
     }
+
+    public ContentFinderCondition? GetContentFinderConditionByName(string name)
+    {
+        foreach (ContentFinderCondition content in contentFinderConditions)
+        {
+            string mName = content.Name.ExtractText();
+            if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
+
+            return content;
+        }
+
+        return null;
+    }
 }
