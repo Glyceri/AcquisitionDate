@@ -24,6 +24,7 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.FacewearList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnGlassesSelect;
 
     protected override void OnDispose()
     {
@@ -70,6 +71,10 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
             if (DrawDate(tNode, glassesModel, true))
             {
                 GiveTooltip(baseAddon, tNode, glassesModel);
+            }
+            else
+            {
+                ClearOldTooldtips();
             }
         }
 

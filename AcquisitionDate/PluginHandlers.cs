@@ -20,6 +20,8 @@ internal class PluginHandlers
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IDutyState DutyState { get; private set; } = null!;
     [PluginService] internal static IAddonEventManager EventManager { get; private set; } = null!;
+    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
+    [PluginService] internal static ITextureSubstitutionProvider TextureSubstitutionProvider { get; private set; } = null!;
 
     internal static void Initialise(ref IDalamudPluginInterface plugin, AcquisitionDatePlugin selfPlugin)
     {

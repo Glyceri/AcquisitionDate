@@ -29,6 +29,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.FishingList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFishGuide;
 
     protected override void OnDispose() 
     {
@@ -107,6 +108,10 @@ internal unsafe class FishGuideWindowHook : DateTextHook
             if (DrawDate(tNode, lastID, true))
             {
                 GiveTooltip(baseAddon, tNode, lastID);
+            }
+            else
+            {
+                ClearOldTooldtips();
             }
         }
     }

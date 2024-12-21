@@ -4,7 +4,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
-using PetRenamer.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -13,7 +13,6 @@ namespace AcquisitionDate.Windows.Windows;
 
 internal class AcquisitionDebugWindow : AcquisitionWindow
 {
-    readonly Configuration Configuration;
     readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquisitionServices Services;
@@ -21,21 +20,24 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     protected override Vector2 MinSize { get; } = new Vector2(350, 136);
     protected override Vector2 MaxSize { get; } = new Vector2(2000, 2000);
     protected override Vector2 DefaultSize { get; } = new Vector2(800, 400);
+    protected override bool HasHeaderBar { get; } = true;
 
     int currentActive = 0;
     List<DevStruct> devStructList = new List<DevStruct>();
 
-    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database) : base("Acquisition Dev Window")
+    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration) : base(windowHandler, configuration,"Acquisition Dev Window")
     {
         Services = services;
         UserList = userList;
         Database = database;
-        Configuration = services.Configuration;
 
         devStructList.Add(new DevStruct("User List", DrawUserList));
         devStructList.Add(new DevStruct("User Database", DrawUserDatabase));
 
-        Open();
+        if (configuration.debugModeActive && configuration.openDebugWindowOnStart)
+        {
+            Open();
+        }
     }
 
     int current = 1480;

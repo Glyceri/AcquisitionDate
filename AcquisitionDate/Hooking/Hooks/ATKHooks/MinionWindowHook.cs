@@ -23,6 +23,7 @@ internal unsafe class MinionWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.MinionList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMinionNotebook;
 
     protected override void OnDispose()
     {
@@ -69,6 +70,10 @@ internal unsafe class MinionWindowHook : DateTextHook
         if (DrawDate(tNode, minionID, true))
         {
             GiveTooltip(baseAddon, tNode, minionID);
+        }
+        else
+        {
+            ClearOldTooldtips();
         }
     }
 }

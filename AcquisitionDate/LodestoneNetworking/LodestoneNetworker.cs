@@ -30,8 +30,6 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public LodestoneNetworker()
     {
-        HttpClient.DefaultRequestHeaders.Add("Cookie", "ldst_sess=");
-
         PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
         {
             ClientLanguage.Japanese => LodestoneRegion.Japan,
@@ -49,6 +47,12 @@ internal class LodestoneNetworker : ILodestoneNetworker
         if (currentWorld.Value.DataCenter.Value.PvPRegion == 3) return LodestoneRegion.Europe;
 
         return LodestoneRegion.America;
+    }
+
+    public void SetSessionToken(string sessionToken)
+    {
+        HttpClient.DefaultRequestHeaders.Remove("Cookie");
+        HttpClient.DefaultRequestHeaders.Add("Cookie", $"ldst_sess={sessionToken}");
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)

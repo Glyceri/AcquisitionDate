@@ -23,6 +23,7 @@ internal unsafe class MountWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.MountList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMountNotebook;
 
     protected override void OnDispose()
     {
@@ -61,6 +62,10 @@ internal unsafe class MountWindowHook : DateTextHook
         if (DrawDate(tNode, mountID, true))
         {
             GiveTooltip(baseAddon, tNode, mountID);
+        }
+        else
+        {
+            ClearOldTooldtips();
         }
     }
 }

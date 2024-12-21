@@ -37,6 +37,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         31018,
         31019,
         ];
+    uint[] lastOrchestrionDate = new uint[20];
 
     public OrchestrionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
 
@@ -47,6 +48,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.OrchestrionList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnOrchestrion;
 
     protected override void OnDispose() { }
 
@@ -54,8 +56,10 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
     {
         ComponentNode componentList = baseNode.GetComponentNode(27);
 
-        foreach (uint id in idArray)
-        {
+        for (int i = 0; i < idArray.Length; i++) {
+
+            uint id = idArray[i];
+
             ComponentNode listRendererNode = componentList.GetComponentNode(id);
 
             AtkTextNode* textNode = listRendererNode.GetNode<AtkTextNode>(6);
@@ -68,7 +72,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
             if (tNode == null)
             {
                 tNode = CreateTextNode(customDateTextNodeID);
-                if (tNode == null) return;
+                if (tNode == null) continue;
 
                 MergeTextBetweenElements(tNode, &numberNode->AtkResNode, &textNode->AtkResNode, &listRendererNode.GetPointer()->Component->UldManager);
 
@@ -78,23 +82,32 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
                 tNode->TextColor = textNode->TextColor;
                 tNode->EdgeColor = textNode->EdgeColor;
                 tNode->BackgroundColor = textNode->BackgroundColor;
-            }
-
-            tNode->ToggleVisibility(false);
-            textNode->SetYFloat(0);
+            }            
 
             byte* fullStringPointer = textNode->NodeText.StringPtr;
-            if (fullStringPointer == null) return;
+            if (fullStringPointer == null) continue;
 
             string? songName = Marshal.PtrToStringUTF8((nint)fullStringPointer);
-            if (songName.IsNullOrWhitespace()) return;
+            if (songName.IsNullOrWhitespace()) continue;
 
             Orchestrion? orchestrion = Sheets.GetOrchestrionByName(songName);
-            if (orchestrion == null) return;
+            if (orchestrion == null) continue;
 
-            if (DrawDate(tNode, orchestrion.Value.RowId))
+            uint orchestrionDate = orchestrion?.RowId ?? 0;
+
+            if (lastOrchestrionDate[i] == orchestrionDate) continue;
+
+            lastOrchestrionDate[i] = orchestrionDate;
+
+            if (DrawDate(tNode, orchestrionDate))
             {
                 textNode->SetYFloat(7);
+                GiveTooltip(baseAddon, tNode, orchestrionDate);
+            }
+            else
+            {
+                textNode->SetYFloat(0);
+                ClearOldTooldtips();
             }
         }
     }

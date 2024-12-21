@@ -7,6 +7,8 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Services.Interfaces;
+using AcquistionDate.PetNicknames.Windowing.Components;
+using AcquisitionDate.PetNicknames.Windowing.Windows;
 
 namespace AcquisitionDate.Windows;
 
@@ -21,21 +23,26 @@ internal class WindowHandler : IDisposable
     readonly IUserList UserList;
     readonly IDatabase Database;
 
-    public WindowHandler(IAcquisitionServices services, IDalamudPluginInterface pluginInterface, IUserList userList, IDatabase database)
+    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database)
     {
         WindowSystem = new WindowSystem("AcquisitionDate");
-        pluginInterface.UiBuilder.Draw += Draw;
+        PluginHandlers.PluginInterface.UiBuilder.Draw += Draw;
+        PluginHandlers.PluginInterface.UiBuilder.OpenConfigUi += OpenWindow<AcquisitionConfigWindow>;
 
         Services = services;
         UserList = userList;
         Database = database;
+
+        ComponentLibrary.Initialise();
 
         Register();
     }
 
     void Register()
     {
-        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database));
+        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database, this, Services.Configuration));
+        AddWindow(new AcquisitionConfigWindow(this, Services.Configuration));
+        AddWindow(new KofiWindow(this, Services.Configuration));
     }
 
     void Draw()
@@ -81,9 +88,23 @@ internal class WindowHandler : IDisposable
         }
     }
 
+    public T? GetWindow<T>() where T : AcquisitionWindow
+    {
+        foreach (AcquisitionWindow window in WindowSystem.Windows)
+        {
+            if (window is not T acquisitionWindow) continue;
+
+            return acquisitionWindow;
+        }
+
+        return null;
+    }
+
     public void Dispose()
     {
         PluginHandlers.PluginInterface.UiBuilder.Draw -= Draw;
+        PluginHandlers.PluginInterface.UiBuilder.OpenConfigUi -= OpenWindow<AcquisitionConfigWindow>;
+
         ClearAllWindows();
     }
 

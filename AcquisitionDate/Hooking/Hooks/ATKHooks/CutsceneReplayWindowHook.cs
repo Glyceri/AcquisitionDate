@@ -32,6 +32,8 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
         return userData.DutyList;
     }
 
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnCutsceneReplay;
+
     protected override void OnDispose()
     {
         TrySafeInvalidateUIElement(ref tNode);
@@ -97,6 +99,10 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
         {
             GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
             cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
+        }
+        else
+        {
+            ClearOldTooldtips();
         }
     }
 }

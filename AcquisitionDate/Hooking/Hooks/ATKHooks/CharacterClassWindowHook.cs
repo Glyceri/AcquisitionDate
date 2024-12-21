@@ -9,7 +9,7 @@ using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
-using PetRenamer.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
@@ -25,6 +25,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
     readonly Hook<AddonCharacterClass.Delegates.ReceiveEvent>? ReceiveEventHook;
 
     uint lastIndex = 0;
+    bool lastValid = false;
 
     public CharacterClassWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
     {
@@ -99,7 +100,8 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
 
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-        DrawDate(tNode, lastIndex, true);
+        lastValid = DrawDate(tNode, lastIndex, true);
+        tNode2->ToggleVisibility(lastValid);
     }
 
     AtkTextNode* GetTextNode(AddonCharacterClass* thisPtr, uint id)
@@ -160,14 +162,12 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
                 break;
             }
 
-            if (outcome == null) return false;
-
-            sbyte expIndex = outcome.Value.ExpArrayIndex;
+            sbyte expIndex = outcome?.ExpArrayIndex ?? 0;
             uint indexBase = (uint)expIndex * 10000;
             indexBase += classLevel;
 
             lastIndex = indexBase;
-            PluginHandlers.PluginLog.Verbose($"Found hovered class to be: {outcome.Value.Name.ExtractText()} {lastIndex}");
+            PluginHandlers.PluginLog.Verbose($"Found hovered class to be: {lastIndex}");
             return true;
         }
         catch (Exception e)
@@ -181,13 +181,11 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
     {
         ReceiveEventHook?.Enable();
 
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "Character", CharacterHookDetour);
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "Character", CharacterHookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "Character", CharacterHookDetour);
     }
 
     void CharacterHookDetour(AddonEvent type, AddonArgs args)
     {
-        PluginHandlers.PluginLog.Verbose("Character Panel Setup");
         AddonCharacter* addon = (AddonCharacter*)args.Addon;
 
         BaseNode baseNode = new BaseNode(&addon->AtkUnitBase);
@@ -198,7 +196,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         AtkComponentNode* atkComponentNode = componentNode.GetPointer();
         if (atkComponentNode == null) return;
 
-        if (addon->TabIndex == 2)
+        if (addon->TabIndex == 2 && lastValid)
         {
             atkComponentNode->SetScaleY(1.02f);
         }
@@ -209,6 +207,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.ClassLVLList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnLevelScreen;
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon) { }
 

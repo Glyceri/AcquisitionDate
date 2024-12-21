@@ -17,7 +17,7 @@ using AcquisitionDate.Serializiation;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
-using PetRenamer.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.TranslatorSystem;
 
 namespace AcquisitionDate;
 
@@ -54,7 +54,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         HookHandler = new HookHandler(Services, UserList, DirtyHandler);
         UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler, HookHandler);
         AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker);
-        WindowHandler = new WindowHandler(Services, pluginInterface, UserList, Database);
+        WindowHandler = new WindowHandler(Services, UserList, Database);
 
         Services.Configuration.Initialise(Database);
     }

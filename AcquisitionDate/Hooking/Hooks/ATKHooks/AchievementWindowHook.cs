@@ -20,6 +20,7 @@ internal unsafe class AchievementWindowHook : DateTextHook
     public override void Init() =>  PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "Achievement", HookDetour);
 
     protected override IDatableList GetList(IDatableData userData) => userData.AchievementList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnAchievements;
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
     {

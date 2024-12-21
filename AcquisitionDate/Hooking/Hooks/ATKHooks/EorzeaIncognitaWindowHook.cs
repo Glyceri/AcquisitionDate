@@ -22,6 +22,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.SightList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnEorzeaIncognita;
 
     protected override void OnDispose() 
     {
@@ -59,6 +60,10 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
         if (DrawDate(tNode, selectedIndex, true))
         {
             GiveTooltip(baseAddon, tNode, selectedIndex);
+        }
+        else
+        {
+            ClearOldTooldtips();
         }
     }
 }

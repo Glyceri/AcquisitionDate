@@ -24,6 +24,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.FashionList;
+    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFashionSelect;
 
     protected override void OnDispose()
     {

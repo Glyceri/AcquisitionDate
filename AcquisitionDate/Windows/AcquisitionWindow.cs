@@ -3,6 +3,7 @@ using ImGuiNET;
 using AcquisitionDate.Windows.Interfaces;
 using System.Numerics;
 using Dalamud.Interface.Utility;
+using AcquistionDate.PetNicknames.Windowing.Components.Header;
 
 namespace AcquisitionDate.Windows;
 
@@ -12,8 +13,16 @@ internal abstract class AcquisitionWindow : Window, IAcquisitionWindow
     protected abstract Vector2 MaxSize { get; }
     protected abstract Vector2 DefaultSize { get; }
 
-    public AcquisitionWindow(string name, ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse, bool forceMainWindow = false) : base(name, flags, forceMainWindow) 
+    protected abstract bool HasHeaderBar { get; }
+
+    protected readonly WindowHandler WindowHandler;
+    protected readonly Configuration Configuration;
+
+    public AcquisitionWindow(WindowHandler windowHandler, Configuration configuration, string name, ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse, bool forceMainWindow = false) : base(name, flags, forceMainWindow) 
     {
+        WindowHandler = windowHandler;
+        Configuration = configuration;
+
         SizeCondition = ImGuiCond.FirstUseEver;
         Size = DefaultSize;
 
@@ -45,7 +54,11 @@ internal abstract class AcquisitionWindow : Window, IAcquisitionWindow
         ImGui.PopStyleVar(4);
     }
 
-    public sealed override void Draw() => OnDraw();
+    public sealed override void Draw()
+    {
+        if (HasHeaderBar) HeaderBar.Draw(WindowHandler, Configuration, this);
+        OnDraw();
+    }
 
     protected virtual void OnEarlyDraw() { }
     protected virtual void OnDraw() { }

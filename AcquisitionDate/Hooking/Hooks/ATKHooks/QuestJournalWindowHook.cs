@@ -31,6 +31,12 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
         return userData.DutyList;
     }
 
+    protected override bool HandleConfig(Configuration configuration)
+    {
+        if (isQuest) return configuration.DrawDatesOnQuestJournal;
+        return configuration.DrawDatesOnDutyFinder;
+    }
+
     protected override void OnDispose() { }
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseaddon)

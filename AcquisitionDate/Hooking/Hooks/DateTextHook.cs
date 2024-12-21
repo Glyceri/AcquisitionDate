@@ -10,7 +10,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Events;
 using Dalamud.Utility;
-using PetRenamer.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.TranslatorSystem;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -96,17 +96,24 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (textNode == null) return false;
 
-        textNode->ToggleVisibility(stillDraw && Configuration.ShowPlaceholderDates);
+        bool configSaysVisible = HandleConfig(Configuration);
+        textNode->ToggleVisibility(configSaysVisible);
+
+        bool finalStillDraw = stillDraw && Configuration.ShowPlaceholderDates && configSaysVisible;
+
+        textNode->ToggleVisibility(finalStillDraw);
         textNode->SetText("??/??/????");
 
         string? dateString = GetDateTimeString(listID);
-        if (dateString.IsNullOrWhitespace()) return stillDraw;
+        if (dateString.IsNullOrWhitespace()) return finalStillDraw;
 
-        textNode->ToggleVisibility(true);
+        textNode->ToggleVisibility(configSaysVisible);
         textNode->SetText(dateString);
 
-        return true;
+        return configSaysVisible;
     }
+
+    protected abstract bool HandleConfig(Configuration config);
 
     string? GetDateTimeString(uint ID)
     {

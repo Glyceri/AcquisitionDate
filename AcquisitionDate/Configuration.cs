@@ -2,7 +2,7 @@ using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Serializiation;
 using Dalamud.Configuration;
-using PetRenamer.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 
 namespace AcquisitionDate;
@@ -15,6 +15,33 @@ internal class Configuration : IPluginConfiguration
     public int DateType = 0;
     public int AcquisitionLanuage = 0;
     public bool ShowPlaceholderDates = true;
+
+    // UI
+
+    public bool quickButtonsToggle = true;
+    public int minionIconType = 1;
+    public bool showKofiButton = true;
+
+    // Game Elements
+
+    public bool DrawDatesOnAchievements = true;
+    public bool DrawDatesOnLevelScreen = true;
+    public bool DrawDatesOnCutsceneReplay = true;
+    public bool DrawDatesOnEorzeaIncognita = true;
+    public bool DrawDatesOnFishGuide = true;
+    public bool DrawDatesOnGlassesSelect = true;
+    public bool DrawDatesOnMinionNotebook = true;
+    public bool DrawDatesOnMountNotebook = true;
+    public bool DrawDatesOnOrchestrion = true;
+    public bool DrawDatesOnFashionSelect = true;
+    public bool DrawDatesOnQuestJournal = true;
+    public bool DrawDatesOnDutyFinder = true;
+
+    // End Game Elements
+
+    // ------------------------- Debug SETTINGS --------------------------
+    public bool debugModeActive = false;
+    public bool openDebugWindowOnStart = false;
 
     public SerializableUser[]? SerializableUsers { get; set; } = null;
 
@@ -68,5 +95,12 @@ internal class Configuration : IPluginConfiguration
         $"{Translator.GetLine("German")}",
         $"{Translator.GetLine("French")}",
         $"{Translator.GetLine("Japanese")}",
+    ];
+
+    public string[] IconMenuTypes = 
+    [
+        "Action", 
+        "Notebook", 
+        "Item"
     ];
 }
