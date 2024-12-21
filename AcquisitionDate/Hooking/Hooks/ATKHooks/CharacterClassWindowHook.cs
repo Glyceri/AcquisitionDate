@@ -182,22 +182,30 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         ReceiveEventHook?.Enable();
 
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "Character", CharacterHookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "Character", CharacterHookDetour);
     }
 
     void CharacterHookDetour(AddonEvent type, AddonArgs args)
     {
         PluginHandlers.PluginLog.Verbose("Character Panel Setup");
-        AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
+        AddonCharacter* addon = (AddonCharacter*)args.Addon;
 
-        BaseNode baseNode = new BaseNode(addon);
-
+        BaseNode baseNode = new BaseNode(&addon->AtkUnitBase);
+        
         ComponentNode componentNode = baseNode.GetComponentNode(82);
         if (componentNode == null) return;
 
         AtkComponentNode* atkComponentNode = componentNode.GetPointer();
         if (atkComponentNode == null) return;
 
-        atkComponentNode->SetScaleY(1.02f);
+        if (addon->TabIndex == 2)
+        {
+            atkComponentNode->SetScaleY(1.02f);
+        }
+        else
+        {
+            atkComponentNode->SetScaleY(1f);
+        }
     }
 
     protected override IDatableList GetList(IDatableData userData) => userData.ClassLVLList;

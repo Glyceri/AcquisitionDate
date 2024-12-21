@@ -38,8 +38,6 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         31019,
         ];
 
-    AtkTextNode* tNode;
-
     public OrchestrionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
 
     public override void Init()
@@ -50,10 +48,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData) => userData.OrchestrionList;
 
-    protected override void OnDispose()
-    {
-        TrySafeInvalidateUIElement(ref tNode);
-    }
+    protected override void OnDispose() { }
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
     {
@@ -69,7 +64,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
             AtkTextNode* numberNode = listRendererNode.GetNode<AtkTextNode>(5);
             if (numberNode == null) continue;
 
-            tNode = listRendererNode.GetNode<AtkTextNode>(customDateTextNodeID);
+            AtkTextNode* tNode = listRendererNode.GetNode<AtkTextNode>(customDateTextNodeID);
             if (tNode == null)
             {
                 tNode = CreateTextNode(customDateTextNodeID);
