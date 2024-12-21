@@ -28,7 +28,7 @@ internal static class HeaderBar
 
             HeaderBarWidth = 0;
 
-            WindowStruct<AcquisitionDebugWindow> petDevWindow = new WindowStruct<AcquisitionDebugWindow>(in windowHandler, in configuration, FontAwesomeIcon.Biohazard, "Pet Dev", configuration.debugModeActive);
+            WindowStruct<AcquisitionDebugWindow> petDevWindow = new WindowStruct<AcquisitionDebugWindow>(in windowHandler, in configuration, FontAwesomeIcon.Biohazard, "Acquisition Dev (Messy NGL)", configuration.debugModeActive);
             WindowStruct<KofiWindow> kofiWindow = new WindowStruct<KofiWindow>(in windowHandler, in configuration, FontAwesomeIcon.Coffee, Translator.GetLine("Kofi.Title"), configuration.showKofiButton && window is not KofiWindow);
             WindowStruct<AcquisitionConfigWindow> petConfigWindow = new WindowStruct<AcquisitionConfigWindow>(in windowHandler, in configuration, FontAwesomeIcon.Cogs, Translator.GetLine("Config.Title"), window is not AcquisitionConfigWindow || configuration.quickButtonsToggle);
             //WindowStruct<PetListWindow> petListWindow = new WindowStruct<PetListWindow>(in windowHandler, in configuration, FontAwesomeIcon.FileExport, Translator.GetLine("PetList.Sharing"), (window is not PetListWindow) && (configuration.listButtonLayout == 0 || configuration.listButtonLayout == 1));
