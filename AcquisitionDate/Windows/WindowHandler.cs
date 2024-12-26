@@ -7,7 +7,7 @@ using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.Windowing.Components;
-using AcquisitionDate.PetNicknames.Windowing.Windows;
+using AcquisitionDate.AcquisitionDate.Windowing.Windows;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;

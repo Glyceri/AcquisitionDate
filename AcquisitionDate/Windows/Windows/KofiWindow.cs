@@ -6,7 +6,7 @@ using Dalamud.Utility;
 using ImGuiNET;
 using System.Numerics;
 
-namespace AcquisitionDate.PetNicknames.Windowing.Windows;
+namespace AcquisitionDate.AcquisitionDate.Windowing.Windows;
 
 internal class KofiWindow : AcquisitionWindow
 {

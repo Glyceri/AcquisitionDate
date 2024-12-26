@@ -1,6 +1,6 @@
 using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.PetNicknames.Services.ServiceWrappers;
-using AcquisitionDate.PetNicknames.Services.ServiceWrappers.Interfaces;
+using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers;
+using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Services.Wrappers;
 

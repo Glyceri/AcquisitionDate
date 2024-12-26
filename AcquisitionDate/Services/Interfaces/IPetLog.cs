@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcquisitionDate.PetNicknames.Services.ServiceWrappers.Interfaces;
+namespace AcquisitionDate.AcquisitionDate.Services.ServiceWrappers.Interfaces;
 
 internal interface IPetLog
 {

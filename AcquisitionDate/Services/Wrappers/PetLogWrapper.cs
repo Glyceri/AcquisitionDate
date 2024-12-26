@@ -1,8 +1,8 @@
 using Dalamud.Plugin.Services;
-using AcquisitionDate.PetNicknames.Services.ServiceWrappers.Interfaces;
+using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers.Interfaces;
 using System;
 
-namespace AcquisitionDate.PetNicknames.Services.ServiceWrappers;
+namespace AcquisitionDate.AcquisitionDate.Services.ServiceWrappers;
 
 internal class PetLogWrapper : IPetLog
 {

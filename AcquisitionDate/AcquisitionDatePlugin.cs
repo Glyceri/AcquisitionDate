@@ -18,6 +18,7 @@ using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
 using AcquistionDate.PetNicknames.TranslatorSystem;
+using AcquisitionDate.AcquisitionDate.Commands;
 
 namespace AcquisitionDate;
 
@@ -34,6 +35,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
     readonly IUserList UserList;
     readonly IAcquirerHandler AcquirerHandler;
 
+    readonly CommandHandler CommandHandler;
     readonly DirtyHandler DirtyHandler;
     readonly SaveHandler SaveHandler;
 
@@ -56,11 +58,14 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker);
         WindowHandler = new WindowHandler(Services, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler);
 
+        CommandHandler = new CommandHandler(Services.Configuration, WindowHandler);
+
         Services.Configuration.Initialise(Database);
     }
 
     public void Dispose()
     {
+        CommandHandler?.Dispose();
         HookHandler?.Dispose();
         WindowHandler?.Dispose();
         UpdateHandler?.Dispose();

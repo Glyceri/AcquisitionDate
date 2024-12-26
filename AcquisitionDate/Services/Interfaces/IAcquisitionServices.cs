@@ -1,4 +1,4 @@
-using AcquisitionDate.PetNicknames.Services.ServiceWrappers.Interfaces;
+using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers.Interfaces;
 
 namespace AcquisitionDate.Services.Interfaces;
 

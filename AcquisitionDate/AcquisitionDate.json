@@ -2,12 +2,23 @@
   "Author": "Glyceri",
   "Name": "Acquisition Date",
   "Punchline": "Shows the date when you acquired something.",
-  "Description": "Shows the date when you acquired something.",
+  "Description": "Shows the date when you acquired:\n- Achievements\n- Quests\n- Duties\n- Levels\n- Fish\n- Sightseeing Log Entries\n- Glasses\n- Minions\n- Mounts\n- Orchestrion Rolls\n- Fashion Accessories\nAnd More!",
   "ApplicableVersion": "any",
   "Tags": [
-    "sample",
-    "plugin",
-    "goats"
+    "date",
+    "acquired",
+    "unlocked",
+    "achievements",
+    "quests",
+    "duties",
+    "level",
+    "fish",
+    "sightseeing log",
+    "glasses",
+    "minion",
+    "mount",
+    "orchestrion",
+    "fashion"
   ],
   "IconUrl": "https://github.com/Glyceri/AcquisitionDate/raw/main/icon.png",
   "RepoUrl": "https://github.com/Glyceri/AcquisitionDate"

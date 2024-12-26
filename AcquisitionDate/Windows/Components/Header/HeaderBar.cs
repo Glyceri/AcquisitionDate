@@ -6,7 +6,7 @@ using System.Numerics;
 using AcquisitionDate.Windows;
 using AcquisitionDate;
 using AcquisitionDate.Windows.Windows;
-using AcquisitionDate.PetNicknames.Windowing.Windows;
+using AcquisitionDate.AcquisitionDate.Windowing.Windows;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Header;
 

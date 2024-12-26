@@ -95,11 +95,4 @@ internal class Configuration : IPluginConfiguration
         $"{Translator.GetLine("French")}",
         $"{Translator.GetLine("Japanese")}",
     ];
-
-    public string[] IconMenuTypes = 
-    [
-        "Action", 
-        "Notebook", 
-        "Item"
-    ];
 }
