@@ -13,13 +13,12 @@ internal class Configuration : IPluginConfiguration
     public int Version { get; set; } = 0;
 
     public int DateType = 0;
-    public int AcquisitionLanuage = 0;
+    public int AcquisitionLanuage = 1;
     public bool ShowPlaceholderDates = true;
 
     // UI
 
     public bool quickButtonsToggle = true;
-    public int minionIconType = 1;
     public bool showKofiButton = true;
 
     // Game Elements

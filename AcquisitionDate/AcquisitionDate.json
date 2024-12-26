@@ -1,12 +1,14 @@
 {
-    "Author": "Glyceri",
-    "Name": "Acquisition Date",
-    "Punchline": "Shows the date when you acquired something.",
-    "Description": "Shows the date when you acquired something.",
-    "ApplicableVersion": "any",
-    "Tags": [
-        "sample",
-        "plugin",
-        "goats"
-    ]
+  "Author": "Glyceri",
+  "Name": "Acquisition Date",
+  "Punchline": "Shows the date when you acquired something.",
+  "Description": "Shows the date when you acquired something.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "sample",
+    "plugin",
+    "goats"
+  ],
+  "IconUrl": "https://github.com/Glyceri/AcquisitionDate/raw/main/icon.png",
+  "RepoUrl": "https://github.com/Glyceri/AcquisitionDate"
 }

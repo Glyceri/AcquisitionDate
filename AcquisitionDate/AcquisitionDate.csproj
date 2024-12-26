@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Version>0.1.0.0</Version>
     <Description>A plugin that shows the acquisition date of stuff.</Description>
-    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Glyceri/AcquisitionDate</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

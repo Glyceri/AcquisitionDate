@@ -42,8 +42,6 @@ internal class WindowHandler : IDisposable
         LodestoneNetworker = lodestoneNetworker;
         DirtyListener = dirtyListener;
 
-        ComponentLibrary.Initialise();
-
         Register();
     }
 

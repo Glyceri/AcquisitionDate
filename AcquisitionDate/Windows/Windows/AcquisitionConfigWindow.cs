@@ -25,15 +25,13 @@ internal class AcquisitionConfigWindow : AcquisitionWindow
         {
             DrawMenu(Translator.GetLine("Config.DateFormat"), Configuration.DateFormatString, ref Configuration.DateType, 120);
             DrawMenu(Translator.GetLine("Config.PluginLanguage"), Configuration.Languages, ref Configuration.AcquisitionLanuage, 120);
-            if (ImGui.Checkbox(Translator.GetLine("Config.ShowPlaceholderDates"), ref Configuration.ShowPlaceholderDates)) Configuration.Save();
+            if (ImGui.Checkbox(Translator.GetLine("Config.ShowPlaceholderDates") + " [??/??/????]", ref Configuration.ShowPlaceholderDates)) Configuration.Save();
         }
 
         if (ImGui.CollapsingHeader(Translator.GetLine("Config.Header.UISettings")))
         {
             if (ImGui.Checkbox(Translator.GetLine("Config.Kofi"), ref Configuration.showKofiButton)) Configuration.Save();
             if (ImGui.Checkbox(Translator.GetLine("Config.Toggle"), ref Configuration.quickButtonsToggle)) Configuration.Save();
-
-            DrawMenu("Icon Type", Configuration.IconMenuTypes, ref Configuration.minionIconType);
         }
 
         if (ImGui.CollapsingHeader(Translator.GetLine("Config.Header.NativeSettings")))
