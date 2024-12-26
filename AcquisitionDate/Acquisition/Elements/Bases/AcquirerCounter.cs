@@ -46,7 +46,7 @@ internal abstract class AcquirerCounter : AcquirerBase
         SetPercentage(10);
         if (data == null)
         {
-            Failed();
+            Failed("Page count data is NULL. (this probably means you didn't put in a session token)");
             return;
         }
 
@@ -72,7 +72,7 @@ internal abstract class AcquirerCounter : AcquirerBase
 
         if (!IsAcquiring)
         {
-            Failed();
+            Failed("Acquisition Got Cancelled Early.");
             return;
         }
 
@@ -95,6 +95,6 @@ internal abstract class AcquirerCounter : AcquirerBase
     protected void OnFailure(Exception e)
     {
         PluginHandlers.PluginLog.Error(e, "Acquirer encountered an error.");
-        Failed();
+        Failed(e.Message);
     }
 }

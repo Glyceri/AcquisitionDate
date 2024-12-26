@@ -8,13 +8,7 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class AchievementAcquirer : AcquirerCounter
 {
-    // TEMPORARY
-    public static AchievementAcquirer Instance { get; private set; }
-
-    public AchievementAcquirer(ILodestoneNetworker networker) : base(networker)
-    {
-        Instance = this;
-    }
+    public AchievementAcquirer(ILodestoneNetworker networker) : base(networker) { }
 
     protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest(_currentUser, OnPageCountData);
 

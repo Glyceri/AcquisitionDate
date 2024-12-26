@@ -30,7 +30,7 @@ internal abstract class AcquirerItem : AcquirerCounter
         SetPercentage(10);
         if (data == null)
         {
-            Failed();
+            Failed("Page URL list is NULL. (this probably means you didn't put in a session token)");
             return;
         }
 

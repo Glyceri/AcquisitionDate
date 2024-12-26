@@ -11,6 +11,8 @@ internal abstract class AcquirerBase : IAcquirer
 {
     public bool IsAcquiring { get; protected set; }
     public byte CompletionRate { get; protected set; }
+    public string? AcquisitionError { get; private set; }
+    public bool HasSucceeded { get; private set; }
 
     protected readonly ILodestoneNetworker Networker;
 
@@ -25,6 +27,7 @@ internal abstract class AcquirerBase : IAcquirer
 
     public void Acquire(IDatableData user)
     {
+        HasSucceeded = false;
         _currentUser = user;
         ReadyAcquire();
         OnAcquire();
@@ -32,6 +35,7 @@ internal abstract class AcquirerBase : IAcquirer
 
     public void Cancel()
     {
+        HasSucceeded = false;
         HandleCancel();
         OnCancel();
     }
@@ -46,8 +50,9 @@ internal abstract class AcquirerBase : IAcquirer
     protected abstract void OnCancel();
     protected abstract void OnDispose();
 
-    protected void Failed()
+    protected void Failed(string? reason = null)
     {
+        AcquisitionError = reason;
         IsAcquiring = false;
         Cancel();
     }
@@ -56,6 +61,7 @@ internal abstract class AcquirerBase : IAcquirer
     {
         IsAcquiring = false;
         CompletionRate = byte.MaxValue;
+        HasSucceeded = true;
     }
 
     protected void ResetAcquire()
@@ -66,6 +72,7 @@ internal abstract class AcquirerBase : IAcquirer
 
     protected void ReadyAcquire()
     {
+        AcquisitionError = null;
         ResetAcquire();
         IsAcquiring = true;
     }
@@ -80,13 +87,14 @@ internal abstract class AcquirerBase : IAcquirer
         }
 
         queueElements.Clear();
-        InternalReset();
+        IsAcquiring = false;
     }
 
     void InternalReset()
     {
         IsAcquiring = false;
         CompletionRate = 0;
+        HasSucceeded = false;
     }
 
     protected void SetPercentage(float percentage)

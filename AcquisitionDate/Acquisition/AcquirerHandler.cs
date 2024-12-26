@@ -13,6 +13,12 @@ internal class AcquirerHandler : IAcquirerHandler
 
     List<IAcquirer> acquirers = new List<IAcquirer>();
 
+    public IAcquirer MinionAcquirer { get; private set; } = null!;
+    public IAcquirer MountAcquirer { get; private set; } = null!;
+    public IAcquirer FacewearAcquirer { get; private set; } = null!;
+    public IAcquirer AchievementAcquirer { get; private set; } = null!;
+    public IAcquirer QuestAcquirer { get; private set; } = null!;
+
     public AcquirerHandler(IAcquisitionServices services, ILodestoneNetworker networker)
     {
         Services = services;
@@ -23,11 +29,11 @@ internal class AcquirerHandler : IAcquirerHandler
 
     void Setup()
     {
-        AddAcquirer(new MinionAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(new MountAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(new FacewearAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(new AchievementAcquirer(LodestoneNetworker));
-        AddAcquirer(new QuestAcquirer(Services, LodestoneNetworker));
+        AddAcquirer(MinionAcquirer = new MinionAcquirer(Services.Sheets, LodestoneNetworker));
+        AddAcquirer(MountAcquirer = new MountAcquirer(Services.Sheets, LodestoneNetworker));
+        AddAcquirer(FacewearAcquirer = new FacewearAcquirer(Services.Sheets, LodestoneNetworker));
+        AddAcquirer(AchievementAcquirer = new AchievementAcquirer(LodestoneNetworker));
+        AddAcquirer(QuestAcquirer = new QuestAcquirer(Services.Sheets, LodestoneNetworker));
     }
 
     void AddAcquirer(IAcquirer acquirer)

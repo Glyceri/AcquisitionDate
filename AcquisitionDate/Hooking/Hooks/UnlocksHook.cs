@@ -1,6 +1,5 @@
 ﻿using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
-using AcquisitionDate.Hooking.Hooks.ATKHooks;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Hooks.UnlockHooks;
 using AcquisitionDate.Services.Interfaces;

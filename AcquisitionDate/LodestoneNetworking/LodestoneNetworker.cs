@@ -1,4 +1,5 @@
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue;
@@ -28,8 +29,12 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     float lodestoneQueueReleaseTimer = 0;
 
-    public LodestoneNetworker()
+    readonly IDirtyListener DirtyListener;
+
+    public LodestoneNetworker(IDirtyListener dirtyListener)
     {
+        DirtyListener = dirtyListener;
+
         PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
         {
             ClientLanguage.Japanese => LodestoneRegion.Japan,
@@ -38,6 +43,8 @@ internal class LodestoneNetworker : ILodestoneNetworker
             ClientLanguage.English => GetLodestoneRegion(),
             _ => LodestoneRegion.Germany,
         };
+
+        DirtyListener.RegisterDirtyUser(OnDirty);
     }
 
     LodestoneRegion GetLodestoneRegion()
@@ -47,6 +54,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
         if (currentWorld.Value.DataCenter.Value.PvPRegion == 3) return LodestoneRegion.Europe;
 
         return LodestoneRegion.America;
+    }
+
+    void OnDirty()
+    {
+        SetSessionToken(string.Empty);
+
+        ClearQueue();
+        CancelRequests();
     }
 
     public void SetSessionToken(string sessionToken)
@@ -134,7 +149,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
         }
     }
 
-    public void Dispose()
+    void ClearQueue()
     {
         int queueCount = _queueElements.Count;
 
@@ -145,7 +160,10 @@ internal class LodestoneNetworker : ILodestoneNetworker
         }
 
         _queueElements.Clear();
+    }
 
+    void CancelRequests()
+    {
         try
         {
             HttpClient.CancelPendingRequests();
@@ -154,6 +172,15 @@ internal class LodestoneNetworker : ILodestoneNetworker
         {
             PluginHandlers.PluginLog.Error(e, "Couldn't cancel pending requests.");
         }
+    }
+
+    public void Dispose()
+    {
+        DirtyListener.UnregisterDirtyUser(OnDirty);
+
+        ClearQueue();
+        CancelRequests();
+
         try
         {
             HttpClient.Dispose();

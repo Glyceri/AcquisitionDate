@@ -9,20 +9,16 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class QuestAcquirer : AcquirerCounter
 {
-    // TEMPORARY
-    public static QuestAcquirer Instance { get; private set; }
+    readonly ISheets Sheets;
 
-    readonly IAcquisitionServices Services;
-
-    public QuestAcquirer(IAcquisitionServices services, ILodestoneNetworker networker) : base(networker)
+    public QuestAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(networker)
     {
-        Services = services;
-        Instance = this;
+        Sheets = sheets;
     }
 
     protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest(_currentUser, OnPageCountData);
 
-    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest(Services.Sheets, _currentUser, page, OnQuestData, OnPageComplete, OnFailure);
+    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest(Sheets, _currentUser, page, OnQuestData, OnPageComplete, OnFailure);
 
     void OnQuestData(QuestData data)
     {

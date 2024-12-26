@@ -96,10 +96,9 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (textNode == null) return false;
 
-        bool configSaysVisible = HandleConfig(Configuration);
-        textNode->ToggleVisibility(configSaysVisible);
+        bool configSaysVisible = HandleConfig(Configuration) && Configuration.ShowPlaceholderDates;
 
-        bool finalStillDraw = stillDraw && Configuration.ShowPlaceholderDates && configSaysVisible;
+        bool finalStillDraw = stillDraw && configSaysVisible;
 
         textNode->ToggleVisibility(finalStillDraw);
         textNode->SetText("??/??/????");

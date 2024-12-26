@@ -54,6 +54,14 @@ internal static class Translator
         { "Kofi.Line1",                         "This is about real life money." },
         { "Kofi.Line2",                         "It will be used to my cat toys!" },
         { "Kofi.TakeMe",                        "Take me" },
+
+        { "Acquiry.Save",                       "Apply Session Token." },
+        { "Acquiry.Clear",                      "Clear Session Token." },
+        { "ClearButton.Label",                  "Hold \"Left Ctrl\" + \"Left Shift\" to clear the Session Token." },
+        { "Acquiry.Start",                      "Download {0} dates from the Lodestone."},
+        { "Acquiry.Stop",                       "Stop Lodestone Download." },
+        { "Acquiry.CompPerc",                   "Completion Percentage: {0}%"},
+
     };
 
     static Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
@@ -94,6 +102,14 @@ internal static class Translator
         { "Kofi.Line1",                         "Hier geht es um echtes Geld." },
         { "Kofi.Line2",                         "Es wird für Cat-Toys verwendet!" },
         { "Kofi.TakeMe",                        "Los geht's" },
+
+        { "Acquiry.Save",                       "Session Token anwenden." },
+        { "Acquiry.Clear",                      "Session Token löschen." },
+        { "ClearButton.Label",                  "Halten Sie \"Linke Strg\" + \"Linke Umschalt\" gedrückt, um das Session Token zu löschen." },
+        { "Acquiry.Start",                      "Laden {0} Daten vom Lodestone."},
+        { "Acquiry.Stop",                       "Lodestone-Download Stoppen." },
+        { "Acquiry.CompPerc",                   "Abschlussprozentsatz: {0}%"},
+
     };
 
     static Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()

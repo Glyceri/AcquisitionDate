@@ -15,9 +15,9 @@ internal class KofiWindow : AcquisitionWindow
     protected override Vector2 DefaultSize { get; } = new Vector2(350, 136);
     protected override bool HasHeaderBar { get; } = false;
 
-    float BarSize = 30 * ImGuiHelpers.GlobalScale;
+    float BarSize => 30 * ImGuiHelpers.GlobalScale;
 
-    public KofiWindow(WindowHandler windowHandler, Configuration configuration) : base(windowHandler, configuration, "Kofi-Window", ImGuiWindowFlags.None) { }
+    public KofiWindow(WindowHandler windowHandler, Configuration configuration) : base(windowHandler, configuration, "Acquired Date Kofi-Window", ImGuiWindowFlags.None) { }
 
     protected override void OnDraw()
     {

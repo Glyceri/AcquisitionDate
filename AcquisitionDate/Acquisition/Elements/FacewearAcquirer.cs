@@ -9,13 +9,7 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class FacewearAcquirer : AcquirerItem
 {
-    // TEMPORARY
-    public static FacewearAcquirer Instance { get; private set; }
-
-    public FacewearAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker)
-    {
-        Instance = this;
-    }
+    public FacewearAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker) { }
 
     protected override ILodestoneRequest PageDataRequest(string page) => new FacewearDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
 

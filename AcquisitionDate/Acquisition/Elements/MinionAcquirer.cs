@@ -9,13 +9,7 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class MinionAcquirer : AcquirerItem
 {
-    // TEMPORARY
-    public static MinionAcquirer Instance { get; private set; }
-
-    public MinionAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker)
-    {
-        Instance = this;
-    }
+    public MinionAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker) { }
 
     protected override ILodestoneRequest PageDataRequest(string page) => new MinionDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
 

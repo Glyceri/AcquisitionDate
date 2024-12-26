@@ -1,4 +1,5 @@
 ﻿using AcquistionDate.PetNicknames.TranslatorSystem;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using System.Numerics;
 
@@ -15,7 +16,7 @@ internal class AcquisitionConfigWindow : AcquisitionWindow
 
     public AcquisitionConfigWindow(WindowHandler windowHandler, Configuration configuration) : base(windowHandler, configuration, Translator.GetLine("Config.Title"))
     {
-        Open();
+        
     }
 
     protected override void OnDraw()
@@ -70,6 +71,7 @@ internal class AcquisitionConfigWindow : AcquisitionWindow
         }
 
         if (width <= 0) width = ImGui.GetContentRegionAvail().X;
+        else width = width * ImGuiHelpers.GlobalScale;
 
         ImGui.SetNextItemWidth(width);
 

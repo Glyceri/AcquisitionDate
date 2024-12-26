@@ -9,13 +9,7 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class MountAcquirer : AcquirerItem
 {
-    // TEMPORARY
-    public static MountAcquirer Instance { get; private set; }
-
-    public MountAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker)
-    {
-        Instance = this;
-    }
+    public MountAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker) { }
 
     protected override ILodestoneRequest PageDataRequest(string page) => new MountDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
 

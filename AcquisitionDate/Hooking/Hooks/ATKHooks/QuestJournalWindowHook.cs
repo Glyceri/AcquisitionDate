@@ -23,6 +23,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "Journal", HookDetour);
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "ContentsFinder", HookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "RaidFinder", HookDetour);
     }
 
     protected override IDatableList GetList(IDatableData userData)
@@ -70,9 +71,11 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
         tNode->ToggleVisibility(true);
 
-        string contentString = siblingNode->NodeText.ToString().Trim();
+        string contentString = siblingNode->NodeText.ToString().Trim().Replace("\n", string.Empty).Replace("\r", string.Empty);
 
         uint currentID = 0;
+
+        bool stillDraw = true;
 
         if (_lastAddonName == "Journal")
         {
@@ -93,20 +96,24 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
                 currentID += ushort.MaxValue + 1;
             }
         }
-        else if (_lastAddonName == "ContentsFinder")
+        else if (_lastAddonName == "ContentsFinder" || _lastAddonName == "RaidFinder")
         {
             isQuest = false;
             ContentFinderCondition? content = Sheets.GetContentFinderConditionByName(contentString);
+            if (content == null)
+            {
+                stillDraw = false;
+            }
             currentID = content?.RowId ?? 0;
         }
 
-        if (lastID == currentID) return;
+        if (lastID == currentID && currentID != 0) return;
 
         lastID = currentID;
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {currentID}");
 
-        DrawDate(tNode, currentID, true);
+        DrawDate(tNode, currentID, stillDraw);
         journalDetail->SetX((short)(journalDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 

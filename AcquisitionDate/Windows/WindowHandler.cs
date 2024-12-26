@@ -1,6 +1,5 @@
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin;
 using System;
+using Dalamud.Interface.Windowing;
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Windows.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
@@ -9,6 +8,9 @@ using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.Windowing.Components;
 using AcquisitionDate.PetNicknames.Windowing.Windows;
+using AcquisitionDate.Acquisition.Interfaces;
+using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.DirtySystem.Interfaces;
 
 namespace AcquisitionDate.Windows;
 
@@ -22,16 +24,23 @@ internal class WindowHandler : IDisposable
     readonly IAcquisitionServices Services;
     readonly IUserList UserList;
     readonly IDatabase Database;
+    readonly IAcquirerHandler AcquirerHandler;
+    readonly ILodestoneNetworker LodestoneNetworker;
+    readonly IDirtyListener DirtyListener;
 
-    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database)
+    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener)
     {
         WindowSystem = new WindowSystem("AcquisitionDate");
         PluginHandlers.PluginInterface.UiBuilder.Draw += Draw;
         PluginHandlers.PluginInterface.UiBuilder.OpenConfigUi += OpenWindow<AcquisitionConfigWindow>;
+        PluginHandlers.PluginInterface.UiBuilder.OpenMainUi += OpenWindow<AcquiryWindow>;
 
         Services = services;
         UserList = userList;
         Database = database;
+        AcquirerHandler = acquirerHandler;
+        LodestoneNetworker = lodestoneNetworker;
+        DirtyListener = dirtyListener;
 
         ComponentLibrary.Initialise();
 
@@ -43,6 +52,8 @@ internal class WindowHandler : IDisposable
         AddWindow(new AcquisitionDebugWindow(Services, UserList, Database, this, Services.Configuration));
         AddWindow(new AcquisitionConfigWindow(this, Services.Configuration));
         AddWindow(new KofiWindow(this, Services.Configuration));
+        AddWindow(new AcquiryWindow(this, Services.Configuration, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyListener));
+        AddWindow(new SessionTokenWindow(this, Services.Configuration));
     }
 
     void Draw()
@@ -104,6 +115,7 @@ internal class WindowHandler : IDisposable
     {
         PluginHandlers.PluginInterface.UiBuilder.Draw -= Draw;
         PluginHandlers.PluginInterface.UiBuilder.OpenConfigUi -= OpenWindow<AcquisitionConfigWindow>;
+        PluginHandlers.PluginInterface.UiBuilder.OpenMainUi -= OpenWindow<AcquiryWindow>;
 
         ClearAllWindows();
     }
