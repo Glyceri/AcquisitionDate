@@ -120,13 +120,21 @@ internal class AcquiryWindow : AcquisitionWindow
             }
             TextAligner.PopAlignment();
 
-            if (RenameLabel.Draw("Session Token: ", sessionTokenInput == lastSessionTokenInput, ref sessionTokenInput, new Vector2(ImGui.GetContentRegionAvail().X, BarSize)))
+            if (RenameLabel.Draw("Session Token: ", sessionTokenInput == lastSessionTokenInput, ref sessionTokenInput, new Vector2(ImGui.GetContentRegionAvail().X, BarSize), out bool validInput))
             {
                 lastSessionTokenInput = sessionTokenInput;
                 LodestoneNetworker.SetSessionToken(sessionTokenInput);
             }
 
             ImGui.NewLine();
+
+            if (!validInput)
+            {
+                BasicLabel.Draw("Your session token might contain a ... and thus will not be copied completely.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+                BasicLabel.Draw("Drag your network tab all the way to the left and copy the value after the ... disappears.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+
+                ImGui.NewLine();
+            }
 
             TextAligner.Align(TextAlignment.Centre);
             BasicLabel.Draw("!!!   NEVER SHARE YOUR SESSION TOKEN WITH ANYONE   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));

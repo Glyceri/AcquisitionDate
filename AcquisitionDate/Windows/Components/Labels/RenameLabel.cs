@@ -11,8 +11,9 @@ namespace AcquisitionDate.Windows.Components.Labels;
 
 internal static class RenameLabel
 {
-    public static bool Draw(string label, bool activeSave, ref string value, Vector2 size, string tooltipLabel = "", float labelWidth = 140)
+    public static bool Draw(string label, bool activeSave, ref string value, Vector2 size, out bool codeValid, string tooltipLabel = "", float labelWidth = 140)
     {
+        codeValid = true;
         ImGuiStylePtr style = ImGui.GetStyle();
 
         float actualWidth = labelWidth * ImGuiHelpers.GlobalScale;
@@ -58,6 +59,12 @@ internal static class RenameLabel
         }
 
         shouldActivate |= ImGui.InputTextMultiline($"##RenameBar_{WindowHandler.InternalCounter}", ref value, 64, size - new Vector2(actualWidth + style.ItemSpacing.X * 3 + height * 2, 0), ImGuiInputTextFlags.CtrlEnterForNewLine | ImGuiInputTextFlags.EnterReturnsTrue);
+
+        // Lodestone session tokens are 40 chars in length
+        if (value.Length != 40 && value.Length != 0)
+        {
+            codeValid = false;
+        }
 
         if (valueNullOrWhitespace)
         {
