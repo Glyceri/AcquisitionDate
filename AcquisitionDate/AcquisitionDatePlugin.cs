@@ -19,11 +19,14 @@ using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquisitionDate.AcquisitionDate.Commands;
+using System.Reflection;
 
 namespace AcquisitionDate;
 
 public sealed class AcquisitionDatePlugin : IDalamudPlugin
 {
+    public readonly string Version;
+
     internal WindowHandler WindowHandler { get; private set; }
 
     readonly IAcquisitionServices Services;
@@ -41,6 +44,8 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
     public AcquisitionDatePlugin(IDalamudPluginInterface pluginInterface)
     {
+        Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version";
+
         PluginHandlers.Initialise(ref pluginInterface, this);
         Services = new AcquisitionSevices();
 

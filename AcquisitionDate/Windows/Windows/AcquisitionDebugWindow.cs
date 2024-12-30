@@ -1,10 +1,8 @@
-using AcquisitionDate.Acquisition.Elements;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 using System.Collections.Generic;
 using System.Numerics;

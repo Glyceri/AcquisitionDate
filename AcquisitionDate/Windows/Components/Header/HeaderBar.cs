@@ -7,6 +7,7 @@ using AcquisitionDate.Windows;
 using AcquisitionDate;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.AcquisitionDate.Windowing.Windows;
+using AcquisitionDate.Core.Handlers;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Header;
 
@@ -19,6 +20,8 @@ internal static class HeaderBar
     {
         Vector2 contentSize = ImGui.GetContentRegionAvail();
         contentSize.Y = HEADER_BAR_HEIGHT * ImGuiHelpers.GlobalScale;
+
+        Vector2 currentCursorPos = ImGui.GetCursorPos();
 
         if (Listbox.Begin($"##headerbar_{WindowHandler.InternalCounter}", contentSize))
         {
@@ -49,6 +52,14 @@ internal static class HeaderBar
 
             Listbox.End();
         }
+
+        Vector2 newCursorPos = ImGui.GetCursorPos();
+
+        ImGui.SetCursorPos(currentCursorPos + new Vector2(0, contentSize.Y * 0.25f));
+
+        ImGui.Text($"v{PluginHandlers.Plugin.Version}");
+
+        ImGui.SetCursorPos(newCursorPos);
     }
 }
 

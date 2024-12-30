@@ -106,10 +106,10 @@ internal unsafe abstract class DateTextHook : HookableElement
         string? dateString = GetDateTimeString(listID);
         if (dateString.IsNullOrWhitespace()) return finalStillDraw;
 
-        textNode->ToggleVisibility(configSaysVisible);
+        textNode->ToggleVisibility(true);
         textNode->SetText(dateString);
 
-        return configSaysVisible;
+        return true;
     }
 
     protected abstract bool HandleConfig(Configuration config);
