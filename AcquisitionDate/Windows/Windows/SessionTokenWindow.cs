@@ -38,6 +38,7 @@ internal class SessionTokenWindow : AcquisitionWindow
         BasicLabel.Draw(" * A section should now pop up with the tabs:\n   Headers, Preview, Response, Initiator, Timing, Cookies", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 2));
         BasicLabel.Draw("6. Click on the 'Cookies' tab.", size);
         BasicLabel.Draw("7. Find the section that says: 'ldst_sess and copy the value.", size);
+        BasicLabel.Draw(" * If you see a ... after the cookie number,\n   drag the tab to the left until it disappears.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 2));
         BasicLabel.Draw("   !!! NEVER SHARE THIS VALUE WITH ANYONE\n   YES THIS INCLUDES MY PLUGIN TECHNICALLY !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 2));
         BasicLabel.Draw("8. Now paste the session token into the field 'Session Token' in the 'Acquisition Window'", size);
         BasicLabel.Draw("9. After you are done downloading LOG OUT of the lodestone.\nDon't just click it away LOG OUT! This invalidates your session token.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 2));
