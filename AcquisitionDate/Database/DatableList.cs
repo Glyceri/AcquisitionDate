@@ -185,4 +185,6 @@ internal class DatableList : IDatableList
         list.RemoveAt(index);
         array = list.ToArray();
     }
+
+    public uint GetID(int index) => IDs[index];
 }

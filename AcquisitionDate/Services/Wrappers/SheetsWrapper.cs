@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace AcquisitionDate.Services.Wrappers;
 
@@ -333,6 +334,66 @@ internal class SheetsWrapper : ISheets
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
 
             return content;
+        }
+
+        return null;
+    }
+
+    public Achievement? GetAchievementByID(uint id)
+    {
+        foreach (Achievement achievement in achievements)
+        {
+            if (achievement.RowId != id) continue;
+
+            return achievement;
+        }
+
+        return null;
+    }
+
+    public Mount? GetMountByID(uint id)
+    {
+        foreach (Mount mount in mounts)
+        {
+            if (mount.RowId != id) continue;
+
+            return mount;
+        }
+
+        return null;
+    }
+
+    public IGlassesSheetData? GetGlassesByID(uint id)
+    {
+        foreach (IGlassesSheetData glasses in glassesSheetCache)
+        {
+            if (glasses.Model != id) continue;
+
+            return glasses;
+        }
+
+        return null;
+    }
+
+    public Ornament? GetOrnamentByID(uint id)
+    {
+        foreach (Ornament ornament in ornaments)
+        {
+            if (ornament.RowId != id) continue;
+
+            return ornament;
+        }
+
+        return null;
+    }
+
+    public Orchestrion? GetOrchestrionByID(uint id)
+    {
+        foreach (Orchestrion orchestrion in orchestrions)
+        {
+            if (orchestrion.RowId != id) continue;
+
+            return orchestrion;
         }
 
         return null;

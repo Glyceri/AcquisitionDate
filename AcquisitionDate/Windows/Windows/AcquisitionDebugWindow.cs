@@ -1,6 +1,10 @@
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
+using AcquistionDate.PetNicknames.TranslatorSystem;
+using AcquistionDate.PetNicknames.Windowing.Components;
+using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using System;
@@ -49,17 +53,108 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
         }
         else
         {
-            ImGui.LabelText(localUser.Name, "Name: ");
-            ImGui.LabelText(localUser.Homeworld.ToString(), "Homeworld: ");
-            ImGui.LabelText(localUser.Data.HomeworldName.ToString(), "Homeworld Name: ");
-            ImGui.LabelText(localUser.ContentID.ToString(), "ContentID: ");
-            ImGui.LabelText(localUser.LodestoneID?.ToString() ?? "...", "Lodestone ID: ");
+            DrawUser(localUser.Data);
         }
+    }
+
+    void DrawUser(IDatableData user)
+    {
+        ImGui.LabelText(user.Name, "Name: ");
+        ImGui.LabelText(user.Homeworld.ToString(), "Homeworld: ");
+        ImGui.LabelText(user.HomeworldName.ToString(), "Homeworld Name: ");
+        ImGui.LabelText(user.ContentID.ToString(), "ContentID: ");
+        ImGui.LabelText(user.LodestoneID?.ToString() ?? "...", "Lodestone ID: ");
     }
 
     void DrawUserDatabase()
     {
+        IDatableData[] entries = Database.GetEntries();
 
+        for (int i = 0; i < entries.Length; i++)
+        {
+            IDatableData entry = entries[i];
+
+            if (ImGui.CollapsingHeader($"{entry.Name} {entry.HomeworldName}"))
+            {
+                DrawUser(entry);
+                ImGui.Indent();
+                DrawDatableList(entry, entry.AchievementList, "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.QuestList, "Quests", (id) => Services.Sheets.GetQuest(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.MinionList, "Minions", (id) => Services.Sheets.GetCompanion((ushort)id)?.BaseSingular ?? "[Unknown]");
+                DrawDatableList(entry, entry.MountList, "Mounts", (id) => Services.Sheets.GetMountByID(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.ClassLVLList, "Levels", (id) => $"{id}");
+
+                DrawDatableList(entry, entry.FacewearList, "Facewear", (id) => Services.Sheets.GetGlassesByID(id)?.BaseSingular ?? "[Unknown]");
+                DrawDatableList(entry, entry.OrchestrionList, "Orchestrion Roll", (id) => Services.Sheets.GetOrchestrionByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.CardList, "Cards", (id) => $"{id}");
+                DrawDatableList(entry, entry.FashionList, "Fashion", (id) => Services.Sheets.GetOrnamentByID(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.DutyList, "Duties", (id) => Services.Sheets.GetContentFinderCondition((ushort)id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.CardList, "Fishing", (id) => $"{id}");
+                DrawDatableList(entry, entry.SightList, "Sightseeing List", (id) => Services.Sheets.GetAdventureByIndex(id)?.Name.ExtractText() ?? "[Unknown]");
+
+                DrawDatableList(entry, entry.FramersList, "Framing Kits", (id) => $"{id}");
+                DrawDatableList(entry, entry.SecretRecipeBookList, "Secret Recipe Book", (id) => $"{id}");
+                DrawDatableList(entry, entry.BuddyEquipList, "Bardings", (id) => $"{id}");
+                DrawDatableList(entry, entry.UnlockLinkList, "Unlock Link???? (idk what this is)", (id) => $"{id}");
+                DrawDatableList(entry, entry.FolkloreTomeList, "Folklores", (id) => $"{id}");
+                ImGui.Unindent();
+            }
+        }
+    }
+
+    void DrawDatableList(IDatableData data, IDatableList list, string title, Func<uint, string> getElementName)
+    {
+        int listLength = list.Length;
+
+        if (ImGui.CollapsingHeader($"{title} ({listLength})##{data.Name}_{data.HomeworldName}_{title}", ImGuiTreeNodeFlags.Framed))
+        {
+            ImGui.Indent();
+            if (ImGui.BeginTable($"##{data.Name}_{data.HomeworldName}_{title}", 3))
+            {
+                ImGui.TableSetupColumn($"{title} Name", ImGuiTableColumnFlags.WidthFixed, 400 * ImGuiHelpers.GlobalScale);
+                ImGui.TableSetupColumn("Lodestone Date", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("Manual Date", ImGuiTableColumnFlags.WidthFixed);
+
+                ImGui.TableHeadersRow();
+
+                for (int i = 0; i < listLength; i++)
+                {
+                    ImGui.TableNextRow();
+                    bool visible = ImGui.IsItemVisible();
+                    ImGui.TableSetColumnIndex(0);
+
+                    uint elementID = list.GetID(i);
+                    DateTime? lodestoneDate = list.GetDate(elementID, AcquiredDateType.Lodestone);
+                    DateTime? manualDate = list.GetDate(elementID, AcquiredDateType.Manual);
+
+                    if (EraserButton.Draw(new Vector2(25,20), Translator.GetLine("ClearButton.Label"), Translator.GetLine("Acquiry.Clear")))
+                    {
+                        if (list.RemoveDate(elementID))
+                        {
+                            break;
+                        }
+                    }
+
+                    ImGui.SameLine();
+
+                    if (visible)
+                    {
+                        ImGui.Text($"{getElementName?.Invoke(elementID)}");
+                    }
+                    else
+                    {
+                        ImGui.Text($"{elementID}");
+                    }
+                    ImGui.TableSetColumnIndex(1);
+                    ImGui.Text($"{lodestoneDate?.ToString(Services.Configuration.DateParseString()) ?? "[No Date Found]"}");
+                    ImGui.TableSetColumnIndex(2);
+                    ImGui.Text($"{manualDate?.ToString(Services.Configuration.DateParseString()) ?? "[No Date Found]"}");
+                }
+
+                ImGui.EndTable();
+            }
+            ImGui.Unindent();
+        }
     }
 
     public override void OnOpen()

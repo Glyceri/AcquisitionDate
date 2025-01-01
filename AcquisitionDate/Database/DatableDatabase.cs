@@ -65,6 +65,8 @@ internal class DatableDatabase : IDatabase
         return newEntry;
     }
 
+    public IDatableData[] GetEntries() => _entries.ToArray();
+
     public IDatableData? GetEntryNoCreate(ulong contentID)
     {
         int entriesCount = _entries.Count;

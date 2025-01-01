@@ -8,6 +8,8 @@ internal interface IDatableList
     int Length { get; }
     DateTime? LowestDateTime { get; }
 
+    uint GetID(int index);
+
     // Get's the prefferred most accurate date!
     DateTime? GetDate(uint ID);
     DateTime? GetDate(uint ID, AcquiredDateType dateType);
