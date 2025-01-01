@@ -14,7 +14,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public EorzeaIncognitaWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public EorzeaIncognitaWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -57,7 +57,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Adventure notebook clicked index: {selectedIndex}");
 
-        if (DrawDate(tNode, selectedIndex, true))
+        if (DrawDate(tNode, selectedIndex, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, selectedIndex);
         }

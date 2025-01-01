@@ -15,7 +15,7 @@ internal unsafe class MinionWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MinionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public MinionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -67,7 +67,7 @@ internal unsafe class MinionWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Minion Notebook notebook clicked ID: {minionID}");
 
-        if (DrawDate(tNode, minionID, true))
+        if (DrawDate(tNode, minionID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, minionID);
         }

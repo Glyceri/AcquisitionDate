@@ -16,6 +16,7 @@ internal class Configuration : IPluginConfiguration
     public int AcquisitionLanuage = 1;
     public bool ShowPlaceholderDates = true;
     public int FetchDelaySeconds = 0;
+    public bool ShowDatesFromAlts = true;
 
     // UI
 

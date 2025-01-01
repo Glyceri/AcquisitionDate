@@ -17,7 +17,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
     uint lastID = 0;
     bool isQuest = false;
 
-    public QuestJournalWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public QuestJournalWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -113,7 +113,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {currentID}");
 
-        DrawDate(tNode, currentID, stillDraw);
+        DrawDate(tNode, currentID, showAlt: false, stillDraw: stillDraw);
         journalDetail->SetX((short)(journalDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 

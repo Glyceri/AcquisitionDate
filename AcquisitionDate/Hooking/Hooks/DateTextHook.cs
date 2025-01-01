@@ -11,6 +11,8 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Events;
 using Dalamud.Utility;
 using AcquistionDate.PetNicknames.TranslatorSystem;
+using static Dalamud.Interface.Utility.Raii.ImRaii;
+using Microsoft.VisualBasic;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -19,16 +21,18 @@ internal unsafe abstract class DateTextHook : HookableElement
     protected readonly Configuration Configuration;
     protected readonly IUserList UserList;
     protected readonly ISheets Sheets;
+    protected readonly IDatabase Database;
 
     protected AddonEvent _lastEventType;
     protected string _lastAddonName = string.Empty;
     protected uint _lastId = 0;
 
-    public DateTextHook(IUserList userList, ISheets sheets, Configuration configuration)
+    public DateTextHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration)
     {
         Configuration = configuration;
         UserList = userList;
         Sheets = sheets;
+        Database = database;
     }
 
     protected void HookDetour(AddonEvent type, AddonArgs args)
@@ -92,7 +96,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         return null;
     }
 
-    protected bool DrawDate(AtkTextNode* textNode, uint listID, bool stillDraw = false)
+    protected bool DrawDate(AtkTextNode* textNode, uint listID, bool showAlt, bool stillDraw = false)
     {
         if (textNode == null) return false;
 
@@ -104,10 +108,46 @@ internal unsafe abstract class DateTextHook : HookableElement
         textNode->SetText("??/??/????");
 
         string? dateString = GetDateTimeString(listID);
-        if (dateString.IsNullOrWhitespace()) return finalStillDraw;
+        bool noDateFound = dateString.IsNullOrWhitespace();
+
+        if (Configuration.ShowDatesFromAlts && showAlt && noDateFound)
+        {
+            DateTime? earliestTime = null;
+            IDatableData? earliestData = null;
+
+            foreach (IDatableData data in Database.GetEntries())
+            {
+                IDatableList list = GetList(data);
+
+                DateTime? dateTime = list.GetDate(listID);
+                if (dateTime == null) continue;
+
+                earliestTime ??= dateTime;
+                earliestData ??= data;
+                if (earliestTime == null) continue;
+
+                if (earliestTime.Value.Ticks >= dateTime.Value.Ticks) continue;
+
+                earliestTime = dateTime;
+                earliestData = data;
+            }
+
+            dateString = GetDateString(earliestTime);
+            noDateFound = dateString.IsNullOrWhitespace();
+
+            if (UserList.ActiveUser?.Data != earliestData && earliestData != null)
+            {
+                dateString += $" ({earliestData.Name}@{earliestData.HomeworldName}) [ALT]";
+            }
+        }
+
+        if (noDateFound) 
+        {
+            return finalStillDraw; 
+        }
 
         textNode->ToggleVisibility(true);
-        textNode->SetText(dateString);
+        textNode->SetText(dateString!);
 
         return true;
     }
@@ -121,10 +161,22 @@ internal unsafe abstract class DateTextHook : HookableElement
 
         IDatableList list = GetList(localUser.Data);
 
+        return GetDateForList(ID, list);
+    }
+
+    string? GetDateForList(uint ID, IDatableList list)
+    {
         DateTime? dateTime = list.GetDate(ID);
         if (dateTime == null) return null;
 
-        return dateTime.Value.ToString(Configuration.DateParseString()).Replace("-", "/");
+        return GetDateString(dateTime);
+    }
+
+    string? GetDateString(DateTime? date)
+    {
+        if (date == null) return null;
+
+        return date.Value.ToString(Configuration.DateParseString()).Replace("-", "/");
     }
 
     IAddonEventHandle? lastHoverOverEvent;

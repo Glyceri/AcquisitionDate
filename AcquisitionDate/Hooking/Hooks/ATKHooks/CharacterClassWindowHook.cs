@@ -27,7 +27,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
     uint lastIndex = 0;
     bool lastValid = false;
 
-    public CharacterClassWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
+    public CharacterClassWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
     {
         ReceiveEventHook = PluginHandlers.Hooking.HookFromAddress<AddonCharacterClass.Delegates.ReceiveEvent>((nint)AddonCharacterClass.StaticVirtualTablePointer->ReceiveEvent, ReceiveEventDetour);
     }
@@ -100,7 +100,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
 
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-        lastValid = DrawDate(tNode, lastIndex, true);
+        lastValid = DrawDate(tNode, lastIndex, showAlt: false, stillDraw: true);
         tNode2->ToggleVisibility(lastValid);
     }
 

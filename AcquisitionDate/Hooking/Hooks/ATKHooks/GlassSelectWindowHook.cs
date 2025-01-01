@@ -14,7 +14,7 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public GlassSelectWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public GlassSelectWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -68,7 +68,7 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
 
             uint glassesModel = (uint)(lastGlasses?.Model ?? 0);
 
-            if (DrawDate(tNode, glassesModel, true))
+            if (DrawDate(tNode, glassesModel, showAlt: false, stillDraw: true))
             {
                 GiveTooltip(baseAddon, tNode, glassesModel);
             }

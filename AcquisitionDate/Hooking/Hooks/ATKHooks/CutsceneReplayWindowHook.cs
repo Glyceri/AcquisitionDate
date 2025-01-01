@@ -19,7 +19,7 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
     bool isQuest = false;
 
-    public CutsceneReplayWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public CutsceneReplayWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -95,7 +95,7 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {questID}");
 
-        if (DrawDate(tNode, questID, true))
+        if (DrawDate(tNode, questID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
             cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)

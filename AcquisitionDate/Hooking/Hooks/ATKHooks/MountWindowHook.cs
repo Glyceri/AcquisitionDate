@@ -15,7 +15,7 @@ internal unsafe class MountWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MountWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public MountWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -59,7 +59,7 @@ internal unsafe class MountWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Mount Notebook notebook clicked ID: {mountID}");
 
-        if (DrawDate(tNode, mountID, true))
+        if (DrawDate(tNode, mountID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, mountID);
         }

@@ -49,6 +49,7 @@ internal static class Translator
         { "Config.ShowPlaceholderDates",        "Show Placeholder Dates" },
         { "Config.Toggle",                      "Quick Buttons toggle instead of open." },
         { "Config.Kofi",                        "Show Ko-fi Button." },
+        { "Config.DrawAlts",                    "Show Dates for Alt-Accounts if they are available." },
 
         { "Kofi.Title",                         "Ko-fi" },
         { "Kofi.Line1",                         "This is about real life money." },
@@ -97,6 +98,7 @@ internal static class Translator
         { "Config.ShowPlaceholderDates",        "Platzhalter für Erwerbsdaten anzeigen" },
         { "Config.Toggle",                      "Schnellschaltflächen werden umgeschaltet statt geöffnet." },
         { "Config.Kofi",                        "Ko-Fi-Button anzeigen." },
+        { "Config.DrawAlts",                    "Erwerbsdatum für Alt-Accounts anzeigen wann sie verfügbar sind." },
 
         { "Kofi.Title",                         "Ko-fi" },
         { "Kofi.Line1",                         "Hier geht es um echtes Geld." },

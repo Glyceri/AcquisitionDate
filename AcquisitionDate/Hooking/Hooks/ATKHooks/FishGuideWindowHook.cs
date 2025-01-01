@@ -17,7 +17,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
 
     uint lastID = 0;
 
-    public FishGuideWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
+    public FishGuideWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
     {
 
     }
@@ -105,7 +105,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 return;
             }
 
-            if (DrawDate(tNode, lastID, true))
+            if (DrawDate(tNode, lastID, showAlt: false, stillDraw: true))
             {
                 GiveTooltip(baseAddon, tNode, lastID);
             }

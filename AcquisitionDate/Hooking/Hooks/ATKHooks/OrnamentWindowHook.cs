@@ -16,7 +16,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public OrnamentWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public OrnamentWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -63,7 +63,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Ornament Notebook clicked ID: {ornamentID}");
 
-        if (DrawDate(tNode, ornamentID, true))
+        if (DrawDate(tNode, ornamentID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, ornamentID);
         }

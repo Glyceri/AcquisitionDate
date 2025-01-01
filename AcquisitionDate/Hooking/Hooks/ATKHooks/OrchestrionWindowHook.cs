@@ -39,7 +39,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         ];
     uint[] lastOrchestrionDate = new uint[20];
 
-    public OrchestrionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public OrchestrionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -99,7 +99,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
 
             lastOrchestrionDate[i] = orchestrionDate;
 
-            if (DrawDate(tNode, orchestrionDate))
+            if (DrawDate(tNode, orchestrionDate, showAlt: false, stillDraw: false))
             {
                 textNode->SetYFloat(7);
                 GiveTooltip(baseAddon, tNode, orchestrionDate);
