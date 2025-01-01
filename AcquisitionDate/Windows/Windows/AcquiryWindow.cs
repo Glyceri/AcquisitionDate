@@ -16,9 +16,9 @@ namespace AcquisitionDate.Windows.Windows;
 
 internal class AcquiryWindow : AcquisitionWindow
 {
-    protected override Vector2 MinSize { get; } = new Vector2(400, 765);
+    protected override Vector2 MinSize { get; } = new Vector2(400, 788);
     protected override Vector2 MaxSize { get; } = new Vector2(600, 940);
-    protected override Vector2 DefaultSize { get; } = new Vector2(600, 765);
+    protected override Vector2 DefaultSize { get; } = new Vector2(600, 788);
     protected override bool HasHeaderBar { get; } = true;
 
     readonly IUserList UserList;
@@ -158,6 +158,7 @@ internal class AcquiryWindow : AcquisitionWindow
 
         if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
         {
+            BasicLabel.Draw($"Active User: {currentActiveData.Name}@{currentActiveData.HomeworldName}", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             BasicLabel.Draw("Disable your VPN... sorry", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
 
             DrawBar();
