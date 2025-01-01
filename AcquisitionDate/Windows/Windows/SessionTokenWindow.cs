@@ -26,6 +26,7 @@ internal class SessionTokenWindow : AcquisitionWindow
 
         Vector2 size = new Vector2(ImGui.GetContentRegionAvail().X, BarSize);
 
+        BasicLabel.Draw("!!! Disable your VPN !!!", size);
         BasicLabel.Draw("1. Log in to the lodestone.", size);
         BasicLabel.Draw("   !!! MAKE SURE YOU ARE ON THE SAME CHARACTER/ACCOUNT\n   AS YOU ARE LOGGED IN ON IN GAME !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 2));
         BasicLabel.Draw("2. Right click anything and click inspect element.", size);

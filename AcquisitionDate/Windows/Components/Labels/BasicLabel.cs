@@ -8,8 +8,6 @@ internal static class BasicLabel
 {
     public static unsafe void Draw(string label, Vector2 size, string tooltip = "")
     {
-        ImGuiStylePtr style = ImGui.GetStyle();
-
         Vector4* colour = ImGui.GetStyleColorVec4(ImGuiCol.ButtonActive);
 
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, *colour);

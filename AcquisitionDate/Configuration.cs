@@ -15,6 +15,7 @@ internal class Configuration : IPluginConfiguration
     public int DateType = 0;
     public int AcquisitionLanuage = 1;
     public bool ShowPlaceholderDates = true;
+    public int FetchDelaySeconds = 0;
 
     // UI
 
@@ -94,5 +95,28 @@ internal class Configuration : IPluginConfiguration
         $"{Translator.GetLine("German")}",
         $"{Translator.GetLine("French")}",
         $"{Translator.GetLine("Japanese")}",
+    ];
+
+    public float FetchDelayInSeconds =>
+        Math.Clamp
+        (
+            UnclampedFetchDelayInSeconds,   // Get the fetch delay in seconds
+            1.5f,                           // This ensure the minimal delay is always 1.5!
+            10.0f                           // This ensures that the maximum delay is always 10 (not relevant, but more than 10 seems craaazy)
+        ); 
+
+    float UnclampedFetchDelayInSeconds =>
+        FetchDelaySeconds * 0.5f + 1.5f;
+
+    public string[] FetchDelay =>
+    [
+        $"1.5s",
+        $"2s",
+        $"2.5s",
+        $"3s",
+        $"3.5s",
+        $"4s",
+        $"4.5s",
+        $"5s",
     ];
 }

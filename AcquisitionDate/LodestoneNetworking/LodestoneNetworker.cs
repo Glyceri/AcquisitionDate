@@ -17,10 +17,6 @@ namespace AcquisitionDate.LodestoneNetworking;
 
 internal class LodestoneNetworker : ILodestoneNetworker
 {
-    // 1.5 seconds between release.
-    // SE times out your request if you send more than 1 a second
-    const float TIME_BETWEEN_RELEASES = 1.5f;
-
     readonly HttpClient HttpClient = new HttpClient();
 
     public LodestoneRegion PreferredRegion { get; private set; } = LodestoneRegion.Germany;
@@ -30,10 +26,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
     float lodestoneQueueReleaseTimer = 0;
 
     readonly IDirtyListener DirtyListener;
+    readonly Configuration Configuration;
 
-    public LodestoneNetworker(IDirtyListener dirtyListener)
+    string _sessionToken = string.Empty;
+
+    public LodestoneNetworker(IDirtyListener dirtyListener, Configuration configuration)
     {
         DirtyListener = dirtyListener;
+        Configuration = configuration;
 
         PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
         {
@@ -66,8 +66,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public void SetSessionToken(string sessionToken)
     {
+        _sessionToken = sessionToken;
         HttpClient.DefaultRequestHeaders.Remove("Cookie");
         HttpClient.DefaultRequestHeaders.Add("Cookie", $"ldst_sess={sessionToken}");
+    }
+
+    public string GetSessionToken()
+    {
+        return _sessionToken;
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)
@@ -125,7 +131,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
             queueElement.Tick(deltaTime);
         }
 
-        if (lodestoneQueueReleaseTimer < TIME_BETWEEN_RELEASES) return;
+        if (lodestoneQueueReleaseTimer < Configuration.FetchDelayInSeconds) return;
         lodestoneQueueReleaseTimer = 0;
 
         for (int i = 0; i < _queueElements.Count; i++)
@@ -156,7 +162,14 @@ internal class LodestoneNetworker : ILodestoneNetworker
         for (int i = 0; i < queueCount; i++)
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
-            queueElement.Dispose(); // This also calls the cancellation token c:
+            try
+            {
+                queueElement.Dispose(); // This also calls the cancellation token c:
+            }
+            catch (Exception ex)
+            {
+                PluginHandlers.PluginLog.Error("Error in disposal of queue element", ex);
+            }
         }
 
         _queueElements.Clear();

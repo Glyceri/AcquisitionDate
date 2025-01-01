@@ -15,4 +15,5 @@ internal interface ILodestoneNetworker : IDisposable, IUpdatable
     ILodestoneQueueElement AddElementToQueue(Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string URL);
 
     void SetSessionToken(string sessionToken);
+    string GetSessionToken();
 }
