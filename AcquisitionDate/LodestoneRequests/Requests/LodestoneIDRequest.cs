@@ -1,8 +1,10 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.Services.Interfaces;
 using HtmlAgilityPack;
 using System;
+using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests;
 
@@ -62,5 +64,9 @@ internal class LodestoneIDRequest : LodestoneRequest
         Data.SetLodestoneID(lodestoneID.Value);
     }
 
-    public override string GetURL() => $"/lodestone/character/?q={Data.Name.Replace(" ", "+")}&worldname={Data.HomeworldName}";
+    public override string GetURL()
+    {
+        PluginHandlers.PluginLog.Verbose($"/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}");
+        return $"/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}";
+    }
 }
