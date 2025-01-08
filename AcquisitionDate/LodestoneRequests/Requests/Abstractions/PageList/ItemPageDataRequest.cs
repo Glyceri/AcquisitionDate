@@ -4,6 +4,7 @@ using AcquisitionDate.LodestoneData;
 using AcquisitionDate.Services.Interfaces;
 using HtmlAgilityPack;
 using System;
+using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageList;
 
@@ -37,7 +38,7 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
         HtmlNode? labelNode = HtmlParserHelper.GetNode(rootNode, $"{BaseName}__header__label");
         if (labelNode == null) return;
 
-        string itemName = labelNode.InnerText;
+        string itemName = HttpUtility.HtmlDecode(labelNode.InnerText);
 
         uint? itemID = GetIDFromString(itemName);
         if (itemID == null) return;

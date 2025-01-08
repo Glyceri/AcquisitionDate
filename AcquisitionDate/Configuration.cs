@@ -4,6 +4,7 @@ using AcquisitionDate.Serializiation;
 using Dalamud.Configuration;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
+using Newtonsoft.Json;
 
 namespace AcquisitionDate;
 
@@ -46,7 +47,12 @@ internal class Configuration : IPluginConfiguration
 
     public SerializableUser[]? SerializableUsers { get; set; } = null;
 
+    #region HELPERS
+
+    [JsonIgnore]
     IDatabase? Database;
+
+    [JsonIgnore]
     bool hasSetUp = false;
 
     public void Initialise(IDatabase database)
@@ -79,8 +85,10 @@ internal class Configuration : IPluginConfiguration
         _ => "dd/MM/yyyy"       // Day   / Month / Year
     };
 
+    [JsonIgnore]
     public AcquisitionDateLanguage GetLanguage => (AcquisitionDateLanguage)AcquisitionLanuage;
 
+    [JsonIgnore]
     public string[] DateFormatString =>
     [
         $"{Translator.GetLine("Day")}/{Translator.GetLine("Month")}/{Translator.GetLine("Year")}",
@@ -89,6 +97,7 @@ internal class Configuration : IPluginConfiguration
         $"{Translator.GetLine("Year")}/{Translator.GetLine("Day")}/{Translator.GetLine("Month")}",
     ];
 
+    [JsonIgnore]
     public string[] Languages =>
     [
         $"{Translator.GetLine("Default")}",
@@ -98,17 +107,20 @@ internal class Configuration : IPluginConfiguration
         $"{Translator.GetLine("Japanese")}",
     ];
 
+    [JsonIgnore]
     public float FetchDelayInSeconds =>
         Math.Clamp
         (
             UnclampedFetchDelayInSeconds,   // Get the fetch delay in seconds
             1.5f,                           // This ensure the minimal delay is always 1.5!
             10.0f                           // This ensures that the maximum delay is always 10 (not relevant, but more than 10 seems craaazy)
-        ); 
+        );
 
+    [JsonIgnore]
     float UnclampedFetchDelayInSeconds =>
         FetchDelaySeconds * 0.5f + 1.5f;
 
+    [JsonIgnore]
     public string[] FetchDelay =>
     [
         $"1.5s",
@@ -120,4 +132,5 @@ internal class Configuration : IPluginConfiguration
         $"4.5s",
         $"5s",
     ];
+    #endregion
 }

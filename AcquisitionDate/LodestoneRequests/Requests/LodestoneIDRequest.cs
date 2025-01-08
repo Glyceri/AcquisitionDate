@@ -21,8 +21,7 @@ internal class LodestoneIDRequest : LodestoneRequest
 
     public override void HandleFailure(Exception exception)
     {
-        // Maybe Don't do this... idk yet
-        Data.HasSearchedLodestoneID = true;
+        PluginHandlers.PluginLog.Error("Error in finding lodestone ID", exception);
     }
 
     public override void HandleSuccess(HtmlDocument document)
@@ -38,7 +37,7 @@ internal class LodestoneIDRequest : LodestoneRequest
         HtmlNode? nameNode = HtmlParserHelper.GetNode(entryNode, "entry__name");
         if (nameNode == null) return;
 
-        string userName = nameNode.InnerText;
+        string userName = HttpUtility.HtmlDecode(nameNode.InnerText);
 
         HtmlNode? worldNode = HtmlParserHelper.GetNode(entryNode, "entry__world");
         if (worldNode == null) return;
@@ -66,7 +65,7 @@ internal class LodestoneIDRequest : LodestoneRequest
 
     public override string GetURL()
     {
-        PluginHandlers.PluginLog.Verbose($"/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}");
+        PluginHandlers.PluginLog.Verbose($"Searching for user with the url: '/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}'");
         return $"/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}";
     }
 }

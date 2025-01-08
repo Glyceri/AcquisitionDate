@@ -4,6 +4,7 @@ using Dalamud.Utility;
 using HtmlAgilityPack;
 using System;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
 
@@ -15,7 +16,7 @@ internal abstract class ListPageCountRequest : PageCountRequest
 
     protected int? GetPageCount(HtmlNode pageCountNode)
     {
-        string pageText = pageCountNode.InnerText;
+        string pageText = HttpUtility.HtmlDecode(pageCountNode.InnerText);
         if (pageText.IsNullOrWhitespace()) return null;
 
         Match match = regex.Match(pageText);
