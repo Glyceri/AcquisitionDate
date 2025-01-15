@@ -16,6 +16,12 @@ internal class AchievementAcquirer : AcquirerCounter
     
     void OnAchievementData(AchievementData data) 
     {
+        // This is the chocobo quest, a failsafe because chocobo mount is peepeepoopoo
+        if (data.AchievementID == 66698)
+        {
+            _currentUser?.MountList.SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        }
+
         _currentUser?.AchievementList.SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 

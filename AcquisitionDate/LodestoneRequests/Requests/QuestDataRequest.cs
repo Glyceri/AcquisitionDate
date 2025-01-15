@@ -81,13 +81,37 @@ internal class QuestDataRequest : CharacterRequest
             questsThatFit.Add((qName.Length, quest));
         }
 
-        if (questsThatFit.Count == 0) return;
+        if (questsThatFit.Count == 0) 
+        { 
+            return;
+        }
+        else if (questsThatFit.Count == 1)
+        {
+            uint rowID = questsThatFit[0].validQuest.RowId;
 
-        questsThatFit.Sort((quest1, quest2) => quest1.size.CompareTo(quest2.size));
+            await PluginHandlers.Framework.Run(() => ContinuousSuccessCallback?.Invoke(new QuestData(rowID, time)), tokenSource.Token);
+        }
+        else
+        {
+            questsThatFit.Sort((quest1, quest2) => quest1.size.CompareTo(quest2.size));
 
-        uint rowID = questsThatFit[questsThatFit.Count - 1].validQuest.RowId;
+            Quest finalQuest = questsThatFit[questsThatFit.Count - 1].validQuest;
+            string finalQuestName = finalQuest.Name.ExtractText();
 
-        await PluginHandlers.Framework.Run(() => ContinuousSuccessCallback?.Invoke(new QuestData(rowID, time)), tokenSource.Token);
+            List<uint> allFinalRowIDS = new List<uint>();
+
+            for (int i = 0; i < questsThatFit.Count; i++)
+            {
+                if (questsThatFit[i].validQuest.Name.ExtractText() != finalQuestName) continue;
+
+                allFinalRowIDS.Add(questsThatFit[i].validQuest.RowId);
+            }
+
+            foreach (uint rowID in allFinalRowIDS)
+            {
+                await PluginHandlers.Framework.Run(() => ContinuousSuccessCallback?.Invoke(new QuestData(rowID, time)), tokenSource.Token);
+            }
+        }       
     }
 
     public override string GetURL() =>  base.GetURL() + $"quest/?page={Page}#anchor_quest";
