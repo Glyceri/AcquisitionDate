@@ -35,6 +35,7 @@ internal class DatableData : IDatableData
     public IDatableList BuddyEquipList { get; }
     public IDatableList UnlockLinkList { get; }
     public IDatableList FolkloreTomeList { get; }
+    public IDatableList EmoteList { get; }
 
     readonly IAcquisitionServices Services;
     readonly IDirtySetter DirtySetter;
@@ -62,7 +63,8 @@ internal class DatableData : IDatableData
         IDatableList secretRecipeList,
         IDatableList buddyEquipList,
         IDatableList unlockLinkList,
-        IDatableList folkloreList)
+        IDatableList folkloreList,
+        IDatableList emoteList)
     {
         Services = services;
         DirtySetter = dirtySetter;
@@ -92,6 +94,7 @@ internal class DatableData : IDatableData
         BuddyEquipList = buddyEquipList;
         UnlockLinkList = unlockLinkList;
         FolkloreTomeList = folkloreList;
+        EmoteList = emoteList;
     }
 
     public DatableData(IAcquisitionServices services, IDirtySetter dirtySetter, string name, ushort homeworld, ulong contentID, ulong? lodestoneID)
@@ -124,6 +127,7 @@ internal class DatableData : IDatableData
         BuddyEquipList = new DatableList(DirtySetter);
         UnlockLinkList = new DatableList(DirtySetter);
         FolkloreTomeList = new DatableList(DirtySetter);
+        EmoteList = new DatableList(DirtySetter);
     }
 
     public void UpdateEntry(IDatableUser datableUser)

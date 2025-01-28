@@ -49,7 +49,8 @@ internal class DatableDatabase : IDatabase
                 new DatableList(DirtySetter, user.SecretRecipeBookList),
                 new DatableList(DirtySetter, user.BuddyEquipList),
                 new DatableList(DirtySetter, user.UnlockLinkList),
-                new DatableList(DirtySetter, user.FolkloreTomeList));
+                new DatableList(DirtySetter, user.FolkloreTomeList),
+                new DatableList(DirtySetter, user.EmoteList));
 
             _entries.Add(newData);
         }

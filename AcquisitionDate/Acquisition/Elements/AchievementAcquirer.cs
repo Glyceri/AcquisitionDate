@@ -3,16 +3,31 @@ using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
+using AcquisitionDate.Parser.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements;
 
 internal class AchievementAcquirer : AcquirerCounter
 {
-    public AchievementAcquirer(ILodestoneNetworker networker) : base(networker) { }
+    public AchievementAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser) { }
 
-    protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest(_currentUser, OnPageCountData);
+    protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest
+    (
+        AcquistionParser.AchievementListPageCountParser, 
+        _currentUser, 
+        OnPageCountData
+    );
 
-    protected override ILodestoneRequest DataRequest(int page) => new AchievementDateRequest(_currentUser, page, OnAchievementData, OnPageComplete, OnFailure);
+    protected override ILodestoneRequest DataRequest(int page) => new AchievementDateRequest
+    (
+        AcquistionParser.AchievementListParser, 
+        AcquistionParser.AchievementElementParser, 
+        _currentUser, 
+        page, 
+        OnAchievementData, 
+        OnPageComplete, 
+        OnFailure
+    );
     
     void OnAchievementData(AchievementData data) 
     {

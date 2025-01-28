@@ -3,7 +3,6 @@ using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.TranslatorSystem;
-using AcquistionDate.PetNicknames.Windowing.Components;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
@@ -76,6 +75,10 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
             if (ImGui.CollapsingHeader($"{entry.Name} {entry.HomeworldName}"))
             {
+                if (ImGui.Button("SAVE"))
+                {
+                    Services.Configuration.Save();
+                }
                 DrawUser(entry);
                 ImGui.Indent();
                 DrawDatableList(entry, entry.AchievementList, "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");

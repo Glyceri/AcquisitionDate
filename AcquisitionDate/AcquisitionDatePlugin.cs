@@ -20,6 +20,8 @@ using AcquisitionDate.DirtySystem;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquisitionDate.AcquisitionDate.Commands;
 using System.Reflection;
+using AcquisitionDate.Parser.Interfaces;
+using AcquisitionDate.Parser;
 
 namespace AcquisitionDate;
 
@@ -29,6 +31,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
     internal WindowHandler WindowHandler { get; private set; }
 
+    readonly IAcquisitionParser AcquistionParser;
     readonly IAcquisitionServices Services;
     readonly IUpdateHandler UpdateHandler;
     readonly ILodestoneNetworker LodestoneNetworker;
@@ -49,6 +52,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         PluginHandlers.Initialise(ref pluginInterface, this);
         Services = new AcquisitionSevices();
 
+        AcquistionParser = new AcquisitionParser(Services.Sheets);
         Translator.Initialise(Services.Configuration);
 
         DirtyHandler = new DirtyHandler();
@@ -59,8 +63,8 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
         LodestoneNetworker = new LodestoneNetworker(DirtyHandler, Services.Configuration);
         HookHandler = new HookHandler(Services, UserList, Database, DirtyHandler);
-        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, Services, SaveHandler, HookHandler);
-        AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker);
+        UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, AcquistionParser, SaveHandler, HookHandler);
+        AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker, AcquistionParser);
         WindowHandler = new WindowHandler(Services, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler);
 
         CommandHandler = new CommandHandler(Services.Configuration, WindowHandler);
@@ -70,6 +74,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
 
     public void Dispose()
     {
+        AcquistionParser?.Dispose();
         CommandHandler?.Dispose();
         HookHandler?.Dispose();
         WindowHandler?.Dispose();

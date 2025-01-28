@@ -2,6 +2,7 @@
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using System;
 
 namespace AcquisitionDate.Acquisition.Elements.Bases;
@@ -11,7 +12,7 @@ internal abstract class AcquirerCounter : AcquirerBase
     protected int internalCounter = 0;
     protected int maxCounter = 0;
 
-    protected AcquirerCounter(ILodestoneNetworker networker) : base(networker)
+    protected AcquirerCounter(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser)
     {
     }
 

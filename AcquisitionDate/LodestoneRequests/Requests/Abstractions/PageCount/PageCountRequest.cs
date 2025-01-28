@@ -1,7 +1,6 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
-using HtmlAgilityPack;
 using System;
 
 namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
@@ -9,8 +8,6 @@ namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
 internal abstract class PageCountRequest : CharacterRequest
 {
     readonly Action<PageCountData?> PageCountCallback;
-
-    protected abstract int Outcome { get; set; }
 
     public PageCountRequest(IDatableData data, Action<PageCountData?> pageCountCallback) : base(data)
     {
@@ -23,20 +20,5 @@ internal abstract class PageCountRequest : CharacterRequest
         PageCountCallback?.Invoke(null);
     }
 
-    public sealed override void HandleSuccess(HtmlDocument document)
-    {
-        var successfullParse = OnSuccess(document);
-
-        if (!successfullParse)
-        {
-            HandleFailure(new Exception("Failed to parse document"));
-            return;
-        }
-
-        CallbackOutcome();
-    }
-
-    protected abstract bool OnSuccess(HtmlDocument document);
-
-    void CallbackOutcome() => PageCountCallback?.Invoke(new PageCountData(Outcome));
+    protected void CallbackOutcome(int count) => PageCountCallback?.Invoke(new PageCountData(count));
 }

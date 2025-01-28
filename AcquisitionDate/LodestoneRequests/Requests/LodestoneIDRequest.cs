@@ -1,7 +1,7 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.HtmlParser;
-using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Parser.Elements;
+using AcquisitionDate.Parser.Structs;
 using HtmlAgilityPack;
 using System;
 using System.Web;
@@ -11,12 +11,12 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 internal class LodestoneIDRequest : LodestoneRequest
 {
     readonly IDatableData Data;
-    readonly ISheets Sheets;
+    readonly LodestoneIDParser LodestoneIDParser;
 
-    public LodestoneIDRequest(IDatableData datableData, ISheets sheets)
+    public LodestoneIDRequest(LodestoneIDParser lodestoneIDParser, IDatableData datableData)
     {
+        LodestoneIDParser = lodestoneIDParser;
         Data = datableData;
-        Sheets = sheets;
     }    
 
     public override void HandleFailure(Exception exception)
@@ -28,39 +28,14 @@ internal class LodestoneIDRequest : LodestoneRequest
     {
         HtmlNode rootNode = document.DocumentNode;
 
-        HtmlNode? listNode = HtmlParserHelper.GetNode(rootNode, "ldst__window");
-        if (listNode == null) return;
+        LodestoneIDParser.Parse(rootNode, OnData, HandleFailure);
+    }
 
-        HtmlNode? entryNode = HtmlParserHelper.GetNode(listNode, "entry");
-        if (entryNode == null) return;
+    void OnData(LodestoneParseData lodestoneData)
+    {
+        if (!Data.Name.Equals(lodestoneData.UserName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)lodestoneData.Homeworld) return;
 
-        HtmlNode? nameNode = HtmlParserHelper.GetNode(entryNode, "entry__name");
-        if (nameNode == null) return;
-
-        string userName = HttpUtility.HtmlDecode(nameNode.InnerText);
-
-        HtmlNode? worldNode = HtmlParserHelper.GetNode(entryNode, "entry__world");
-        if (worldNode == null) return;
-
-        string[] splitArr = worldNode.InnerText.Split(' ');
-        if (splitArr.Length != 2) return;
-
-        string worldName = splitArr[0];
-
-        uint? worldID = Sheets.GetWorldID(worldName);
-        if (worldID == null) return;
-
-        HtmlNode? linkNode = HtmlParserHelper.GetNode(entryNode, "entry__link");
-        if (linkNode == null) return;
-
-        string IDvalue = linkNode.GetAttributeValue("href", string.Empty);
-
-        uint? lodestoneID = HtmlParserHelper.GetValueFromDashedLink(IDvalue);
-        if (lodestoneID == null) return;
-
-        if (!Data.Name.Equals(userName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)worldID.Value) return;
-
-        Data.SetLodestoneID(lodestoneID.Value);
+        Data.SetLodestoneID(lodestoneData.LodestoneID);
     }
 
     public override string GetURL()

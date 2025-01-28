@@ -1,4 +1,5 @@
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Serializiation;
 using System;
 
 namespace AcquisitionDate.Database.Interfaces;
@@ -16,4 +17,6 @@ internal interface IDatableList
     void SetDate(uint ID, DateTime? value, AcquiredDateType dateType);
     bool RemoveDate(uint ID, AcquiredDateType dateType);
     bool RemoveDate(uint ID);
+
+    SerializableList Serialise();
 }

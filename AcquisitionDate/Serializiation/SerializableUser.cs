@@ -7,101 +7,82 @@ namespace AcquisitionDate.Serializiation;
 [Serializable]
 internal class SerializableUser
 {
-    public readonly ulong ContentID;
-    public readonly ulong? LodestoneID;
-    public readonly string Name;
-    public readonly ushort Homeworld;
+    [JsonProperty] public ulong ContentID                       { get; set; }
+    [JsonProperty] public ulong? LodestoneID                    { get; set; }
+    [JsonProperty] public string Name                           { get; set; }
+    [JsonProperty] public ushort Homeworld                      { get; set; }
 
-    public readonly SerializableList AchievementList;
-    public readonly SerializableList QuestList;
-    public readonly SerializableList MinionList;
-    public readonly SerializableList MountList;
-    public readonly SerializableList FacewearList;
-    public readonly SerializableList OrchestrionList;
-    public readonly SerializableList ClassLVLList;
-    public readonly SerializableList CardList;
-    public readonly SerializableList FashionList;
-    public readonly SerializableList DutyList;
-    public readonly SerializableList FishingList;
-    public readonly SerializableList SightList;
-    public readonly SerializableList FramersList;
-    public readonly SerializableList SecretRecipeBookList; //Idk what this is tbf, but im tracking it c:
-    public readonly SerializableList BuddyEquipList;
-    public readonly SerializableList UnlockLinkList; // Riding maps, blu totems, emotes/dances, hairstyles
-    public readonly SerializableList FolkloreTomeList;
+    [JsonProperty] public SerializableList AchievementList      { get; set; }
+    [JsonProperty] public SerializableList QuestList            { get; set; }
+    [JsonProperty] public SerializableList MinionList           { get; set; }
+    [JsonProperty] public SerializableList MountList            { get; set; }
+    [JsonProperty] public SerializableList FacewearList         { get; set; }
+    [JsonProperty] public SerializableList OrchestrionList      { get; set; }
+    [JsonProperty] public SerializableList ClassLVLList         { get; set; }
+    [JsonProperty] public SerializableList CardList             { get; set; }
+    [JsonProperty] public SerializableList FashionList          { get; set; }
+    [JsonProperty] public SerializableList DutyList             { get; set; }
+    [JsonProperty] public SerializableList FishingList          { get; set; }
+    [JsonProperty] public SerializableList SightList            { get; set; }
+    [JsonProperty] public SerializableList FramersList          { get; set; }
+    [JsonProperty] public SerializableList SecretRecipeBookList { get; set; } //Idk what this is tbf, but im tracking it c:
+    [JsonProperty] public SerializableList BuddyEquipList       { get; set; }
+    [JsonProperty] public SerializableList UnlockLinkList       { get; set; } // Riding maps, blu totems, emotes/dances, hairstyles
+    [JsonProperty] public SerializableList FolkloreTomeList     { get; set; }
+    [JsonProperty] public SerializableList EmoteList            { get; set; }
 
-    [JsonConstructor]
-    public SerializableUser(
-        ulong contentId, 
-        ulong? lodestoneID, 
-        string name, 
-        ushort homeworld, 
-        SerializableList achievementList, 
-        SerializableList questList, 
-        SerializableList minionList, 
-        SerializableList mountList,
-        SerializableList facewearList,
-        SerializableList orchestrionList,
-        SerializableList classLVLList,
-        SerializableList cardList,
-        SerializableList fashionList,
-        SerializableList dutyList,
-        SerializableList fishingList,
-        SerializableList sightList,
-        SerializableList framersList,
-        SerializableList secretRecipeBookList,
-        SerializableList buddyEquipList,
-        SerializableList unlockLinkList,
-        SerializableList folkloreTomeList)
+    public SerializableUser()
     {
-        ContentID = contentId;
-        LodestoneID = lodestoneID;
-        Name = name;
-        Homeworld = homeworld;
+        ContentID               = 0;
+        LodestoneID             = null;
+        Name                    = string.Empty;
+        Homeworld               = 0;
 
-        AchievementList = achievementList;
-        QuestList = questList;
-        MinionList = minionList;
-        MountList = mountList;
-        FacewearList = facewearList;
-        OrchestrionList = orchestrionList;
-        ClassLVLList = classLVLList;
-        CardList = cardList;
-        FashionList = fashionList;
-        DutyList = dutyList;
-        FishingList = fishingList;
-        SightList = sightList;
-        FramersList = framersList;
-        SecretRecipeBookList = secretRecipeBookList;
-        BuddyEquipList = buddyEquipList;
-        UnlockLinkList = unlockLinkList;
-        FolkloreTomeList = folkloreTomeList;
+        AchievementList         = SerializableList.CreateEmpty();
+        QuestList               = SerializableList.CreateEmpty();
+        MinionList              = SerializableList.CreateEmpty();
+        MountList               = SerializableList.CreateEmpty();
+        FacewearList            = SerializableList.CreateEmpty();
+        OrchestrionList         = SerializableList.CreateEmpty();
+        ClassLVLList            = SerializableList.CreateEmpty();
+        CardList                = SerializableList.CreateEmpty();
+        FashionList             = SerializableList.CreateEmpty();
+        DutyList                = SerializableList.CreateEmpty();
+        FishingList             = SerializableList.CreateEmpty();
+        SightList               = SerializableList.CreateEmpty();
+        FramersList             = SerializableList.CreateEmpty();
+        SecretRecipeBookList    = SerializableList.CreateEmpty();
+        BuddyEquipList          = SerializableList.CreateEmpty();
+        UnlockLinkList          = SerializableList.CreateEmpty();
+        FolkloreTomeList        = SerializableList.CreateEmpty();
+        EmoteList               = SerializableList.CreateEmpty();
     }
 
     public SerializableUser(IDatableData data)
     {
-        ContentID = data.ContentID;
-        LodestoneID = data.LodestoneID;
-        Name = data.Name;
-        Homeworld = data.Homeworld;
+        ContentID               = data.ContentID;
+        LodestoneID             = data.LodestoneID;
+        Name                    = data.Name;
+        Homeworld               = data.Homeworld;
 
-        AchievementList = new SerializableList(data.AchievementList);
-        QuestList = new SerializableList(data.QuestList);
-        MinionList = new SerializableList(data.MinionList);
-        MountList = new SerializableList(data.MountList);
+        AchievementList         = data.AchievementList      .Serialise();
+        QuestList               = data.QuestList            .Serialise();
+        MinionList              = data.MinionList           .Serialise();
+        MountList               = data.MountList            .Serialise();
 
-        FacewearList = new SerializableList(data.FacewearList);
-        OrchestrionList = new SerializableList(data.OrchestrionList);
-        ClassLVLList = new SerializableList(data.ClassLVLList);
-        CardList = new SerializableList(data.CardList);
-        FashionList = new SerializableList(data.FashionList);
-        DutyList = new SerializableList(data.DutyList);
-        FishingList = new SerializableList(data.FishingList);
-        SightList = new SerializableList(data.SightList);
-        FramersList = new SerializableList(data.FramersList);
-        SecretRecipeBookList = new SerializableList(data.SecretRecipeBookList);
-        BuddyEquipList = new SerializableList(data.BuddyEquipList);
-        UnlockLinkList = new SerializableList(data.UnlockLinkList);
-        FolkloreTomeList = new SerializableList(data.FolkloreTomeList);
+        FacewearList            = data.FacewearList         .Serialise();
+        OrchestrionList         = data.OrchestrionList      .Serialise();
+        ClassLVLList            = data.ClassLVLList         .Serialise();
+        CardList                = data.CardList             .Serialise();
+        FashionList             = data.FashionList          .Serialise();
+        DutyList                = data.DutyList             .Serialise();
+        FishingList             = data.FishingList          .Serialise();
+        SightList               = data.SightList            .Serialise();
+        FramersList             = data.FramersList          .Serialise();
+        SecretRecipeBookList    = data.SecretRecipeBookList .Serialise();
+        BuddyEquipList          = data.BuddyEquipList       .Serialise();
+        UnlockLinkList          = data.UnlockLinkList       .Serialise();
+        FolkloreTomeList        = data.FolkloreTomeList     .Serialise();
+        EmoteList               = data.EmoteList            .Serialise();
     }
 }

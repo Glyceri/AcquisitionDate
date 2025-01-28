@@ -1,6 +1,7 @@
 ﻿using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements.Bases;
@@ -11,7 +12,7 @@ internal abstract class AcquirerItem : AcquirerCounter
 
     string[] urls = [];
 
-    protected AcquirerItem(ISheets sheets, ILodestoneNetworker networker) : base(networker)
+    protected AcquirerItem(ISheets sheets, ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser)
     {
         Sheets = sheets;
     }

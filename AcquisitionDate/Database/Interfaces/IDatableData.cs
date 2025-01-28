@@ -34,6 +34,7 @@ internal interface IDatableData
     IDatableList BuddyEquipList { get; }
     IDatableList UnlockLinkList { get; }
     IDatableList FolkloreTomeList { get; }
+    IDatableList EmoteList { get; }
 
     void UpdateEntry(IDatableUser datableUser);
     void SetLodestoneID(ulong lodestoneID);

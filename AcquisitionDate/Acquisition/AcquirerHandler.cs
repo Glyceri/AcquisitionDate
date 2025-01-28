@@ -1,6 +1,7 @@
 using AcquisitionDate.Acquisition.Elements;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
 
@@ -10,6 +11,7 @@ internal class AcquirerHandler : IAcquirerHandler
 {
     readonly ILodestoneNetworker LodestoneNetworker;
     readonly IAcquisitionServices Services;
+    readonly IAcquisitionParser Parser;
 
     List<IAcquirer> acquirers = new List<IAcquirer>();
 
@@ -19,21 +21,22 @@ internal class AcquirerHandler : IAcquirerHandler
     public IAcquirer AchievementAcquirer { get; private set; } = null!;
     public IAcquirer QuestAcquirer { get; private set; } = null!;
 
-    public AcquirerHandler(IAcquisitionServices services, ILodestoneNetworker networker)
+    public AcquirerHandler(IAcquisitionServices services, ILodestoneNetworker networker, IAcquisitionParser acquistionParser)
     {
         Services = services;
         LodestoneNetworker = networker;
+        Parser = acquistionParser;
 
         Setup();
     }
 
     void Setup()
     {
-        AddAcquirer(MinionAcquirer = new MinionAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(MountAcquirer = new MountAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(FacewearAcquirer = new FacewearAcquirer(Services.Sheets, LodestoneNetworker));
-        AddAcquirer(AchievementAcquirer = new AchievementAcquirer(LodestoneNetworker));
-        AddAcquirer(QuestAcquirer = new QuestAcquirer(Services.Sheets, LodestoneNetworker));
+        AddAcquirer(MinionAcquirer = new MinionAcquirer(Services.Sheets, LodestoneNetworker, Parser));
+        AddAcquirer(MountAcquirer = new MountAcquirer(Services.Sheets, LodestoneNetworker, Parser));
+        AddAcquirer(FacewearAcquirer = new FacewearAcquirer(Services.Sheets, LodestoneNetworker, Parser));
+        AddAcquirer(AchievementAcquirer = new AchievementAcquirer(LodestoneNetworker, Parser));
+        AddAcquirer(QuestAcquirer = new QuestAcquirer(LodestoneNetworker, Parser));
     }
 
     void AddAcquirer(IAcquirer acquirer)

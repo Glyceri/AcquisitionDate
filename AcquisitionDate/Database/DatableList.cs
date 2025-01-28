@@ -187,4 +187,6 @@ internal class DatableList : IDatableList
     }
 
     public uint GetID(int index) => IDs[index];
+
+    public SerializableList Serialise() => new SerializableList(this);
 }

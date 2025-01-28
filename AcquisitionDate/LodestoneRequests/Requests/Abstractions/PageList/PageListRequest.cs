@@ -38,5 +38,5 @@ internal abstract class PageListRequest : CharacterRequest
 
     protected abstract bool OnSuccess(HtmlDocument document);
 
-    void CallbackOutcome() => PageURLCountback?.Invoke(new PageURLListData(Outcome));
+    protected void CallbackOutcome() => PageURLCountback?.Invoke(new PageURLListData(Outcome));
 }

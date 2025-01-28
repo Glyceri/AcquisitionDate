@@ -3,22 +3,31 @@ using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
-using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements;
 
 internal class QuestAcquirer : AcquirerCounter
 {
-    readonly ISheets Sheets;
+    public QuestAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser) { }
 
-    public QuestAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(networker)
-    {
-        Sheets = sheets;
-    }
+    protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest
+    (
+        AcquistionParser.AchievementListPageCountParser, 
+        _currentUser, 
+        OnPageCountData
+    );
 
-    protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest(_currentUser, OnPageCountData);
-
-    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest(Sheets, _currentUser, page, OnQuestData, OnPageComplete, OnFailure);
+    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest
+    (
+        AcquistionParser.QuestListParser, 
+        AcquistionParser.QuestDataParser, 
+        _currentUser, 
+        page, 
+        OnQuestData, 
+        OnPageComplete, 
+        OnFailure
+    );
 
     void OnQuestData(QuestData data)
     {

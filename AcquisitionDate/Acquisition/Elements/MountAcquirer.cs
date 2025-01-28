@@ -3,13 +3,14 @@ using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements;
 
 internal class MountAcquirer : AcquirerItem
 {
-    public MountAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(sheets, networker) { }
+    public MountAcquirer(ISheets sheets, ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(sheets, networker, acquistionParser) { }
 
     protected override ILodestoneRequest PageDataRequest(string page) => new MountDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
 
