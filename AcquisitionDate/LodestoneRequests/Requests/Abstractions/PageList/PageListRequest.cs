@@ -1,7 +1,6 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
-using HtmlAgilityPack;
 using System;
 
 namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageList;
@@ -9,8 +8,6 @@ namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageList;
 internal abstract class PageListRequest : CharacterRequest
 {
     readonly Action<PageURLListData?> PageURLCountback;
-
-    protected abstract string[] Outcome { get; set; }
 
     public PageListRequest(IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(data)
     {
@@ -23,20 +20,5 @@ internal abstract class PageListRequest : CharacterRequest
         PageURLCountback?.Invoke(null);
     }
 
-    public sealed override void HandleSuccess(HtmlDocument document)
-    {
-        var successfullParse = OnSuccess(document);
-
-        if (!successfullParse)
-        {
-            HandleFailure(new Exception("Failed to parse document"));
-            return;
-        }
-
-        CallbackOutcome();
-    }
-
-    protected abstract bool OnSuccess(HtmlDocument document);
-
-    protected void CallbackOutcome() => PageURLCountback?.Invoke(new PageURLListData(Outcome));
+    protected void CallbackOutcome(string[] urls) => PageURLCountback?.Invoke(new PageURLListData(urls));
 }

@@ -7,5 +7,5 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class MinionPageListRequest : ItemPageListRequest
 {
-    public MinionPageListRequest(IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(data, pageUrlCallback, "minion") { }  
+    public MinionPageListRequest(ItemPageListParser itemPageListParser, IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(itemPageListParser, data, pageUrlCallback, "minion") { }  
 }

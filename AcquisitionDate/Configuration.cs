@@ -5,13 +5,14 @@ using Dalamud.Configuration;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 using Newtonsoft.Json;
+using Dalamud.Game;
 
 namespace AcquisitionDate;
 
 [Serializable]
 internal class Configuration : IPluginConfiguration
 {
-    public int Version { get; set; } = 0;
+    public int Version { get; set; } = 1;
 
     public int DateType = 0;
     public int AcquisitionLanuage = 1;
@@ -44,6 +45,7 @@ internal class Configuration : IPluginConfiguration
     // ------------------------- Debug SETTINGS --------------------------
     public bool debugModeActive = false;
     public bool openDebugWindowOnStart = false;
+    public int lastActiveDevTab = 0;
 
     public SerializableUser[]? SerializableUsers { get; set; } = null;
 
@@ -77,12 +79,27 @@ internal class Configuration : IPluginConfiguration
         PluginHandlers.PluginInterface.SavePluginConfig(this);
     }
 
-    public string DateParseString() => DateType switch
+    public string DateParseString()
     {
-        1 => "MM/dd/yyyy",      // Month / Day   / Year
-        2 => "yyyy/MM/dd",      // Year  / Month / Day
-        3 => "yyyy/dd/MM",      // Year  / Day   / Month
-        _ => "dd/MM/yyyy"       // Day   / Month / Year
+        string unsanitizedDateString = UnsanitizedDateParseString();
+        ClientLanguage clLanguage = PluginHandlers.ClientState.ClientLanguage;
+
+        string sanitizedString = unsanitizedDateString;
+
+        if      (clLanguage == ClientLanguage.Japanese  ||
+                 clLanguage == ClientLanguage.English)      sanitizedString.Replace("^", "/");
+        else if (clLanguage == ClientLanguage.German    ||
+                 clLanguage == ClientLanguage.French)       sanitizedString.Replace("^", ".");
+
+        return sanitizedString;
+    }
+
+    string UnsanitizedDateParseString() => DateType switch
+    {
+        1 => "MM^dd^yyyy",      // Month / Day   / Year
+        2 => "yyyy^MM^dd",      // Year  / Month / Day
+        3 => "yyyy^dd^MM",      // Year  / Day   / Month
+        _ => "dd^MM^yyyy"       // Day   / Month / Year
     };
 
     [JsonIgnore]

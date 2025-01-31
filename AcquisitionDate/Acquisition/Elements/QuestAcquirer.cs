@@ -13,15 +13,15 @@ internal class QuestAcquirer : AcquirerCounter
 
     protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest
     (
-        AcquistionParser.AchievementListPageCountParser, 
+        AcquisitionParser.AchievementListPageCountParser, 
         _currentUser, 
         OnPageCountData
     );
 
     protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest
     (
-        AcquistionParser.QuestListParser, 
-        AcquistionParser.QuestDataParser, 
+        AcquisitionParser.QuestListParser, 
+        AcquisitionParser.QuestDataParser, 
         _currentUser, 
         page, 
         OnQuestData, 

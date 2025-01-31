@@ -7,5 +7,5 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class FacewearPageListRequest : ItemPageListRequest
 {
-    public FacewearPageListRequest(IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(data, pageUrlCallback, "faceaccessory") { }
+    public FacewearPageListRequest(ItemPageListParser itemPageListParser, IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(itemPageListParser, data, pageUrlCallback, "faceaccessory") { }
 }

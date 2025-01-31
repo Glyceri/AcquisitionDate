@@ -12,9 +12,22 @@ internal class MinionAcquirer : AcquirerItem
 {
     public MinionAcquirer(ISheets sheets, ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(sheets, networker, acquistionParser) { }
 
-    protected override ILodestoneRequest PageDataRequest(string page) => new MinionDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
+    protected override ILodestoneRequest PageDataRequest(string page) => new MinionDataRequest
+    (
+        AcquisitionParser.ItemPageDataParser,
+        Sheets,
+        page,
+        OnItemData,
+        UpCounterAndActivate,
+        OnFailure
+    );
 
-    protected override ILodestoneRequest PageCountRequest() => new MinionPageListRequest(_currentUser, OnPageURLList);
+    protected override ILodestoneRequest PageCountRequest() => new MinionPageListRequest
+    (
+        AcquisitionParser.ItemPageListParser,
+        _currentUser,
+        OnPageURLList
+    );
 
     void OnItemData(ItemData itemData)
     {

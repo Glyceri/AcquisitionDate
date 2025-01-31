@@ -12,9 +12,22 @@ internal class FacewearAcquirer : AcquirerItem
 {
     public FacewearAcquirer(ISheets sheets, ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(sheets, networker, acquistionParser) { }
 
-    protected override ILodestoneRequest PageDataRequest(string page) => new FacewearDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
+    protected override ILodestoneRequest PageDataRequest(string page) => new FacewearDataRequest
+    (
+        AcquisitionParser.ItemPageDataParser,
+        Sheets, 
+        page, 
+        OnItemData, 
+        UpCounterAndActivate, 
+        OnFailure
+    );
 
-    protected override ILodestoneRequest PageCountRequest() => new FacewearPageListRequest(_currentUser, OnPageURLList);
+    protected override ILodestoneRequest PageCountRequest() => new FacewearPageListRequest
+    (
+        AcquisitionParser.ItemPageListParser,
+        _currentUser, 
+        OnPageURLList
+    );
 
     void OnItemData(ItemData itemData)
     {

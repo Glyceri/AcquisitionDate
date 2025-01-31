@@ -13,15 +13,15 @@ internal class AchievementAcquirer : AcquirerCounter
 
     protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest
     (
-        AcquistionParser.AchievementListPageCountParser, 
+        AcquisitionParser.AchievementListPageCountParser, 
         _currentUser, 
         OnPageCountData
     );
 
     protected override ILodestoneRequest DataRequest(int page) => new AchievementDateRequest
     (
-        AcquistionParser.AchievementListParser, 
-        AcquistionParser.AchievementElementParser, 
+        AcquisitionParser.AchievementListParser, 
+        AcquisitionParser.AchievementElementParser, 
         _currentUser, 
         page, 
         OnAchievementData, 

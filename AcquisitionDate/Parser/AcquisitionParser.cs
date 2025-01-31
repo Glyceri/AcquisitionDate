@@ -14,6 +14,8 @@ internal class AcquisitionParser : IAcquisitionParser
     public LodestonePageLanguageParser LodestonePageLanguageParser { get; init; }
     public QuestListParser QuestListParser { get; init; }
     public QuestDataParser QuestDataParser { get; init; }
+    public ItemPageListParser ItemPageListParser { get; init; }
+    public ItemPageDataParser ItemPageDataParser { get; init; }
 
     public AcquisitionParser(ISheets sheets)
     {
@@ -25,6 +27,8 @@ internal class AcquisitionParser : IAcquisitionParser
         LodestoneIDParser = new LodestoneIDParser(sheets);
         QuestListParser = new QuestListParser();
         QuestDataParser = new QuestDataParser(sheets);
+        ItemPageListParser = new ItemPageListParser();
+        ItemPageDataParser = new ItemPageDataParser();
     }
 
     public void Dispose()

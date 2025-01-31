@@ -12,9 +12,22 @@ internal class MountAcquirer : AcquirerItem
 {
     public MountAcquirer(ISheets sheets, ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(sheets, networker, acquistionParser) { }
 
-    protected override ILodestoneRequest PageDataRequest(string page) => new MountDataRequest(Sheets, page, OnItemData, UpCounterAndActivate, OnFailure);
+    protected override ILodestoneRequest PageDataRequest(string page) => new MountDataRequest
+    (
+        AcquisitionParser.ItemPageDataParser,
+        Sheets,
+        page,
+        OnItemData,
+        UpCounterAndActivate,
+        OnFailure
+    );
 
-    protected override ILodestoneRequest PageCountRequest() => new MountPageListRequest(_currentUser, OnPageURLList);
+    protected override ILodestoneRequest PageCountRequest() => new MountPageListRequest
+    (
+        AcquisitionParser.ItemPageListParser,
+        _currentUser, 
+        OnPageURLList
+    );
 
     void OnItemData(ItemData itemData)
     {

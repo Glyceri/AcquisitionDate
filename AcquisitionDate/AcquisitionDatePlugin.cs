@@ -65,7 +65,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         HookHandler = new HookHandler(Services, UserList, Database, DirtyHandler);
         UpdateHandler = new UpdateHandler(LodestoneNetworker, UserList, AcquistionParser, SaveHandler, HookHandler);
         AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker, AcquistionParser);
-        WindowHandler = new WindowHandler(Services, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler);
+        WindowHandler = new WindowHandler(Services, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler, AcquistionParser);
 
         CommandHandler = new CommandHandler(Services.Configuration, WindowHandler);
 

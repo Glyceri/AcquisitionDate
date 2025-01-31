@@ -1,14 +1,20 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
+using HtmlAgilityPack;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Encodings.Web;
 
 namespace AcquisitionDate.Windows.Windows;
 
@@ -17,6 +23,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquisitionServices Services;
+    readonly IAcquisitionParser Parser;
 
     protected override Vector2 MinSize { get; } = new Vector2(350, 136);
     protected override Vector2 MaxSize { get; } = new Vector2(2000, 2000);
@@ -26,19 +33,66 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     int currentActive = 0;
     List<DevStruct> devStructList = new List<DevStruct>();
 
-    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration) : base(windowHandler, configuration,"Acquisition Dev Window")
+    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration, IAcquisitionParser parser) : base(windowHandler, configuration,"Acquisition Dev Window")
     {
         Services = services;
         UserList = userList;
         Database = database;
+        Parser = parser;
 
         devStructList.Add(new DevStruct("User List", DrawUserList));
         devStructList.Add(new DevStruct("User Database", DrawUserDatabase));
+        devStructList.Add(new DevStruct("Parsers", DrawParserTab));
 
         if (configuration.debugModeActive && configuration.openDebugWindowOnStart)
         {
             Open();
         }
+    }
+
+    string parseText = string.Empty;
+    LodestoneRegion currentRegion = LodestoneRegion.Europe;
+
+    void DrawParserTab()
+    {
+        if (ImGui.BeginMenu($"Lodestone Region ({currentRegion})##lodestoneRegionMenu"))
+        {
+            if (ImGui.MenuItem("Europe")) currentRegion = LodestoneRegion.Europe;
+            if (ImGui.MenuItem("America")) currentRegion = LodestoneRegion.America;
+            if (ImGui.MenuItem("Germany")) currentRegion = LodestoneRegion.Germany;
+            if (ImGui.MenuItem("France")) currentRegion = LodestoneRegion.France;
+            if (ImGui.MenuItem("Japan")) currentRegion = LodestoneRegion.Japan;
+
+            ImGui.EndMenu();
+        }
+
+        ImGui.InputTextMultiline("##parserText", ref parseText, 1000000, ImGui.GetContentRegionAvail() * new Vector2(1, 0.5f));
+
+        if (ImGui.Button($"Parse##parser{WindowHandler.InternalCounter}", new Vector2(ImGui.GetContentRegionAvail().X, 35)))
+        {
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(parseText);
+            PluginHandlers.PluginLog.Verbose($"Try Parse:\n{document.DocumentNode.InnerHtml}");
+            Parser.ItemPageDataParser.SetPageLanguage(currentRegion);
+            Parser.ItemPageDataParser.SetGetIDFunc(GetID);
+            Parser.ItemPageDataParser.SetListIconName("minion");
+            Parser.ItemPageDataParser.Parse(document.DocumentNode, OnSuccess, OnFailure);
+        }
+    }
+
+    uint? GetID(string name)
+    {
+        return Services.Sheets.GetCompanionByName(name)?.ID ?? null;
+    }
+
+    void OnSuccess(ItemData itemData)
+    {
+        PluginHandlers.PluginLog.Verbose($"New Item Data: {itemData.ItemID}, {itemData.AchievedDate}");
+    }
+
+    void OnFailure(Exception e)
+    {
+        PluginHandlers.PluginLog.Error(e, "Error in parse!");
     }
 
     unsafe void DrawUserList()
@@ -162,6 +216,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
     public override void OnOpen()
     {
+        currentActive = Configuration.lastActiveDevTab;
         if (devStructList.Count <= currentActive) return;
 
         devStructList[currentActive].requestUpdate?.Invoke(true);
@@ -183,12 +238,14 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
 
         for (int i = 0; i < devStructList.Count; i++)
         {
-            if (!ImGui.TabItemButton(devStructList[i].title)) continue;
+            if (!ImGui.TabItemButton(devStructList[i].title, i == currentActive ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None)) continue;
             int lastActive = currentActive;
             if (lastActive == i) continue;
             currentActive = i;
             devStructList[lastActive].requestUpdate?.Invoke(false);
             devStructList[currentActive].requestUpdate?.Invoke(true);
+            Configuration.lastActiveDevTab = currentActive;
+            Configuration.Save();
         }
 
         devStructList[currentActive].onSelected?.Invoke();

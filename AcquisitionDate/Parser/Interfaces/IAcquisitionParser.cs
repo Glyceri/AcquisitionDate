@@ -13,4 +13,6 @@ internal interface IAcquisitionParser : IDisposable
     LodestoneIDParser LodestoneIDParser { get; }
     QuestListParser QuestListParser { get; }
     QuestDataParser QuestDataParser { get; }
+    ItemPageListParser ItemPageListParser { get; }
+    ItemPageDataParser ItemPageDataParser { get; }
 }

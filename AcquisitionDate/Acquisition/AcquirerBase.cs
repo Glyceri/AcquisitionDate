@@ -16,7 +16,7 @@ internal abstract class AcquirerBase : IAcquirer
     public bool HasSucceeded { get; private set; }
 
     protected readonly ILodestoneNetworker Networker;
-    protected readonly IAcquisitionParser AcquistionParser;
+    protected readonly IAcquisitionParser AcquisitionParser;
 
     protected IDatableData _currentUser = null!;
 
@@ -25,7 +25,7 @@ internal abstract class AcquirerBase : IAcquirer
     public AcquirerBase(ILodestoneNetworker networker, IAcquisitionParser acquistionParser)
     {
         Networker = networker;
-        AcquistionParser = acquistionParser;
+        AcquisitionParser = acquistionParser;
     }
 
     public void Acquire(IDatableData user)
