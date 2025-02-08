@@ -1,5 +1,6 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.Parser.Elements;
 using AcquisitionDate.Services.Interfaces;
 using HtmlAgilityPack;
@@ -16,13 +17,15 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
     readonly Action<Exception>? FailureCallback;
     readonly Action<ItemData> OnItemData;
     readonly ItemPageDataParser ItemDataParser;
+    readonly LodestoneRegion PageRegion;
 
-    public ItemPageDataRequest(ItemPageDataParser itemPageDataParser, ISheets sheets, string baseURL, string baseName, Action<ItemData> onItemData, Action? successCallback = null, Action<Exception>? failureCallback = null)
+    public ItemPageDataRequest(ItemPageDataParser itemPageDataParser, ISheets sheets, string baseURL, string baseName, LodestoneRegion pageRegion, Action<ItemData> onItemData, Action? successCallback = null, Action<Exception>? failureCallback = null)
     {
         ItemDataParser = itemPageDataParser;
         Sheets = sheets;
         BaseURL = baseURL;
         BaseName = baseName;
+        PageRegion = pageRegion;
         OnItemData = onItemData;
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
@@ -38,6 +41,7 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
 
         ItemDataParser.SetListIconName(BaseName);
         ItemDataParser.SetGetIDFunc(GetIDFromString);
+        ItemDataParser.SetPageLanguage(PageRegion);
         ItemDataParser.Parse(rootNode, OnSuccess, PrintFailure);
     }
 

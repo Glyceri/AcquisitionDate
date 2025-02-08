@@ -1,6 +1,7 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Utility;
@@ -14,10 +15,12 @@ using System.Web;
 
 namespace AcquisitionDate.Parser.Elements;
 
-internal class QuestDataParser : IAcquistionParserElement<QuestData>, IDisposable
+internal class QuestDataParser : IAchievementDataParser<QuestData>, IDisposable
 {
     readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
     readonly ISheets Sheets;
+
+    LodestoneRegion pageLanguage;
 
     public QuestDataParser(ISheets sheets)
     {
@@ -38,7 +41,7 @@ internal class QuestDataParser : IAcquistionParserElement<QuestData>, IDisposabl
             return;
         }
 
-        DateTime? time = HtmlParserHelper.GetAcquiredTime(entryQuestName);
+        DateTime? time = HtmlParserHelper.GetAcquiredTime(entryQuestName, pageLanguage);
         if (time == null)
         {
             onFailure?.Invoke(new Exception("unable to acquire dateTime from entryQuestName!"));
@@ -118,5 +121,10 @@ internal class QuestDataParser : IAcquistionParserElement<QuestData>, IDisposabl
             CancellationTokenSource?.Dispose();
         }
         catch { }
+    }
+
+    public void SetPageLanguage(LodestoneRegion lodestoneRegion)
+    {
+        pageLanguage = lodestoneRegion;
     }
 }

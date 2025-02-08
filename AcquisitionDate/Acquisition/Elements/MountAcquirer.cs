@@ -17,6 +17,7 @@ internal class MountAcquirer : AcquirerItem
         AcquisitionParser.ItemPageDataParser,
         Sheets,
         page,
+        pageRegion,
         OnItemData,
         UpCounterAndActivate,
         OnFailure

@@ -1,7 +1,9 @@
 ﻿using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
+using AcquisitionDate.LodestoneRequests.Requests;
 using AcquisitionDate.Parser.Interfaces;
 using System;
 
@@ -11,18 +13,27 @@ internal abstract class AcquirerCounter : AcquirerBase
 {
     protected int internalCounter = 0;
     protected int maxCounter = 0;
+    protected LodestoneRegion pageRegion = LodestoneRegion.Europe;
 
     protected AcquirerCounter(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser)
     {
     }
 
+    ILodestoneRequest PageLanguageRequest() => new LodestoneLanguageRequest
+    (
+        AcquisitionParser.LodestonePageLanguageParser,
+        _currentUser,
+        OnPageLanguageData
+    );
+
     protected abstract ILodestoneRequest PageCountRequest();
     protected abstract ILodestoneRequest DataRequest(int page);
+    
 
     protected override void OnAcquire()
     {
         ResetCounter();
-        GatherMaxCounter();
+        GatherLanguage();
     }
 
     protected override void OnCancel()
@@ -36,9 +47,14 @@ internal abstract class AcquirerCounter : AcquirerBase
         maxCounter = 0;
     }
 
-    void GatherMaxCounter()
+    void GatherLanguage()
     {
         SetPercentage(1);
+        RegisterQueueElement(PageLanguageRequest());
+    }
+
+    void GatherMaxCounter()
+    {
         RegisterQueueElement(PageCountRequest());
     }
 
@@ -54,6 +70,15 @@ internal abstract class AcquirerCounter : AcquirerBase
         maxCounter = data.Value.PageCount;
 
         UpCounterAndActivate();
+    }
+
+    protected void OnPageLanguageData(LodestoneRegion lodestoneRegion)
+    {
+        pageRegion = lodestoneRegion;
+
+        SetPercentage(5);
+
+        GatherMaxCounter();
     }
 
     protected void UpCounterAndActivate()

@@ -1,6 +1,7 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneRequests.Requests.Abstractions;
 using AcquisitionDate.Parser.Elements;
 using HtmlAgilityPack;
@@ -18,8 +19,9 @@ internal class AchievementDateRequest : CharacterRequest
     readonly Action<Exception>? FailureCallback;
     readonly Action<AchievementData> ContinuousSuccessCallback;
     readonly int Page;
+    readonly LodestoneRegion PageLanguage;
 
-    public AchievementDateRequest(AchievementListParser achievementListParser, AchievementElementParser achievementElementParser, IDatableData data, int page, Action<AchievementData> continuousSuccessCallback, Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
+    public AchievementDateRequest(AchievementListParser achievementListParser, AchievementElementParser achievementElementParser, IDatableData data, int page, LodestoneRegion pageLanguage, Action<AchievementData> continuousSuccessCallback, Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
     {
         AchievementListParser = achievementListParser;
         AchievementElementParser = achievementElementParser;
@@ -27,6 +29,7 @@ internal class AchievementDateRequest : CharacterRequest
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
         Page = page;
+        PageLanguage = pageLanguage;
         ContinuousSuccessCallback = continuousSuccessCallback;
     }
 
@@ -45,6 +48,7 @@ internal class AchievementDateRequest : CharacterRequest
     {
         foreach (HtmlNode node in nodes)
         {
+            AchievementElementParser.SetPageLanguage(PageLanguage);
             AchievementElementParser.Parse(node, OnAchievementData, PrintFailure);
         }
     }

@@ -24,6 +24,7 @@ internal class AchievementAcquirer : AcquirerCounter
         AcquisitionParser.AchievementElementParser, 
         _currentUser, 
         page, 
+        pageRegion,
         OnAchievementData, 
         OnPageComplete, 
         OnFailure

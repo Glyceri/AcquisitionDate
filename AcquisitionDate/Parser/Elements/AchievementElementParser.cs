@@ -1,5 +1,6 @@
 ﻿using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.Parser.Interfaces;
 using Dalamud.Utility;
 using HtmlAgilityPack;
@@ -8,8 +9,10 @@ using System.Linq;
 
 namespace AcquisitionDate.Parser.Elements;
 
-internal class AchievementElementParser : IAcquistionParserElement<AchievementData>
+internal class AchievementElementParser : IAchievementDataParser<AchievementData>
 {
+    LodestoneRegion pageLanguage;
+
     public void Parse(HtmlNode rootNode, Action<AchievementData> onSuccess, Action<Exception> onFailure)
     {
         HtmlNode? entryAchievement = HtmlParserHelper.GetNode(rootNode, "entry__achievement");
@@ -59,7 +62,7 @@ internal class AchievementElementParser : IAcquistionParserElement<AchievementDa
             return;
         }
 
-        DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
+        DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode, pageLanguage);
         if (acquiredTime == null)
         {
             onFailure?.Invoke(new Exception("Could NOT acquire a date for the given timeNode"));
@@ -67,5 +70,10 @@ internal class AchievementElementParser : IAcquistionParserElement<AchievementDa
         }
 
         onSuccess?.Invoke(new AchievementData(achievementID.Value, acquiredTime.Value));
+    }
+
+    public void SetPageLanguage(LodestoneRegion lodestoneRegion)
+    {
+        pageLanguage = lodestoneRegion;
     }
 }

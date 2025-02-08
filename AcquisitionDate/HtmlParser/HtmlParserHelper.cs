@@ -16,7 +16,7 @@ internal static class HtmlParserHelper
     const string LDST_STRFTIME_PATTERN = @"ldst_strftime\((\d+),";
     const string DATE_PATTERN = @"(\d{4}/\d{2}/\d{2}|\d{2}/\d{2}/\d{4}|\d{1,2}\.\d{1,2}\.\d{4})";
 
-    public static DateTime? GetAcquiredTime(HtmlNode node, LodestoneRegion lodestoneRegion = LodestoneRegion.America)
+    public static DateTime? GetAcquiredTime(HtmlNode node, LodestoneRegion lodestoneRegion)
     {
         string? innerHTML = node.InnerHtml;
         if (innerHTML.IsNullOrWhitespace()) return GetAlternativeAcquiredTime(node, lodestoneRegion);
@@ -55,8 +55,6 @@ internal static class HtmlParserHelper
 
         string dateFormatText = description.Description.Trim();
         if (dateFormatText.IsNullOrWhitespace()) return null;
-
-        PluginHandlers.PluginLog.Verbose($"Date Text: {dateText}, Date Format Text: {dateFormatText}");
 
         if (DateTime.TryParseExact(dateText, description.Description, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
         {

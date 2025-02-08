@@ -24,6 +24,7 @@ internal class QuestAcquirer : AcquirerCounter
         AcquisitionParser.QuestDataParser, 
         _currentUser, 
         page, 
+        pageRegion,
         OnQuestData, 
         OnPageComplete, 
         OnFailure

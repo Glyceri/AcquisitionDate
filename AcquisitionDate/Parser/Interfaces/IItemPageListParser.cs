@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AcquisitionDate.Parser.Interfaces;
+﻿namespace AcquisitionDate.Parser.Interfaces;
 
 internal interface IItemPageListParser<T> : IAcquistionParserElement<T>
 {

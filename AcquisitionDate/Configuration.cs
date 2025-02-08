@@ -87,9 +87,9 @@ internal class Configuration : IPluginConfiguration
         string sanitizedString = unsanitizedDateString;
 
         if      (clLanguage == ClientLanguage.Japanese  ||
-                 clLanguage == ClientLanguage.English)      sanitizedString.Replace("^", "/");
+                 clLanguage == ClientLanguage.English)      sanitizedString = sanitizedString.Replace("^", "/");
         else if (clLanguage == ClientLanguage.German    ||
-                 clLanguage == ClientLanguage.French)       sanitizedString.Replace("^", ".");
+                 clLanguage == ClientLanguage.French)       sanitizedString = sanitizedString.Replace("^", ".");
 
         return sanitizedString;
     }
