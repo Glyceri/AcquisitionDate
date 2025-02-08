@@ -12,6 +12,7 @@ internal interface ISheets
     FishParameter[] AllFishies { get; }
     SpearfishingItem[] AllSpearFishies { get; }
     ClassJob[] AllClassJobs { get; }
+    Emote[] AllEmotes { get; }
 
     string? GetWorldName(ushort worldID);
     uint? GetWorldID(string worldName);
@@ -36,4 +37,5 @@ internal interface ISheets
     ContentFinderCondition? GetContentFinderConditionByName(string name);
     ClassJob? GetClassJob(uint id);
     Adventure? GetAdventureByIndex(uint index);
+    Emote? GetEmoteByID(uint id);
 }

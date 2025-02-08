@@ -5,6 +5,7 @@ using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
 using AcquisitionDate.Hooking.Hooks.ATKHooks;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
+using AcquisitionDate.Hooking.Hooks.UnlockHooks;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using System;

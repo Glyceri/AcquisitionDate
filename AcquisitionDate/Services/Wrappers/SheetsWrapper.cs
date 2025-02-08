@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace AcquisitionDate.Services.Wrappers;
 
@@ -25,6 +24,7 @@ internal class SheetsWrapper : ISheets
     public FishParameter[] AllFishies => fishies.ToArray();
     public SpearfishingItem[] AllSpearFishies => spearFishies.ToArray();
     public ClassJob[] AllClassJobs => classJobs.ToArray();
+    public Emote[] AllEmotes => emotes.ToArray();
 
     readonly ExcelSheet<World> worlds;
     readonly ExcelSheet<Quest> quests;
@@ -40,23 +40,25 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<Glasses> glasses;
     readonly ExcelSheet<Ornament> ornaments;
     readonly ExcelSheet<Orchestrion> orchestrions;
+    readonly ExcelSheet<Emote> emotes;
 
     public SheetsWrapper()
     {
-        worlds = PluginHandlers.DataManager.GetExcelSheet<World>();
-        achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
-        quests = PluginHandlers.DataManager.GetExcelSheet<Quest>();
-        items = PluginHandlers.DataManager.GetExcelSheet<Item>();
-        companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
-        contentFinderConditions = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
-        classJobs = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
-        fishies = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
-        spearFishies = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
-        vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
-        mounts = PluginHandlers.DataManager.GetExcelSheet<Mount>();
-        glasses = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
-        ornaments = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
-        orchestrions = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
+        worlds                      = PluginHandlers.DataManager.GetExcelSheet<World>();
+        achievements                = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
+        quests                      = PluginHandlers.DataManager.GetExcelSheet<Quest>();
+        items                       = PluginHandlers.DataManager.GetExcelSheet<Item>();
+        companions                  = PluginHandlers.DataManager.GetExcelSheet<Companion>();
+        contentFinderConditions     = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
+        classJobs                   = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
+        fishies                     = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
+        spearFishies                = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
+        vistas                      = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
+        mounts                      = PluginHandlers.DataManager.GetExcelSheet<Mount>();
+        glasses                     = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
+        ornaments                   = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
+        orchestrions                = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
+        emotes                      = PluginHandlers.DataManager.GetExcelSheet<Emote>();
 
         SetupSheetDataCache();
     }
@@ -394,6 +396,18 @@ internal class SheetsWrapper : ISheets
             if (orchestrion.RowId != id) continue;
 
             return orchestrion;
+        }
+
+        return null;
+    }
+
+    public Emote? GetEmoteByID(uint id)
+    {
+        foreach (Emote emote in emotes)
+        {
+            if (emote.RowId != id) continue;
+
+            return emote;
         }
 
         return null;

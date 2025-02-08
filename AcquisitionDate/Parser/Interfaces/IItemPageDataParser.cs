@@ -3,8 +3,7 @@ using System;
 
 namespace AcquisitionDate.Parser.Interfaces;
 
-internal interface IItemPageDataParser<T> : IItemPageListParser<T>
+internal interface IItemPageDataParser<T> : IItemPageListParser<T>, IAchievementDataParser<T>
 {
-    void SetPageLanguage(LodestoneRegion region);
     void SetGetIDFunc(Func<string, uint?> getIDFromString);
 }

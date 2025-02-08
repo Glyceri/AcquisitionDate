@@ -154,6 +154,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                 DrawDatableList(entry, entry.BuddyEquipList, "Bardings", (id) => $"{id}");
                 DrawDatableList(entry, entry.UnlockLinkList, "Unlock Link???? (idk what this is)", (id) => $"{id}");
                 DrawDatableList(entry, entry.FolkloreTomeList, "Folklores", (id) => $"{id}");
+                DrawDatableList(entry, entry.EmoteList, "Emotes", (id) => Services.Sheets.GetEmoteByID(id)?.Name.ExtractText() ?? "[Unknown]");
                 ImGui.Unindent();
             }
         }
