@@ -57,7 +57,7 @@ internal class QuestDataParser : IAchievementDataParser<QuestData>, IDisposable
             return;
         }
 
-        Task.Run(async () => await HandleQuestSearch(decoded, time.Value, onSuccess, onFailure), CancellationTokenSource.Token);
+        Task.Run(async () => await HandleQuestSearch(decoded, time.Value, onSuccess, onFailure), CancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     async Task HandleQuestSearch(string decoded, DateTime time, Action<QuestData> onSuccess, Action<Exception> onFailure)

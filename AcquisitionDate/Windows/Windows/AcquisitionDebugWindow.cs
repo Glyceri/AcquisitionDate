@@ -3,7 +3,10 @@ using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking;
 using AcquisitionDate.LodestoneNetworking.Enums;
+using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.LodestoneNetworking.Structs;
 using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.TranslatorSystem;
@@ -14,7 +17,6 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text.Encodings.Web;
 
 namespace AcquisitionDate.Windows.Windows;
 
@@ -24,6 +26,7 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     readonly IDatabase Database;
     readonly IAcquisitionServices Services;
     readonly IAcquisitionParser Parser;
+    readonly ILodestoneNetworker LodestoneNetworker;
 
     protected override Vector2 MinSize { get; } = new Vector2(350, 136);
     protected override Vector2 MaxSize { get; } = new Vector2(2000, 2000);
@@ -33,20 +36,39 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     int currentActive = 0;
     List<DevStruct> devStructList = new List<DevStruct>();
 
-    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration, IAcquisitionParser parser) : base(windowHandler, configuration,"Acquisition Dev Window")
+    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration, IAcquisitionParser parser, ILodestoneNetworker lodestoneNetworker) : base(windowHandler, configuration,"Acquisition Dev Window")
     {
         Services = services;
         UserList = userList;
         Database = database;
         Parser = parser;
+        LodestoneNetworker = lodestoneNetworker;
 
         devStructList.Add(new DevStruct("User List", DrawUserList));
         devStructList.Add(new DevStruct("User Database", DrawUserDatabase));
         devStructList.Add(new DevStruct("Parsers", DrawParserTab));
+        devStructList.Add(new DevStruct("Networking Queue", DrawNetworkingTab));
 
         if (configuration.debugModeActive && configuration.openDebugWindowOnStart)
         {
             Open();
+        }
+    }
+
+    void DrawNetworkingTab()
+    {
+        Vector2 labelSize = new Vector2(ImGui.GetContentRegionAvail().X, 35 * ImGuiHelpers.GlobalScale);
+
+        foreach (LodestoneQueueElementData data in LodestoneNetworker.GetAllQueueData())
+        {
+            LabledLabel.Draw("Url: ", data.URL, labelSize);
+            LabledLabel.Draw("Queue State: ", data.QueueState.ToString(),  labelSize);
+            LabledLabel.Draw("Time In Queue: ", data.TimeInQueue.ToString(),  labelSize);
+            LabledLabel.Draw("Tick Count: ", data.TickCount.ToString(),  labelSize);
+            LabledLabel.Draw("At Tick: ", data.AtTick.ToString(),  labelSize);
+            LabledLabel.Draw("Disposed: ", data.Disposed.ToString(),  labelSize);
+
+            ImGui.NewLine();
         }
     }
 

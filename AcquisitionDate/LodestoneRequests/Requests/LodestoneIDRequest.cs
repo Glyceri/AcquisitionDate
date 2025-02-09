@@ -10,7 +10,7 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class LodestoneIDRequest : LodestoneRequest
 {
-    readonly IDatableData Data;
+    protected readonly IDatableData Data;
     readonly LodestoneIDParser LodestoneIDParser;
 
     public LodestoneIDRequest(LodestoneIDParser lodestoneIDParser, IDatableData datableData)
@@ -31,7 +31,7 @@ internal class LodestoneIDRequest : LodestoneRequest
         LodestoneIDParser.Parse(rootNode, OnData, HandleFailure);
     }
 
-    void OnData(LodestoneParseData lodestoneData)
+    protected virtual void OnData(LodestoneParseData lodestoneData)
     {
         if (!Data.Name.Equals(lodestoneData.UserName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)lodestoneData.Homeworld) return;
 

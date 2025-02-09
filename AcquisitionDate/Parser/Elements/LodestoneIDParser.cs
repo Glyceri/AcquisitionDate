@@ -33,6 +33,30 @@ internal class LodestoneIDParser : IAcquistionParserElement<LodestoneParseData>
             return;
         }
 
+        string? imageURL = null;
+
+        HtmlNode? cNode = HtmlParserHelper.GetNode(listNode, "entry__chara__face");
+        if (cNode == null)
+        {
+            onFailure?.Invoke(new Exception("cNode is NOT found!"));
+            return;
+        }
+
+        if (cNode.ChildNodes.Count != 0)
+        {
+            HtmlNode img = cNode.ChildNodes[0];
+            if (img != null)
+            { 
+                imageURL = img.GetAttributeValue("src", string.Empty);
+            }
+        }
+
+        if (imageURL == null)
+        {
+            onFailure?.Invoke(new Exception("imageURL is NOT found!"));
+            return;
+        }
+
         HtmlNode? nameNode = HtmlParserHelper.GetNode(entryNode, "entry__name");
         if (nameNode == null)
         {
@@ -81,6 +105,6 @@ internal class LodestoneIDParser : IAcquistionParserElement<LodestoneParseData>
             return;
         }
 
-        onSuccess?.Invoke(new LodestoneParseData(userName, worldID.Value, lodestoneID.Value));
+        onSuccess?.Invoke(new LodestoneParseData(userName, worldID.Value, lodestoneID.Value, imageURL));
     }
 }

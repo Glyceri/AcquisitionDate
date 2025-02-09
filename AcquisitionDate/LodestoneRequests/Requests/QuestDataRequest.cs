@@ -13,7 +13,7 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class QuestDataRequest : CharacterRequest
 {
-    readonly System.Action? SuccessCallback;
+    readonly Action? SuccessCallback;
     readonly Action<Exception>? FailureCallback;
     readonly Action<QuestData> ContinuousSuccessCallback;
     readonly int Page;

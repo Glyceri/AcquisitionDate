@@ -1,4 +1,5 @@
-﻿using AcquisitionDate.Services.Interfaces;
+﻿using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Services.Wrappers;
 
@@ -8,6 +9,6 @@ internal class BackupWrapper : IBackupService
 
     public void DoBackup()
     {
-        
+        PluginHandlers.PluginLog.Fatal("BACKUP SERVICE IS NOT IMPLEMENTED YET!");
     }
 }
