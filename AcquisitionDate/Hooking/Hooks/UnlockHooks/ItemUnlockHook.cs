@@ -151,47 +151,47 @@ internal unsafe class ItemUnlockHook : UnlockHook
         switch ((ItemActionType)item.ItemAction.Value.Type)
         {
             case ItemActionType.Companion:
-                data.MinionList.SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Minion).SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.BuddyEquip:
-                data.BuddyEquipList.SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.BuddyEquip).SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Mount:
-                data.MountList.SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Mount).SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.SecretRecipeBook:
-                data.SecretRecipeBookList.SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.SecretRecipeBook).SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.UnlockLink:
-                data.UnlockLinkList.SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.UnlockLink).SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.TripleTriadCard when item.AdditionalData.Is<TripleTriadCard>():
-                data.CardList.SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Card).SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FolkloreTome:
-                data.FolkloreTomeList.SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.FolkloreTome).SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.OrchestrionRoll when item.AdditionalData.Is<Orchestrion>():
-                data.OrchestrionList.SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Orchestrion).SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FramersKit:
-                data.FramersList.SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Framers).SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Ornament:
-                data.FashionList.SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Fashion).SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Glasses:
-                data.FacewearList.SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Facewear).SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
         }
     }

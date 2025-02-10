@@ -94,6 +94,22 @@ internal class Configuration : IPluginConfiguration
         return sanitizedString;
     }
 
+    public string? DateStandinString()
+    {
+        if (!ShowPlaceholderDates)
+        {
+            return null;
+        }
+
+        string parseString = DateParseString();
+
+        parseString = parseString.Replace("dd", "??");
+        parseString = parseString.Replace("MM", "??");
+        parseString = parseString.Replace("yyyy", "????");
+
+        return parseString;
+    }
+
     string UnsanitizedDateParseString() => DateType switch
     {
         1 => "MM^dd^yyyy",      // Month / Day   / Year

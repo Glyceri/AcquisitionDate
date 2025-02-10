@@ -1,4 +1,5 @@
 ﻿using AcquisitionDate.Acquisition.Elements.Bases;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
@@ -32,7 +33,7 @@ internal class MountAcquirer : AcquirerItem
 
     void OnItemData(ItemData itemData)
     {
-        _currentUser.MountList.SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDate(AcquirableDateType.Mount).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

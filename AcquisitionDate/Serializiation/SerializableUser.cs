@@ -1,3 +1,4 @@
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using Newtonsoft.Json;
 using System;
@@ -29,7 +30,6 @@ internal class SerializableUser
     [JsonProperty] public SerializableList BuddyEquipList       { get; set; }
     [JsonProperty] public SerializableList UnlockLinkList       { get; set; } // Riding maps, blu totems, emotes/dances, hairstyles
     [JsonProperty] public SerializableList FolkloreTomeList     { get; set; }
-    [JsonProperty] public SerializableList EmoteList            { get; set; }
 
     public SerializableUser()
     {
@@ -55,7 +55,6 @@ internal class SerializableUser
         BuddyEquipList          = SerializableList.CreateEmpty();
         UnlockLinkList          = SerializableList.CreateEmpty();
         FolkloreTomeList        = SerializableList.CreateEmpty();
-        EmoteList               = SerializableList.CreateEmpty();
     }
 
     public SerializableUser(IDatableData data)
@@ -65,24 +64,22 @@ internal class SerializableUser
         Name                    = data.Name;
         Homeworld               = data.Homeworld;
 
-        AchievementList         = data.AchievementList      .Serialise();
-        QuestList               = data.QuestList            .Serialise();
-        MinionList              = data.MinionList           .Serialise();
-        MountList               = data.MountList            .Serialise();
-
-        FacewearList            = data.FacewearList         .Serialise();
-        OrchestrionList         = data.OrchestrionList      .Serialise();
-        ClassLVLList            = data.ClassLVLList         .Serialise();
-        CardList                = data.CardList             .Serialise();
-        FashionList             = data.FashionList          .Serialise();
-        DutyList                = data.DutyList             .Serialise();
-        FishingList             = data.FishingList          .Serialise();
-        SightList               = data.SightList            .Serialise();
-        FramersList             = data.FramersList          .Serialise();
-        SecretRecipeBookList    = data.SecretRecipeBookList .Serialise();
-        BuddyEquipList          = data.BuddyEquipList       .Serialise();
-        UnlockLinkList          = data.UnlockLinkList       .Serialise();
-        FolkloreTomeList        = data.FolkloreTomeList     .Serialise();
-        EmoteList               = data.EmoteList            .Serialise();
+        AchievementList         = data.GetDate(AcquirableDateType.Achievement)          .Serialise();
+        QuestList               = data.GetDate(AcquirableDateType.Quest)                .Serialise();
+        MinionList              = data.GetDate(AcquirableDateType.Minion)               .Serialise();
+        MountList               = data.GetDate(AcquirableDateType.Mount)                .Serialise();
+        FacewearList            = data.GetDate(AcquirableDateType.Facewear)             .Serialise();
+        OrchestrionList         = data.GetDate(AcquirableDateType.Orchestrion)          .Serialise();
+        ClassLVLList            = data.GetDate(AcquirableDateType.ClassLVL)             .Serialise();
+        CardList                = data.GetDate(AcquirableDateType.Card)                 .Serialise();
+        FashionList             = data.GetDate(AcquirableDateType.Fashion)              .Serialise();
+        DutyList                = data.GetDate(AcquirableDateType.Duty)                 .Serialise();
+        FishingList             = data.GetDate(AcquirableDateType.Fishing)              .Serialise();
+        SightList               = data.GetDate(AcquirableDateType.Incognita)            .Serialise();
+        FramersList             = data.GetDate(AcquirableDateType.Framers)              .Serialise();
+        SecretRecipeBookList    = data.GetDate(AcquirableDateType.SecretRecipeBook)     .Serialise();
+        BuddyEquipList          = data.GetDate(AcquirableDateType.BuddyEquip)           .Serialise();
+        UnlockLinkList          = data.GetDate(AcquirableDateType.UnlockLink)           .Serialise();
+        FolkloreTomeList        = data.GetDate(AcquirableDateType.FolkloreTome)         .Serialise();
     }
 }

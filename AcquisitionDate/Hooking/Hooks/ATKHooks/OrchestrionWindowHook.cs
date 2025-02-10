@@ -8,6 +8,7 @@ using Acquisition.PetNicknames.Hooking;
 using System.Runtime.InteropServices;
 using Dalamud.Utility;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -47,7 +48,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "OrchestrionINN", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.OrchestrionList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Orchestrion);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnOrchestrion;
 
     protected override void OnDispose() { }

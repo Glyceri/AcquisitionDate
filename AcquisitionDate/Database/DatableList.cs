@@ -1,5 +1,6 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Database.Structs;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
 using System;
@@ -15,46 +16,65 @@ internal class DatableList : IDatableList
     public DateTime?[] ManualTimes = [];
 
     readonly IDirtySetter DirtySetter;
+    readonly Configuration Configuration;
 
     public int Length => IDs.Length;
-
-    public DateTime? LowestDateTime => GetLowestDateTime();
 
     DateTime? lowestDateTime = null;
     bool isDirty = true;
 
-    public DatableList(IDirtySetter dirtySetter)
+    public DatableList(IDirtySetter dirtySetter, Configuration configuration)
     {
         DirtySetter = dirtySetter;
+        Configuration = configuration;
     }
 
-    public DatableList(IDirtySetter dirtySetter, SerializableList list) : this(dirtySetter)
+    public DatableList(IDirtySetter dirtySetter, SerializableList list, Configuration configuration) : this(dirtySetter, configuration)
     {
         IDs = list.IDS;
         LodestoneTimes = list.LodestoneTimes;
         ManualTimes = list.ManualTimes;
     }
 
-    public DateTime? GetDate(uint ID)
-    {
-        DateTime? manualTime = GetDate(ID, AcquiredDateType.Manual);
-        if (manualTime != null) return manualTime;
-
-        DateTime? lodestoneTime = GetDate(ID, AcquiredDateType.Lodestone);
-        if (lodestoneTime != null) return lodestoneTime;
-
-        return null;
-    }
-
-    public DateTime? GetDate(uint ID, AcquiredDateType dateType)
+    public UnlockedDate? GetDate(uint ID)
     {
         int? index = GetIndex(ID);
         if (index == null) return null;
 
-        if (dateType == AcquiredDateType.Lodestone) return LodestoneTimes[index.Value];
-        if (dateType == AcquiredDateType.Manual) return ManualTimes[index.Value];
+        DateTime? lowestDateTime = GetLowestDateTime();
 
-        return null;
+        DateTime? manualTime = ManualTimes[index.Value];
+        DateTime? lodestoneTime = LodestoneTimes[index.Value];
+
+        AcquisitionDateTime? acqManualTime = null;
+        AcquisitionDateTime? acqLodestoneTime = null;
+
+        bool manualTimeIsLowest = false;
+        bool lodestoneTimeIsLowest = false;
+
+        if (lowestDateTime != null)
+        {
+            if (manualTime != null)
+            {
+                manualTimeIsLowest = lowestDateTime.Value.Ticks == manualTime.Value.Ticks;
+            }
+            if (lodestoneTime != null)
+            {
+                lodestoneTimeIsLowest = lowestDateTime.Value.Ticks == lodestoneTime.Value.Ticks;
+            }
+        }
+
+        if (manualTime != null)
+        {
+            acqManualTime = new AcquisitionDateTime(manualTime.Value, manualTimeIsLowest);
+        }
+
+        if (lodestoneTime != null)
+        {
+            acqLodestoneTime = new AcquisitionDateTime(lodestoneTime.Value, lodestoneTimeIsLowest);
+        }
+
+        return new UnlockedDate(Configuration, acqManualTime, acqLodestoneTime);
     }
 
     public bool RemoveDate(uint ID, AcquiredDateType dateType)

@@ -5,6 +5,7 @@ using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -23,7 +24,7 @@ internal unsafe class GlassSelectWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "GlassSelect", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.FacewearList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Facewear);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnGlassesSelect;
 
     protected override void OnDispose()

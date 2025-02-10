@@ -1,6 +1,7 @@
 ﻿using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate;
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
@@ -28,8 +29,8 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData)
     {
-        if (isQuest) return userData.QuestList;
-        return userData.DutyList;
+        if (isQuest) return userData.GetDate(AcquirableDateType.Quest);
+        return userData.GetDate(AcquirableDateType.Duty);
     }
 
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnCutsceneReplay;

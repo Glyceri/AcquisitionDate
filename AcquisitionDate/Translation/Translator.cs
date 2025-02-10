@@ -63,6 +63,8 @@ internal static class Translator
         { "Acquiry.Stop",                       "Stop Lodestone Download." },
         { "Acquiry.CompPerc",                   "Completion Percentage: {0}%"},
         { "Acquiry.Title",                      "Acquisition"},
+
+        { "DateTimeString.Before",              "Before {0}"},
     };
 
     static Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
@@ -112,6 +114,7 @@ internal static class Translator
         { "Acquiry.Stop",                       "Lodestone-Download Stoppen." },
         { "Acquiry.CompPerc",                   "Abschlussprozentsatz: {0}%"},
 
+        { "DateTimeString.Before",              "Vor dem {0}"},
     };
 
     static Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()

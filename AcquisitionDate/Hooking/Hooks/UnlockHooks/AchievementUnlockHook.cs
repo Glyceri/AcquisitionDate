@@ -33,7 +33,7 @@ internal unsafe class AchievementUnlockHook : UnlockHook
         AchievementUnlockingHook!.Original(achievement, achievementID);
 
         PluginHandlers.PluginLog.Information($"Detected Acquired Achievement with ID: {achievementID}");
-        UserList.ActiveUser?.Data.AchievementList.SetDate(achievementID, DateTime.Now, AcquiredDateType.Manual);
+        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Achievement).SetDate(achievementID, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Reset() { } // No Reset needed for achievements due to the direct hook.

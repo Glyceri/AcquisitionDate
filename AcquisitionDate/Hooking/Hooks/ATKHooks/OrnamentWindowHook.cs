@@ -7,6 +7,7 @@ using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
 using System.Runtime.InteropServices;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -23,7 +24,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "OrnamentNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.FashionList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fashion);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFashionSelect;
 
     protected override void OnDispose()

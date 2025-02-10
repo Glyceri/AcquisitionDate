@@ -33,7 +33,6 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         Register(new LevelupUnlockHook(UserList, Sheets));
         Register(new QuestUnlockHook(UserList, Sheets));
         Register(new EorzeaIncognitaUnlockHook(UserList, Sheets));
-        Register(new EmoteUnlockHook(UserList, Sheets));
     }
 
     void Register(UnlockHook unlockHook)

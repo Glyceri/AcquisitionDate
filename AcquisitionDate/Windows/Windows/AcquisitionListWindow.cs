@@ -70,7 +70,7 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
         }
         else
         {
-
+            DrawTabList();
         }
     }
 
@@ -201,6 +201,15 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
                     Listbox.End();
                 }
             }
+
+            Listbox.End();
+        }
+    }
+
+    void DrawTabList()
+    {
+        if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
+        {
 
             Listbox.End();
         }

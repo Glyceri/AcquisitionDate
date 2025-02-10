@@ -11,8 +11,6 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Events;
 using Dalamud.Utility;
 using AcquistionDate.PetNicknames.TranslatorSystem;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
-using Microsoft.VisualBasic;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -78,7 +76,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         tNode->TextColor.B = 0;
         tNode->TextColor.A = 255;
 
-        tNode->SetText("--/--/----");
+        tNode->SetText(Configuration.DateStandinString());
         return tNode;
     }
 
@@ -105,7 +103,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         bool finalStillDraw = stillDraw && configSaysVisible;
 
         textNode->ToggleVisibility(finalStillDraw);
-        textNode->SetText("??/??/????");
+        textNode->SetText(Configuration.DateStandinString());
 
         string? dateString = GetDateTimeString(listID);
         bool noDateFound = dateString.IsNullOrWhitespace();
@@ -176,7 +174,7 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (date == null) return null;
 
-        return date.Value.ToString(Configuration.DateParseString()).Replace("-", "/");
+        return date.Value.ToString(Configuration.DateParseString());
     }
 
     IAddonEventHandle? lastHoverOverEvent;

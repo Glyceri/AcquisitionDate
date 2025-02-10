@@ -6,6 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -28,7 +29,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "FishGuide2", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.FishingList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fishing);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFishGuide;
 
     protected override void OnDispose() 

@@ -6,6 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -22,7 +23,7 @@ internal unsafe class MountWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "MountNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.MountList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Mount);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMountNotebook;
 
     protected override void OnDispose()

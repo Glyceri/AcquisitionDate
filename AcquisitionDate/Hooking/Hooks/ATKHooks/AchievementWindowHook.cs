@@ -1,5 +1,6 @@
 ﻿using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
@@ -19,7 +20,7 @@ internal unsafe class AchievementWindowHook : DateTextHook
 
     public override void Init() =>  PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "Achievement", HookDetour);
 
-    protected override IDatableList GetList(IDatableData userData) => userData.AchievementList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Achievement);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnAchievements;
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)

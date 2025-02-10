@@ -1,4 +1,5 @@
 ﻿using AcquisitionDate.Acquisition.Elements.Bases;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
@@ -32,7 +33,7 @@ internal class QuestAcquirer : AcquirerCounter
 
     void OnQuestData(QuestData data)
     {
-        _currentUser.QuestList.SetDate(data.QuestID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDate(AcquirableDateType.Quest).SetDate(data.QuestID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

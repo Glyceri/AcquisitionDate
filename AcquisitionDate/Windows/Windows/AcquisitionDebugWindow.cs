@@ -16,6 +16,7 @@ using HtmlAgilityPack;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace AcquisitionDate.Windows.Windows;
@@ -157,26 +158,25 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                 }
                 DrawUser(entry);
                 ImGui.Indent();
-                DrawDatableList(entry, entry.AchievementList, "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.QuestList, "Quests", (id) => Services.Sheets.GetQuest(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.MinionList, "Minions", (id) => Services.Sheets.GetCompanion((ushort)id)?.BaseSingular ?? "[Unknown]");
-                DrawDatableList(entry, entry.MountList, "Mounts", (id) => Services.Sheets.GetMountByID(id)?.Singular.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.ClassLVLList, "Levels", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Achievement), "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Quest), "Quests", (id) => Services.Sheets.GetQuest(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Minion), "Minions", (id) => Services.Sheets.GetCompanion((ushort)id)?.BaseSingular ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Mount), "Mounts", (id) => Services.Sheets.GetMountByID(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.ClassLVL), "Levels", (id) => $"{id}");
 
-                DrawDatableList(entry, entry.FacewearList, "Facewear", (id) => Services.Sheets.GetGlassesByID(id)?.BaseSingular ?? "[Unknown]");
-                DrawDatableList(entry, entry.OrchestrionList, "Orchestrion Roll", (id) => Services.Sheets.GetOrchestrionByID(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.CardList, "Cards", (id) => $"{id}");
-                DrawDatableList(entry, entry.FashionList, "Fashion", (id) => Services.Sheets.GetOrnamentByID(id)?.Singular.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.DutyList, "Duties", (id) => Services.Sheets.GetContentFinderCondition((ushort)id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.CardList, "Fishing", (id) => $"{id}");
-                DrawDatableList(entry, entry.SightList, "Sightseeing List", (id) => Services.Sheets.GetAdventureByIndex(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Facewear), "Facewear", (id) => Services.Sheets.GetGlassesByID(id)?.BaseSingular ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Orchestrion), "Orchestrion Roll", (id) => Services.Sheets.GetOrchestrionByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Card), "Cards", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Fashion), "Fashion", (id) => Services.Sheets.GetOrnamentByID(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Duty), "Duties", (id) => Services.Sheets.GetContentFinderCondition((ushort)id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Fishing), "Fishing", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Incognita), "Sightseeing List", (id) => Services.Sheets.GetAdventureByIndex(id)?.Name.ExtractText() ?? "[Unknown]");
 
-                DrawDatableList(entry, entry.FramersList, "Framing Kits", (id) => $"{id}");
-                DrawDatableList(entry, entry.SecretRecipeBookList, "Secret Recipe Book", (id) => $"{id}");
-                DrawDatableList(entry, entry.BuddyEquipList, "Bardings", (id) => $"{id}");
-                DrawDatableList(entry, entry.UnlockLinkList, "Unlock Link???? (idk what this is)", (id) => $"{id}");
-                DrawDatableList(entry, entry.FolkloreTomeList, "Folklores", (id) => $"{id}");
-                DrawDatableList(entry, entry.EmoteList, "Emotes", (id) => Services.Sheets.GetEmoteByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Framers), "Framing Kits", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.SecretRecipeBook), "Secret Recipe Book", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.BuddyEquip), "Bardings", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.UnlockLink), "Unlock Link???? (idk what this is)", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDate(AcquirableDateType.FolkloreTome), "Folklores", (id) => $"{id}");
                 ImGui.Unindent();
             }
         }

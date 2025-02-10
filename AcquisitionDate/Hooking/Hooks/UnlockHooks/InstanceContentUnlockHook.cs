@@ -54,7 +54,7 @@ internal unsafe class InstanceContentUnlockHook : UnlockHook
             return;
         }
 
-        UserList.ActiveUser?.Data.DutyList.SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
+        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Duty).SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Dispose()

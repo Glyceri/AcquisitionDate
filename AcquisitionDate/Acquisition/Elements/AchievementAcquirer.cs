@@ -1,4 +1,5 @@
 ﻿using AcquisitionDate.Acquisition.Elements.Bases;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
@@ -35,10 +36,10 @@ internal class AchievementAcquirer : AcquirerCounter
         // This is the chocobo quest, a failsafe because chocobo mount is peepeepoopoo
         if (data.AchievementID == 66698)
         {
-            _currentUser?.MountList.SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+            _currentUser?.GetDate(AcquirableDateType.Mount).SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
         }
 
-        _currentUser?.AchievementList.SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser?.GetDate(AcquirableDateType.Achievement).SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

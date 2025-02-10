@@ -11,6 +11,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -206,7 +207,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.ClassLVLList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.ClassLVL);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnLevelScreen;
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon) { }

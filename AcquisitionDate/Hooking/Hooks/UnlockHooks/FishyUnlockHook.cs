@@ -74,7 +74,7 @@ internal unsafe class FishyUnlockHook : UnlockHook
         uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFishBitmask);
         if (fishOutcome != null)
         {
-            data.FishingList.SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            data.GetDate(AcquirableDateType.Fishing).SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
             PluginHandlers.PluginLog.Information($"Found new fish caught with ID: {fishOutcome.Value}");
         }
 
@@ -82,7 +82,7 @@ internal unsafe class FishyUnlockHook : UnlockHook
         if (spfishOutcome != null)
         {
             spfishOutcome += SpearFishIdOffset;
-            data.FishingList.SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            data.GetDate(AcquirableDateType.Fishing).SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
             PluginHandlers.PluginLog.Information($"Found new spearfish caught with ID: {spfishOutcome.Value}");
         }
     }
