@@ -204,8 +204,11 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                     ImGui.TableSetColumnIndex(0);
 
                     uint elementID = list.GetID(i);
-                    DateTime? lodestoneDate = list.GetDate(elementID, AcquiredDateType.Lodestone);
-                    DateTime? manualDate = list.GetDate(elementID, AcquiredDateType.Manual);
+                    //DateTime? lodestoneDate = list.GetDate(elementID, AcquiredDateType.Lodestone);
+                    //DateTime? manualDate = list.GetDate(elementID, AcquiredDateType.Manual);
+
+                    DateTime? lodestoneDate = null;
+                    DateTime? manualDate = null;
 
                     if (EraserButton.Draw(new Vector2(25,20), Translator.GetLine("ClearButton.Label"), Translator.GetLine("Acquiry.Clear")))
                     {

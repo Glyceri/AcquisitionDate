@@ -107,7 +107,7 @@ internal class DatableDatabase : IDatabase
         DirtySetter.NotifyDirtyDatabase();
     }
 
-    public string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, IDatableData localUser)
+    public string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser)
     {
         bool earliestIsLocal = false;
 
@@ -115,17 +115,7 @@ internal class DatableDatabase : IDatabase
         UnlockedDate? earliestTime = null;
         IDatableData? earliestData = null;
 
-        if (Services.Configuration.ShowDatesFromAlts == false)
-        {
-            earliestData = localUser;
-
-            IDatableList list = GetList(earliestData, getListCallback);
-
-            UnlockedDate? date = GetDate(forID, list);
-
-            earliestTime = date;
-        }
-        else
+        if (Services.Configuration.ShowDatesFromAlts && showAlts)
         {
             foreach (IDatableData entry in _entries)
             {
@@ -148,6 +138,17 @@ internal class DatableDatabase : IDatabase
                 earliestData = entry;
                 earliestTimeStamp ??= dateTime;
             }
+        }
+        else
+        {
+            earliestData = localUser;
+
+            IDatableList list = GetList(earliestData, getListCallback);
+
+            UnlockedDate? date = GetDate(forID, list);
+
+            earliestTime = date;
+            earliestTimeStamp = date?.GetDateTime();
         }
 
         if (earliestTime == null || earliestData == null || earliestTimeStamp == null)

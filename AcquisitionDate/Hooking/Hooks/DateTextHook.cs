@@ -48,6 +48,8 @@ internal unsafe abstract class DateTextHook : HookableElement
     }
 
     protected abstract void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon);
+    protected abstract IDatableList GetList(IDatableData userData);
+    protected abstract bool HandleConfig(Configuration config);
 
     protected AtkTextNode* CreateTextNode(uint nodeID)
     {
@@ -76,7 +78,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         tNode->TextColor.B = 0;
         tNode->TextColor.A = 255;
 
-        tNode->SetText(Configuration.DateStandinString());
+        tNode->SetText("--/--/----");
         return tNode;
     }
 
@@ -98,84 +100,26 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (textNode == null) return false;
 
-        bool configSaysVisible = HandleConfig(Configuration) && Configuration.ShowPlaceholderDates;
+        textNode->ToggleVisibility(false);
+        textNode->SetText(string.Empty);
 
-        bool finalStillDraw = stillDraw && configSaysVisible;
+        IDatableUser? localUser = UserList.ActiveUser;
+        if (localUser == null) return false;            // Should really be possible that this is false whilst the hooks still update but who knows
 
-        textNode->ToggleVisibility(finalStillDraw);
-        textNode->SetText(Configuration.DateStandinString());
+        bool configSaysVisible = HandleConfig(Configuration);
+        if (!configSaysVisible) return false;
 
-        string? dateString = GetDateTimeString(listID);
-        bool noDateFound = dateString.IsNullOrWhitespace();
-
-        if (Configuration.ShowDatesFromAlts && showAlt && noDateFound)
+        string? dateTimeString = Database.GetDateTimeString(listID, GetList, showAlt, localUser.Data);
+        if (dateTimeString.IsNullOrWhitespace())
         {
-            DateTime? earliestTime = null;
-            IDatableData? earliestData = null;
-
-            foreach (IDatableData data in Database.GetEntries())
-            {
-                IDatableList list = GetList(data);
-
-                DateTime? dateTime = list.GetDate(listID);
-                if (dateTime == null) continue;
-
-                earliestTime ??= dateTime;
-                earliestData ??= data;
-                if (earliestTime == null) continue;
-
-                if (earliestTime.Value.Ticks >= dateTime.Value.Ticks) continue;
-
-                earliestTime = dateTime;
-                earliestData = data;
-            }
-
-            dateString = GetDateString(earliestTime);
-            noDateFound = dateString.IsNullOrWhitespace();
-
-            if (UserList.ActiveUser?.Data != earliestData && earliestData != null)
-            {
-                dateString += $" ({earliestData.Name}@{earliestData.HomeworldName}) [ALT]";
-            }
-        }
-
-        if (noDateFound) 
-        {
-            return finalStillDraw; 
+            return stillDraw;
         }
 
         textNode->ToggleVisibility(true);
-        textNode->SetText(dateString!);
+        textNode->SetText(dateTimeString);
 
         return true;
-    }
-
-    protected abstract bool HandleConfig(Configuration config);
-
-    string? GetDateTimeString(uint ID)
-    {
-        IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null) return null;
-
-        IDatableList list = GetList(localUser.Data);
-
-        return GetDateForList(ID, list);
-    }
-
-    string? GetDateForList(uint ID, IDatableList list)
-    {
-        DateTime? dateTime = list.GetDate(ID);
-        if (dateTime == null) return null;
-
-        return GetDateString(dateTime);
-    }
-
-    string? GetDateString(DateTime? date)
-    {
-        if (date == null) return null;
-
-        return date.Value.ToString(Configuration.DateParseString());
-    }
+    }    
 
     IAddonEventHandle? lastHoverOverEvent;
     IAddonEventHandle? lastHoverOutEvent;
@@ -200,7 +144,7 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (atkEventType == AddonEventType.MouseOver)
         {
-            string? dateString = GetDateTimeString(ID);
+            string? dateString = null;
             string newLine = string.Empty;
             if (dateString.IsNullOrWhitespace())
             {
@@ -222,8 +166,6 @@ internal unsafe abstract class DateTextHook : HookableElement
             AtkStage.Instance()->TooltipManager.HideTooltip((ushort)((AtkResNode*)atkResNode)->ParentNode->NodeId);
         }
     }
-
-    protected abstract IDatableList GetList(IDatableData userData);
 
     protected void MergeTextBetweenElements(AtkTextNode* baseNode, AtkResNode* prevNode, AtkResNode* nextNode, AtkUldManager* uldManager)
     {

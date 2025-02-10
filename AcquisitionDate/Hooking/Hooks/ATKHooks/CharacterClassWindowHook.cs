@@ -101,7 +101,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
 
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-        lastValid = DrawDate(tNode, lastIndex, showAlt: false, stillDraw: true);
+        lastValid = DrawDate(tNode, lastIndex, showAlt: false, stillDraw: false);
         tNode2->ToggleVisibility(lastValid);
     }
 

@@ -10,5 +10,5 @@ internal interface IDatabase
 
     SerializableUser[] SerializeDatabase();
 
-    string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, IDatableData localUser);
+    string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser);
 }
