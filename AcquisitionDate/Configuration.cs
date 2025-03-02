@@ -101,6 +101,11 @@ internal class Configuration : IPluginConfiguration
             return null;
         }
 
+        return RawStandinString();
+    }
+
+    public string RawStandinString()
+    {
         string parseString = DateParseString();
 
         parseString = parseString.Replace("dd", "??");

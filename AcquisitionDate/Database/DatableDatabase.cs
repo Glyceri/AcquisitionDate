@@ -111,9 +111,52 @@ internal class DatableDatabase : IDatabase
     {
         bool earliestIsLocal = false;
 
-        AcquisitionDateTime? earliestTimeStamp = null;
-        UnlockedDate? earliestTime = null;
-        IDatableData? earliestData = null;
+        GetDateValues
+        (
+            forID, 
+            getListCallback, 
+            showAlts, 
+            localUser,
+            out AcquisitionDateTime? earliestTimeStamp,
+            out UnlockedDate? earliestTime,
+            out IDatableData? earliestData
+        );
+
+        if (earliestTime == null || earliestData == null || earliestTimeStamp == null)
+        {
+            return Services.Configuration.DateStandinString();
+        }
+
+        if (earliestData.ContentID == localUser.ContentID)
+        {
+            earliestIsLocal = true;
+        }
+
+        string? dateString = earliestTime.Value.GetTimeString();
+        if (dateString == null)
+        {
+            return Services.Configuration.DateStandinString();
+        }
+
+        if (earliestTimeStamp.Value.IsLowest)
+        {
+            dateString = string.Format(Translator.GetLine("DateTimeString.Before"), dateString);
+        }
+
+        if (!earliestIsLocal)
+        {
+            dateString += $" [{earliestData.Name}@{earliestData.HomeworldName}]";
+        }
+
+        return dateString;
+    }
+
+    void GetDateValues(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser,
+                       out AcquisitionDateTime? earliestTimeStamp, out UnlockedDate? earliestTime, out IDatableData? earliestData)
+    {
+        earliestTimeStamp = null;
+        earliestTime = null;
+        earliestData = null;
 
         if (Services.Configuration.ShowDatesFromAlts && showAlts)
         {
@@ -150,34 +193,6 @@ internal class DatableDatabase : IDatabase
             earliestTime = date;
             earliestTimeStamp = date?.GetDateTime();
         }
-
-        if (earliestTime == null || earliestData == null || earliestTimeStamp == null)
-        {
-            return Services.Configuration.DateStandinString();
-        }
-
-        if (earliestData.ContentID == localUser.ContentID)
-        {
-            earliestIsLocal = true;
-        }
-
-        string? dateString = earliestTime.Value.GetTimeString();
-        if (dateString == null)
-        {
-            return Services.Configuration.DateStandinString();
-        }
-
-        if (earliestTimeStamp.Value.IsLowest)
-        {
-            dateString = string.Format(Translator.GetLine("DateTimeString.Before"), dateString);
-        }
-
-        if (!earliestIsLocal)
-        {
-            dateString += $" [{earliestData.Name}@{earliestData.HomeworldName}]";
-        }
-
-        return dateString;
     }
 
     IDatableList GetList(IDatableData data, Func<IDatableData, IDatableList> getListCallback) => getListCallback.Invoke(data);

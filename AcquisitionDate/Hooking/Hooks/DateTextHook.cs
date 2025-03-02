@@ -25,6 +25,10 @@ internal unsafe abstract class DateTextHook : HookableElement
     protected string _lastAddonName = string.Empty;
     protected uint _lastId = 0;
 
+    // TODO: this is a temporary fix to push the update out.
+    // Make tooltips work properly again :/
+    string? lastDateTimeString = null;
+
     public DateTextHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration)
     {
         Configuration = configuration;
@@ -110,6 +114,14 @@ internal unsafe abstract class DateTextHook : HookableElement
         if (!configSaysVisible) return false;
 
         string? dateTimeString = Database.GetDateTimeString(listID, GetList, showAlt, localUser.Data);
+
+        // Temporary fix until I fully flesh out this update
+        // Fucking PVP tournament taking all my time
+        // My team sucks ass
+        // I suck ass
+        // Why did I join LLLLLLLLLLLLL
+        lastDateTimeString = dateTimeString;
+
         if (dateTimeString.IsNullOrWhitespace())
         {
             return stillDraw;
@@ -144,7 +156,15 @@ internal unsafe abstract class DateTextHook : HookableElement
     {
         if (atkEventType == AddonEventType.MouseOver)
         {
-            string? dateString = null;
+            // Last date time string is TEMPORARY
+            // This HAS to be fixed bettr some day
+            // Because rn itll go:
+            // Achieved On: Before: 00/00/0000
+            // or Achieved On: ??/??/????
+            // Like hello...
+            // This sucks
+            string? dateString = lastDateTimeString;
+
             string newLine = string.Empty;
             if (dateString.IsNullOrWhitespace())
             {
