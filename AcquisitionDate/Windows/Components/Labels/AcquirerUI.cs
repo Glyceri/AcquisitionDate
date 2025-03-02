@@ -104,7 +104,7 @@ internal static class AcquirerUI
             ImGui.PushStyleColor(ImGuiCol.Button, colour);
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, colour);
 
-            ImGui.Button(string.Empty, new Vector2(ImGui.GetContentRegionAvail().X * completionAmount, size.Y));
+            ImGui.Button($"##fillerBar{WindowHandler.InternalCounter}", new Vector2(ImGui.GetContentRegionAvail().X * completionAmount, size.Y));
 
             if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
             {

@@ -58,7 +58,7 @@ internal class WindowHandler : IDisposable
         AddWindow(new KofiWindow(this, Services.Configuration));
         AddWindow(new AcquiryWindow(this, Services.Configuration, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyListener));
         AddWindow(new SessionTokenWindow(this, Services.Configuration));
-        AddWindow(new AcquisitionListWindow(this, Services.Configuration, UserList, Database, ImageDatabase));
+        AddWindow(new AcquisitionListWindow(this, Services, UserList, Database, ImageDatabase));
     }
 
     void Draw()

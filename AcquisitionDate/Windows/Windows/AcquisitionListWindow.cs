@@ -11,6 +11,10 @@ using ImGuiNET;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Utility;
+using AcquisitionDate.Windows.Windows.ListTabs.Tabs;
+using AcquisitionDate.Windows.Windows.ListTabs;
+using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Services;
 
 namespace AcquisitionDate.Windows.Windows;
 
@@ -25,6 +29,7 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
     readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IImageDatabase ImageDatabase;
+    readonly IAcquisitionServices AcquisitionServices;
 
     float BarHeight => 30 * ImGuiHelpers.GlobalScaleSafe;
 
@@ -38,13 +43,18 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
     IDatableData? ActiveEntry;
     IDatableUser? lastUser;
 
-    public AcquisitionListWindow(WindowHandler windowHandler, Configuration configuration, IUserList userList, IDatabase database, IImageDatabase imageDatabase) : base(windowHandler, configuration, "Acquisition List")
+    readonly DataTab AchievementTab;
+
+    public AcquisitionListWindow(WindowHandler windowHandler, IAcquisitionServices services, IUserList userList, IDatabase database, IImageDatabase imageDatabase) : base(windowHandler, services.Configuration, "Acquisition List")
     {
         Open();
 
         UserList = userList;
         Database = database;
         ImageDatabase = imageDatabase;
+        AcquisitionServices = services;
+
+        AchievementTab = new AchievementTab(AcquisitionServices.Sheets);
     }
 
     public override void OnOpen()
@@ -208,9 +218,11 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
 
     void DrawTabList()
     {
+        if (ActiveEntry == null) return;
+
         if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
         {
-
+            AchievementTab.Draw(ActiveEntry.GetDate(AchievementTab.MyType), activeSearchText);
             Listbox.End();
         }
     }

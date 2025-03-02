@@ -38,11 +38,6 @@ internal class ItemPageDataParser : IItemPageDataParser<ItemData>
             onFailure?.Invoke(new Exception($"timeNode was NOT found!"));
             return;
         }
-        if (timeNode.ChildNodes.Count == 0)
-        {
-            onFailure?.Invoke(new Exception($"timeNode.ChildNodes.Count == 0"));
-            return;
-        };
 
         DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode, _region);
         if (acquiredTime == null)
