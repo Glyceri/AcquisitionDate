@@ -47,8 +47,6 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
 
     public AcquisitionListWindow(WindowHandler windowHandler, IAcquisitionServices services, IUserList userList, IDatabase database, IImageDatabase imageDatabase) : base(windowHandler, services.Configuration, "Acquisition List")
     {
-        Open();
-
         UserList = userList;
         Database = database;
         ImageDatabase = imageDatabase;

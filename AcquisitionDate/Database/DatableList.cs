@@ -1,3 +1,4 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Database.Structs;
@@ -159,7 +160,7 @@ internal class DatableList : IDatableList
             DateTime? mTime = ManualTimes[i];
 
             long lValue = lTime?.Ticks ?? long.MaxValue;
-            long mValue = mTime?.Ticks ?? long.MinValue;
+            long mValue = mTime?.Ticks ?? long.MaxValue;
 
             long minTime = lValue;
             if (mValue < minTime) minTime = mValue;
