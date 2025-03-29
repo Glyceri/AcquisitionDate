@@ -34,7 +34,7 @@ internal class HookHandler : IHookHandler
 
     void _Register()
     {
-        Register(new CharacterManagerHook(UserList));
+        Register(new CharacterManagerHook(UserList, Services));
         Register(new AchievementWindowHook(UserList, Database, Services.Sheets, Services.Configuration));
         Register(new QuestJournalWindowHook(UserList, Database, Services.Sheets, Services.Configuration));
         Register(new CutsceneReplayWindowHook(UserList, Database, Services.Sheets, Services.Configuration));

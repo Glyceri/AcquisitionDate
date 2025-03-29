@@ -6,7 +6,6 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
-using System.Runtime.InteropServices;
 using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
@@ -53,7 +52,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
             tNode->BackgroundColor = titleNode->BackgroundColor;
         }
 
-        Ornament? ornament = Sheets.GetOrnamentByName(Marshal.PtrToStringUTF8((nint)titleNode->OriginalTextPointer) ?? string.Empty);
+        Ornament? ornament = Sheets.GetOrnamentByName(titleNode->NodeText.ToString());
         if (ornament == null)
         {
             tNode->ToggleVisibility(false);
