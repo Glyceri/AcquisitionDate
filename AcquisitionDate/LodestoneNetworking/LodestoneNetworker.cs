@@ -37,22 +37,13 @@ internal class LodestoneNetworker : ILodestoneNetworker
         PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
         {
             ClientLanguage.Japanese => LodestoneRegion.Japan,
-            ClientLanguage.German => LodestoneRegion.Germany,
-            ClientLanguage.French => LodestoneRegion.France,
-            ClientLanguage.English => GetLodestoneRegion(),
+            ClientLanguage.German   => LodestoneRegion.Germany,
+            ClientLanguage.French   => LodestoneRegion.France,
+            ClientLanguage.English  => LodestoneRegion.America,
             _ => LodestoneRegion.Germany,
         };
 
         DirtyListener.RegisterDirtyUser(OnDirty);
-    }
-
-    LodestoneRegion GetLodestoneRegion()
-    {
-        World? currentWorld = PluginHandlers.ClientState.LocalPlayer?.CurrentWorld.Value;
-        if (currentWorld == null) return LodestoneRegion.America;
-        if (currentWorld.Value.DataCenter.Value.PvPRegion == 3) return LodestoneRegion.Europe;
-
-        return LodestoneRegion.America;
     }
 
     void OnDirty()
