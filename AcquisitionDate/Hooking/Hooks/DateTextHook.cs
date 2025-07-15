@@ -147,8 +147,8 @@ internal unsafe abstract class DateTextHook : HookableElement
         ClearOldTooldtips();
 
         baseNode->NodeFlags |= NodeFlags.EmitsEvents | NodeFlags.RespondToMouse | NodeFlags.HasCollision;
-        lastHoverOverEvent = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOver, (atkEventType, atkUnitBase, atkResNode) => OnTooltip(atkEventType, atkUnitBase, atkResNode, ID, hasInaccuracies));
-        lastHoverOutEvent = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOut, (atkEventType, atkUnitBase, atkResNode) => OnTooltip(atkEventType, atkUnitBase, atkResNode, ID, hasInaccuracies));
+        lastHoverOverEvent = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOver, (AddonEventType atkEventType, AddonEventData data) => OnTooltip(atkEventType, data.AddonPointer, (nint)((AtkUnitBase*)data.AddonPointer)->RootNode, ID, hasInaccuracies));
+        lastHoverOutEvent  = PluginHandlers.EventManager.AddEvent((nint)baseAddon, (nint)baseNode, AddonEventType.MouseOut, (AddonEventType atkEventType, AddonEventData data) => OnTooltip(atkEventType, data.AddonPointer, (nint)((AtkUnitBase*)data.AddonPointer)->RootNode, ID, hasInaccuracies));
         baseAddon->UpdateCollisionNodeList(false);
     }
 

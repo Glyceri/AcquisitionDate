@@ -47,6 +47,6 @@ internal class ListPageCountParser : IAcquistionParserElement<int>
             return;
         }
 
-        onSuccess?.Invoke(pageCountValue);
+        onSuccess.Invoke(pageCountValue);
     }
 }

@@ -66,20 +66,19 @@ internal unsafe class ItemUnlockHook : UnlockHook
         return freshlyUnlockedItems;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetCompanionID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetBuddyEquipID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetMountID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetSecretRecipeID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetUnlockLinkID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetFolkloreID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetFramerKitID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetOrnamentID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetGlassesID(Item item) => GetItemAdditionalDataID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetTrippleTriadID(Item item) => GetItemAdditionalDataID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetOrchestrionID(Item item) => GetItemAdditionalDataID(item);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetItemActionID(Item item) => item.ItemAction.Value.Data[0];
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetItemAdditionalDataID(Item item) => item.AdditionalData.RowId;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetCompanionID            (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetBuddyEquipID           (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetMountID                (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetSecretRecipeID         (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetUnlockLinkID           (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetFolkloreID             (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetOrnamentID             (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetGlassesID              (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetTrippleTriadID         (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetOrchestrionID          (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetFramerKitID            (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetItemActionID           (Item item) => item.ItemAction.Value.Data[0];
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetItemAdditionalDataID   (Item item) => item.AdditionalData.RowId;
 
     unsafe bool IsUnlocked(Item item, out bool itemIsUnlocked)
     {
