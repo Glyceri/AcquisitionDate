@@ -4,7 +4,7 @@ using AcquistionDate.PetNicknames.Windowing.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquisitionDate.Windows.Components.Labels;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/12.0.2">
+<Project Sdk="Dalamud.NET.Sdk/13.0.0">
   <PropertyGroup>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.1.0</Version>
     <Description>A plugin that shows the acquisition date of stuff.</Description>
     <PackageProjectUrl>https://github.com/Glyceri/AcquisitionDate</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>

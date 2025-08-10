@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System.Numerics;
 using AcquisitionDate.Windows;

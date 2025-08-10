@@ -86,7 +86,6 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 tNode->SetAlignment(AlignmentType.Left);
                 tNode->DrawFlags = stuffeNode->DrawFlags;
                 tNode->TextFlags = stuffeNode->TextFlags;
-                tNode->TextFlags2 = stuffeNode->TextFlags2;
 
                 tNode->EdgeColor = stuffeNode->EdgeColor;
                 tNode->Color = stuffeNode->Color;

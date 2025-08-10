@@ -4,7 +4,7 @@ using AcquisitionDate.Database.Structs;
 using AcquisitionDate.Services.Interfaces;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AcquisitionDate.Windows.Windows.ListTabs.Tabs;
 

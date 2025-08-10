@@ -11,8 +11,8 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class QuestUnlockHook : UnlockHook
 {
-    readonly List<uint> QuestsCompleted = new List<uint>();
-    byte lastAcceptedQuestCount = 0;
+    private readonly List<uint> QuestsCompleted = new List<uint>();
+    private byte lastAcceptedQuestCount = 0;
 
     public QuestUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 

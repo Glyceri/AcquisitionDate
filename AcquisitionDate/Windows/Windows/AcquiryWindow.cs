@@ -9,7 +9,7 @@ using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquisitionDate.Windows.Windows;

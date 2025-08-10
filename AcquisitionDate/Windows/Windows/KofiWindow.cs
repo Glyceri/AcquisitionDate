@@ -3,7 +3,7 @@ using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquisitionDate.AcquisitionDate.Windowing.Windows;

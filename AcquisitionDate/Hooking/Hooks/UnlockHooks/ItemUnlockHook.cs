@@ -16,11 +16,11 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class ItemUnlockHook : UnlockHook
 {
-    readonly List<uint> UnlockedItems = new List<uint>();
+    private readonly List<uint> UnlockedItems = new List<uint>();
 
-    readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
+    private readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
 
-    delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
+    private delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
 
     public ItemUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets)
     {

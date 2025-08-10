@@ -10,7 +10,7 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class LevelupUnlockHook : UnlockHook
 {
-    short[] currentClassJobLevels = [];
+    private short[] currentClassJobLevels = [];
 
     public LevelupUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 

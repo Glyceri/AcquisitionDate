@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Labels;

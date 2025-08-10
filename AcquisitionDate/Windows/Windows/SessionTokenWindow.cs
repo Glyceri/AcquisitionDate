@@ -1,6 +1,6 @@
 ﻿using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using AcquistionDate.PetNicknames.Windowing.Components;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 using Dalamud.Interface.Utility;
 

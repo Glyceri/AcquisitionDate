@@ -7,14 +7,13 @@ using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using AcquistionDate.PetNicknames.Windowing.Components;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Utility;
 using AcquisitionDate.Windows.Windows.ListTabs.Tabs;
 using AcquisitionDate.Windows.Windows.ListTabs;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.Services;
 
 namespace AcquisitionDate.Windows.Windows;
 

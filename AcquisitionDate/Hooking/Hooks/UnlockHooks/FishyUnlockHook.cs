@@ -14,8 +14,8 @@ internal unsafe class FishyUnlockHook : UnlockHook
 {
     public const uint SpearFishIdOffset = 20000;
 
-    byte[] _fishStore       = [];
-    byte[] _spearFishStore  = [];
+    private byte[] _fishStore       = [];
+    private byte[] _spearFishStore  = [];
 
     public FishyUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
@@ -50,7 +50,7 @@ internal unsafe class FishyUnlockHook : UnlockHook
         return null;
     }
 
-    uint? CheckFishies(ref byte[] store, Span<byte> bitmask)
+    private uint? CheckFishies(ref byte[] store, Span<byte> bitmask)
     {
         Span<byte> span = bitmask;
 

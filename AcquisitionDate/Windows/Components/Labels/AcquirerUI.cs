@@ -5,7 +5,7 @@ using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using AcquistionDate.PetNicknames.Windowing.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 using Dalamud.Utility;
 

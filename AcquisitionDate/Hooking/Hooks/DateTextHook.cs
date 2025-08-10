@@ -11,6 +11,7 @@ using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Events;
 using Dalamud.Utility;
 using AcquistionDate.PetNicknames.TranslatorSystem;
+using Dalamud.Game.Addon.Events.EventDataTypes;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -42,7 +43,7 @@ internal unsafe abstract class DateTextHook : HookableElement
         _lastEventType = type;
         _lastAddonName = args.AddonName;
 
-        AtkUnitBase* addon = (AtkUnitBase*)args.Addon;
+        AtkUnitBase* addon = (AtkUnitBase*)args.Addon.Address;
         _lastId = addon->Id;
         if (!addon->IsVisible) return;
 
@@ -70,12 +71,11 @@ internal unsafe abstract class DateTextHook : HookableElement
         tNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorBottom;
         tNode->AtkResNode.DrawFlags = 0;
         tNode->SetAlignment(AlignmentType.BottomLeft);
-        tNode->TextFlags2 = 0;
 
         tNode->LineSpacing = 18;
         tNode->FontSize = 12;
         tNode->AlignmentFontType = 0;
-        tNode->TextFlags = (byte)(TextFlags.AutoAdjustNodeSize);
+        tNode->TextFlags = TextFlags.AutoAdjustNodeSize;
 
         tNode->TextColor.R = 0;
         tNode->TextColor.G = 0;

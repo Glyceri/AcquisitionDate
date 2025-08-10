@@ -3,7 +3,7 @@ using AcquisitionDate.ImageDatabase.Interfaces;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquisitionDate.Windows.Components.Image;
