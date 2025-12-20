@@ -5,6 +5,7 @@ using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -14,14 +15,14 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public EorzeaIncognitaWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public EorzeaIncognitaWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "AdventureNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.SightList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Incognita);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnEorzeaIncognita;
 
     protected override void OnDispose() 
@@ -57,7 +58,7 @@ internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Adventure notebook clicked index: {selectedIndex}");
 
-        if (DrawDate(tNode, selectedIndex, true))
+        if (DrawDate(tNode, selectedIndex, showAlt: true, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, selectedIndex);
         }

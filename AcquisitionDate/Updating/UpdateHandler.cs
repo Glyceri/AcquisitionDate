@@ -1,7 +1,9 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Interfaces;
+using AcquisitionDate.ImageDatabase.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Serializiation;
 using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
@@ -14,20 +16,22 @@ namespace AcquisitionDate.Updating;
 internal class UpdateHandler : IUpdateHandler
 {
     readonly ILodestoneNetworker LodestoneNetworker;
+    readonly IImageDatabase ImageDatabase;
     readonly IUserList UserList;
-    readonly IAcquisitionServices Services;
     readonly SaveHandler SaveHandler;
     readonly IHookHandler HookHandler;
+    readonly IAcquisitionParser AcquistionParser;
 
     readonly List<IUpdatable> _updatables = new List<IUpdatable>();
 
-    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IUserList userList, IAcquisitionServices services, SaveHandler saveHandler, IHookHandler hookHandler)
+    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IImageDatabase imageDatabase, IUserList userList, IAcquisitionParser acquistionParser, SaveHandler saveHandler, IHookHandler hookHandler)
     {
         LodestoneNetworker = lodestoneNetworker;
+        ImageDatabase = imageDatabase;
         UserList = userList;
-        Services = services;
         SaveHandler = saveHandler;
         HookHandler = hookHandler;
+        AcquistionParser = acquistionParser;
 
         PluginHandlers.Framework.Update += OnUpdate;
         Setup();
@@ -36,9 +40,10 @@ internal class UpdateHandler : IUpdateHandler
     void Setup()
     {
         _updatables.Add(SaveHandler);
+        _updatables.Add(ImageDatabase);
         _updatables.Add(LodestoneNetworker);
         _updatables.Add(HookHandler.UnlocksHook);
-        _updatables.Add(new LodestoneIDHelper(LodestoneNetworker, UserList, Services.Sheets));
+        _updatables.Add(new LodestoneIDHelper(AcquistionParser, LodestoneNetworker, UserList));
     }
 
     public void Dispose()

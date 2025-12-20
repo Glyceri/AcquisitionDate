@@ -8,6 +8,7 @@ using Acquisition.PetNicknames.Hooking;
 using System.Runtime.InteropServices;
 using Dalamud.Utility;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -39,7 +40,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         ];
     uint[] lastOrchestrionDate = new uint[20];
 
-    public OrchestrionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public OrchestrionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -47,7 +48,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "OrchestrionINN", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.OrchestrionList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Orchestrion);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnOrchestrion;
 
     protected override void OnDispose() { }
@@ -99,7 +100,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
 
             lastOrchestrionDate[i] = orchestrionDate;
 
-            if (DrawDate(tNode, orchestrionDate))
+            if (DrawDate(tNode, orchestrionDate, showAlt: false, stillDraw: false))
             {
                 textNode->SetYFloat(7);
                 GiveTooltip(baseAddon, tNode, orchestrionDate);

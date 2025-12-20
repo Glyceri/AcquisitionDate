@@ -15,7 +15,7 @@ internal unsafe class BaseNode
 
     public BaseNode(string addon)
     {
-        node = (AtkUnitBase*)PluginHandlers.GameGui.GetAddonByName(addon, 1);
+        node = (AtkUnitBase*)PluginHandlers.GameGui.GetAddonByName(addon, 1).Address;
     }
 
     public AtkResNode* GetRootNode()

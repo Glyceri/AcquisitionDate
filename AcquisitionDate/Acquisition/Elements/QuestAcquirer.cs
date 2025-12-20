@@ -1,28 +1,39 @@
 ﻿using AcquisitionDate.Acquisition.Elements.Bases;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
-using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements;
 
 internal class QuestAcquirer : AcquirerCounter
 {
-    readonly ISheets Sheets;
+    public QuestAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser) { }
 
-    public QuestAcquirer(ISheets sheets, ILodestoneNetworker networker) : base(networker)
-    {
-        Sheets = sheets;
-    }
+    protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest
+    (
+        AcquisitionParser.AchievementListPageCountParser, 
+        _currentUser, 
+        OnPageCountData
+    );
 
-    protected override ILodestoneRequest PageCountRequest() => new QuestPageCountRequest(_currentUser, OnPageCountData);
-
-    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest(Sheets, _currentUser, page, OnQuestData, OnPageComplete, OnFailure);
+    protected override ILodestoneRequest DataRequest(int page) => new QuestDataRequest
+    (
+        AcquisitionParser.QuestListParser, 
+        AcquisitionParser.QuestDataParser, 
+        _currentUser, 
+        page, 
+        pageRegion,
+        OnQuestData, 
+        OnPageComplete, 
+        OnFailure
+    );
 
     void OnQuestData(QuestData data)
     {
-        _currentUser.QuestList.SetDate(data.QuestID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDate(AcquirableDateType.Quest).SetDate(data.QuestID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

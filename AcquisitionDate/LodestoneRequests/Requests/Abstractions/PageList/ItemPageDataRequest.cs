@@ -1,6 +1,7 @@
 ﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
+using AcquisitionDate.Parser.Elements;
 using AcquisitionDate.Services.Interfaces;
 using HtmlAgilityPack;
 using System;
@@ -15,12 +16,16 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
     readonly Action? SuccessCallback;
     readonly Action<Exception>? FailureCallback;
     readonly Action<ItemData> OnItemData;
+    readonly ItemPageDataParser ItemDataParser;
+    readonly LodestoneRegion PageRegion;
 
-    public ItemPageDataRequest(ISheets sheets, string baseURL, string baseName, Action<ItemData> onItemData, Action? successCallback = null, Action<Exception>? failureCallback = null)
+    public ItemPageDataRequest(ItemPageDataParser itemPageDataParser, ISheets sheets, string baseURL, string baseName, LodestoneRegion pageRegion, Action<ItemData> onItemData, Action? successCallback = null, Action<Exception>? failureCallback = null)
     {
+        ItemDataParser = itemPageDataParser;
         Sheets = sheets;
         BaseURL = baseURL;
         BaseName = baseName;
+        PageRegion = pageRegion;
         OnItemData = onItemData;
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
@@ -34,35 +39,14 @@ internal abstract class ItemPageDataRequest : LodestoneRequest
 
         HtmlNode rootNode = document.DocumentNode;
 
-        HtmlNode? labelNode = HtmlParserHelper.GetNode(rootNode, $"{BaseName}__header__label");
-        if (labelNode == null) return;
-
-        string itemName = labelNode.InnerText;
-
-        uint? itemID = GetIDFromString(itemName);
-        if (itemID == null) return;
-
-        HtmlNode? timeNode = HtmlParserHelper.GetNode(rootNode, $"{BaseName}__header__data");
-        if (timeNode == null)
-        {
-            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
-            return;
-        }
-        if (timeNode.ChildNodes.Count == 0)
-        {
-            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
-            return;
-        }
-
-        DateTime? acquiredTime = HtmlParserHelper.GetAcquiredTime(timeNode);
-        if (acquiredTime == null)
-        {
-            HandleFailure(new Exception("No date available. This probably means you didn't fill in a Session Token."));
-            return;
-        }
-
-        PluginHandlers.Framework.Run(() => OnItemData?.Invoke(new ItemData(itemID.Value, acquiredTime.Value)));
+        ItemDataParser.SetListIconName(BaseName);
+        ItemDataParser.SetGetIDFunc(GetIDFromString);
+        ItemDataParser.SetPageLanguage(PageRegion);
+        ItemDataParser.Parse(rootNode, OnSuccess, PrintFailure);
     }
+
+    void PrintFailure(Exception e) => PluginHandlers.PluginLog.Error(e, "Error in ItemPageDataRequest");
+    void OnSuccess(ItemData item) => PluginHandlers.Framework.Run(() => OnItemData?.Invoke(item));
 
     protected abstract uint? GetIDFromString(string itemName);
 

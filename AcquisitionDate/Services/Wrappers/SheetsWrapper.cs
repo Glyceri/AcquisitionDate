@@ -17,52 +17,55 @@ internal class SheetsWrapper : ISheets
     readonly List<IPetSheetData> petSheetCache = new List<IPetSheetData>();
     readonly List<IGlassesSheetData> glassesSheetCache = new List<IGlassesSheetData>();
 
-    public Quest[] AllQuests => quests.ToArray();
-    public Item[] AllItems => items.ToArray();
-    public Achievement[] AllAchievements => achievements.ToArray();
-    public ContentFinderCondition[] AllContentFinderConditions => contentFinderConditions.ToArray();
-    public FishParameter[] AllFishies => fishies.ToArray();
-    public SpearfishingItem[] AllSpearFishies => spearFishies.ToArray();
-    public ClassJob[] AllClassJobs => classJobs.ToArray();
+    public Quest[] AllQuests => Quests.ToArray();
+    public Item[] AllItems => Items.ToArray();
+    public Achievement[] AllAchievements => Achievements.ToArray();
+    public ContentFinderCondition[] AllContentFinderConditions => ContentFinderConditions.ToArray();
+    public FishParameter[] AllFishies => Fishies.ToArray();
+    public SpearfishingItem[] AllSpearFishies => SpearFishies.ToArray();
+    public ClassJob[] AllClassJobs => ClassJobs.ToArray();
+    public Emote[] AllEmotes => Emotes.ToArray();
 
-    readonly ExcelSheet<World> worlds;
-    readonly ExcelSheet<Quest> quests;
-    readonly ExcelSheet<Achievement> achievements;
-    readonly ExcelSheet<Item> items;
-    readonly ExcelSheet<Companion> companions;
-    readonly ExcelSheet<ContentFinderCondition> contentFinderConditions;
-    readonly ExcelSheet<ClassJob> classJobs;
-    readonly ExcelSheet<FishParameter> fishies;
-    readonly ExcelSheet<SpearfishingItem> spearFishies;
-    readonly ExcelSheet<Adventure> vistas;
-    readonly ExcelSheet<Mount> mounts;
-    readonly ExcelSheet<Glasses> glasses;
-    readonly ExcelSheet<Ornament> ornaments;
-    readonly ExcelSheet<Orchestrion> orchestrions;
+    readonly ExcelSheet<World>                      Worlds;
+    readonly ExcelSheet<Quest>                      Quests;
+    readonly ExcelSheet<Achievement>                Achievements;
+    readonly ExcelSheet<Item>                       Items;
+    readonly ExcelSheet<Companion>                  Companions;
+    readonly ExcelSheet<ContentFinderCondition>     ContentFinderConditions;
+    readonly ExcelSheet<ClassJob>                   ClassJobs;
+    readonly ExcelSheet<FishParameter>              Fishies;
+    readonly ExcelSheet<SpearfishingItem>           SpearFishies;
+    readonly ExcelSheet<Adventure>                  Vistas;
+    readonly ExcelSheet<Mount>                      Mounts;
+    readonly ExcelSheet<Glasses>                    Glasses;
+    readonly ExcelSheet<Ornament>                   Ornaments;
+    readonly ExcelSheet<Orchestrion>                Orchestrions;
+    readonly ExcelSheet<Emote>                      Emotes;
 
     public SheetsWrapper()
     {
-        worlds = PluginHandlers.DataManager.GetExcelSheet<World>();
-        achievements = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
-        quests = PluginHandlers.DataManager.GetExcelSheet<Quest>();
-        items = PluginHandlers.DataManager.GetExcelSheet<Item>();
-        companions = PluginHandlers.DataManager.GetExcelSheet<Companion>();
-        contentFinderConditions = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
-        classJobs = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
-        fishies = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
-        spearFishies = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
-        vistas = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
-        mounts = PluginHandlers.DataManager.GetExcelSheet<Mount>();
-        glasses = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
-        ornaments = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
-        orchestrions = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
+        Worlds                      = PluginHandlers.DataManager.GetExcelSheet<World>();
+        Achievements                = PluginHandlers.DataManager.GetExcelSheet<Achievement>();
+        Quests                      = PluginHandlers.DataManager.GetExcelSheet<Quest>();
+        Items                       = PluginHandlers.DataManager.GetExcelSheet<Item>();
+        Companions                  = PluginHandlers.DataManager.GetExcelSheet<Companion>();
+        ContentFinderConditions     = PluginHandlers.DataManager.GetExcelSheet<ContentFinderCondition>();
+        ClassJobs                   = PluginHandlers.DataManager.GetExcelSheet<ClassJob>();
+        Fishies                     = PluginHandlers.DataManager.GetExcelSheet<FishParameter>();
+        SpearFishies                = PluginHandlers.DataManager.GetExcelSheet<SpearfishingItem>();
+        Vistas                      = PluginHandlers.DataManager.GetExcelSheet<Adventure>();
+        Mounts                      = PluginHandlers.DataManager.GetExcelSheet<Mount>();
+        Glasses                     = PluginHandlers.DataManager.GetExcelSheet<Glasses>();
+        Ornaments                   = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
+        Orchestrions                = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
+        Emotes                      = PluginHandlers.DataManager.GetExcelSheet<Emote>();
 
         SetupSheetDataCache();
     }
 
     void SetupSheetDataCache()
     {
-        foreach (Glasses glass in glasses)
+        foreach (Glasses glass in Glasses)
         {
             if(glass.RowId == 0) continue;
 
@@ -81,7 +84,7 @@ internal class SheetsWrapper : ISheets
             glassesSheetCache.Add(new GlassesSheetData((int)rowId, pronoun, singular, plural));
         }
 
-        foreach (Companion companion in companions)
+        foreach (Companion companion in Companions)
         {
             if (!companion.Model.IsValid) continue;
 
@@ -116,7 +119,7 @@ internal class SheetsWrapper : ISheets
     public Adventure? GetAdventureByIndex(uint index)
     {
         int curIndex = -1;
-        foreach (Adventure adventure in vistas)
+        foreach (Adventure adventure in Vistas)
         {
             curIndex++;
             if (curIndex != index) continue;
@@ -129,7 +132,7 @@ internal class SheetsWrapper : ISheets
 
     public ClassJob? GetClassJob(uint id)
     {
-        foreach (ClassJob classJob in classJobs)
+        foreach (ClassJob classJob in ClassJobs)
         {
             if (classJob.RowId != id) continue;
 
@@ -141,7 +144,7 @@ internal class SheetsWrapper : ISheets
 
     public ContentFinderCondition? GetContentFinderCondition(ushort id)
     {
-        foreach (ContentFinderCondition contentFinderCondition in contentFinderConditions)
+        foreach (ContentFinderCondition contentFinderCondition in ContentFinderConditions)
         {
             if (contentFinderCondition.RowId != id) continue;
 
@@ -192,7 +195,7 @@ internal class SheetsWrapper : ISheets
     {
         string betterName = Regex.Replace(name, @"[\r\n]+", string.Empty);
 
-        foreach (Achievement achievement in achievements)
+        foreach (Achievement achievement in Achievements)
         {
             string achiName = achievement.Name.ExtractText();
             if (!string.Equals(achiName, betterName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -205,7 +208,7 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(string name, string journalGroup)
     {
-        foreach (Quest quest in quests)
+        foreach (Quest quest in Quests)
         {
             try
             {
@@ -225,7 +228,7 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(uint id)
     {
-        foreach (Quest quest in quests)
+        foreach (Quest quest in Quests)
         {
             if (quest.RowId != id) continue;
 
@@ -237,7 +240,7 @@ internal class SheetsWrapper : ISheets
 
     public Quest? GetQuest(string name)
     {
-        foreach (Quest quest in quests)
+        foreach (Quest quest in Quests)
         {
             try
             {
@@ -255,7 +258,7 @@ internal class SheetsWrapper : ISheets
 
     public uint? GetWorldID(string worldName)
     {
-        foreach (World world in worlds)
+        foreach (World world in Worlds)
         {
             string name = world.InternalName.ExtractText();
             if (!name.Equals(worldName, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -268,7 +271,7 @@ internal class SheetsWrapper : ISheets
 
     public string? GetWorldName(ushort worldID)
     {
-        World? world = worlds.GetRow(worldID);
+        World? world = Worlds.GetRow(worldID);
         if (world == null) return null;
 
         return world.Value.InternalName.ExtractText();
@@ -276,7 +279,7 @@ internal class SheetsWrapper : ISheets
 
     public Mount? GetMountByName(string name)
     {
-        foreach (Mount mount in mounts)
+        foreach (Mount mount in Mounts)
         {
             string mName = mount.Singular.ExtractText();
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -301,7 +304,7 @@ internal class SheetsWrapper : ISheets
 
     public Ornament? GetOrnamentByName(string name)
     {
-        foreach (Ornament ornament in ornaments)
+        foreach (Ornament ornament in Ornaments)
         {
             string mName = ornament.Singular.ExtractText();
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -314,7 +317,7 @@ internal class SheetsWrapper : ISheets
 
     public Orchestrion? GetOrchestrionByName(string name)
     {
-        foreach (Orchestrion orchestrion in orchestrions)
+        foreach (Orchestrion orchestrion in Orchestrions)
         {
             string mName = orchestrion.Name.ExtractText();
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
@@ -327,12 +330,84 @@ internal class SheetsWrapper : ISheets
 
     public ContentFinderCondition? GetContentFinderConditionByName(string name)
     {
-        foreach (ContentFinderCondition content in contentFinderConditions)
+        foreach (ContentFinderCondition content in ContentFinderConditions)
         {
             string mName = content.Name.ExtractText();
             if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
 
             return content;
+        }
+
+        return null;
+    }
+
+    public Achievement? GetAchievementByID(uint id)
+    {
+        foreach (Achievement achievement in Achievements)
+        {
+            if (achievement.RowId != id) continue;
+
+            return achievement;
+        }
+
+        return null;
+    }
+
+    public Mount? GetMountByID(uint id)
+    {
+        foreach (Mount mount in Mounts)
+        {
+            if (mount.RowId != id) continue;
+
+            return mount;
+        }
+
+        return null;
+    }
+
+    public IGlassesSheetData? GetGlassesByID(uint id)
+    {
+        foreach (IGlassesSheetData glasses in glassesSheetCache)
+        {
+            if (glasses.Model != id) continue;
+
+            return glasses;
+        }
+
+        return null;
+    }
+
+    public Ornament? GetOrnamentByID(uint id)
+    {
+        foreach (Ornament ornament in Ornaments)
+        {
+            if (ornament.RowId != id) continue;
+
+            return ornament;
+        }
+
+        return null;
+    }
+
+    public Orchestrion? GetOrchestrionByID(uint id)
+    {
+        foreach (Orchestrion orchestrion in Orchestrions)
+        {
+            if (orchestrion.RowId != id) continue;
+
+            return orchestrion;
+        }
+
+        return null;
+    }
+
+    public Emote? GetEmoteByID(uint id)
+    {
+        foreach (Emote emote in Emotes)
+        {
+            if (emote.RowId != id) continue;
+
+            return emote;
         }
 
         return null;

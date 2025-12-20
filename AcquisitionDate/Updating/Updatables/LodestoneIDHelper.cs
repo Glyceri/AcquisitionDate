@@ -1,7 +1,7 @@
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
-using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
 
 namespace AcquisitionDate.Updating.Updatables;
@@ -12,15 +12,15 @@ internal class LodestoneIDHelper : IUpdatable
 
     readonly ILodestoneNetworker LodestoneNetworker;
     readonly IUserList UserList;
-    readonly ISheets Sheets;
+    readonly IAcquisitionParser AcquisitionParser;
 
     float searchTimer = 0;
 
-    public LodestoneIDHelper(ILodestoneNetworker networker, IUserList userList, ISheets sheets)
+    public LodestoneIDHelper(IAcquisitionParser parser, ILodestoneNetworker networker, IUserList userList)
     {
+        AcquisitionParser = parser;
         LodestoneNetworker = networker;
         UserList = userList;
-        Sheets = sheets;
     }
 
     public void Update(float deltaTime)
@@ -34,6 +34,13 @@ internal class LodestoneIDHelper : IUpdatable
 
         searchTimer = lodestoneIDCooldown;
 
-        LodestoneNetworker.AddElementToQueue(new LodestoneIDRequest(UserList.ActiveUser.Data, Sheets));
+        LodestoneNetworker.AddElementToQueue
+        (
+            new LodestoneIDRequest
+            (
+                AcquisitionParser.LodestoneIDParser,
+                UserList.ActiveUser.Data
+            )
+        );
     }
 }

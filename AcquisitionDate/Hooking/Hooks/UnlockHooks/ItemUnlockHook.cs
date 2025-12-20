@@ -16,11 +16,11 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class ItemUnlockHook : UnlockHook
 {
-    readonly List<uint> UnlockedItems = new List<uint>();
+    private readonly List<uint> UnlockedItems = new List<uint>();
 
-    readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
+    private readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
 
-    delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
+    private delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
 
     public ItemUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets)
     {
@@ -66,20 +66,19 @@ internal unsafe class ItemUnlockHook : UnlockHook
         return freshlyUnlockedItems;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetCompanionID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetBuddyEquipID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetMountID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetSecretRecipeID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetUnlockLinkID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetFolkloreID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetFramerKitID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetOrnamentID(Item item) => GetItemActionID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetGlassesID(Item item) => GetItemAdditionalDataID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetTrippleTriadID(Item item) => GetItemAdditionalDataID(item);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetOrchestrionID(Item item) => GetItemAdditionalDataID(item);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] ushort GetItemActionID(Item item) => item.ItemAction.Value.Data[0];
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] uint GetItemAdditionalDataID(Item item) => item.AdditionalData.RowId;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetCompanionID            (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetBuddyEquipID           (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetMountID                (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetSecretRecipeID         (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetUnlockLinkID           (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetFolkloreID             (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetOrnamentID             (Item item) => GetItemActionID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetGlassesID              (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetTrippleTriadID         (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetOrchestrionID          (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetFramerKitID            (Item item) => GetItemAdditionalDataID(item);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private ushort GetItemActionID           (Item item) => item.ItemAction.Value.Data[0];
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] private uint   GetItemAdditionalDataID   (Item item) => item.AdditionalData.RowId;
 
     unsafe bool IsUnlocked(Item item, out bool itemIsUnlocked)
     {
@@ -87,7 +86,7 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
         if (item.ItemAction.RowId == 0) return false;
 
-        switch ((ItemActionType)item.ItemAction.Value.Type)
+        switch ((ItemActionType)item.ItemAction.Value.Action.RowId)
         {
             case ItemActionType.Companion:
                 itemIsUnlocked = UIState.Instance()->IsCompanionUnlocked(GetCompanionID(item));
@@ -148,50 +147,50 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
         PluginHandlers.PluginLog.Verbose($"Detected Item Completion with ID: {item.RowId}");
 
-        switch ((ItemActionType)item.ItemAction.Value.Type)
+        switch ((ItemActionType)item.ItemAction.Value.Action.RowId)
         {
             case ItemActionType.Companion:
-                data.MinionList.SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Minion).SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.BuddyEquip:
-                data.BuddyEquipList.SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.BuddyEquip).SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Mount:
-                data.MountList.SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Mount).SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.SecretRecipeBook:
-                data.SecretRecipeBookList.SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.SecretRecipeBook).SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.UnlockLink:
-                data.UnlockLinkList.SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.UnlockLink).SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.TripleTriadCard when item.AdditionalData.Is<TripleTriadCard>():
-                data.CardList.SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Card).SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FolkloreTome:
-                data.FolkloreTomeList.SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.FolkloreTome).SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.OrchestrionRoll when item.AdditionalData.Is<Orchestrion>():
-                data.OrchestrionList.SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Orchestrion).SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FramersKit:
-                data.FramersList.SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Framers).SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Ornament:
-                data.FashionList.SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Fashion).SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Glasses:
-                data.FacewearList.SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDate(AcquirableDateType.Facewear).SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
         }
     }

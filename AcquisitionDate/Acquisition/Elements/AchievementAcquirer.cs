@@ -1,22 +1,45 @@
 ﻿using AcquisitionDate.Acquisition.Elements.Bases;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
+using AcquisitionDate.Parser.Interfaces;
 
 namespace AcquisitionDate.Acquisition.Elements;
 
 internal class AchievementAcquirer : AcquirerCounter
 {
-    public AchievementAcquirer(ILodestoneNetworker networker) : base(networker) { }
+    public AchievementAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser) { }
 
-    protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest(_currentUser, OnPageCountData);
+    protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest
+    (
+        AcquisitionParser.AchievementListPageCountParser, 
+        _currentUser, 
+        OnPageCountData
+    );
 
-    protected override ILodestoneRequest DataRequest(int page) => new AchievementDateRequest(_currentUser, page, OnAchievementData, OnPageComplete, OnFailure);
+    protected override ILodestoneRequest DataRequest(int page) => new AchievementDateRequest
+    (
+        AcquisitionParser.AchievementListParser, 
+        AcquisitionParser.AchievementElementParser, 
+        _currentUser, 
+        page, 
+        pageRegion,
+        OnAchievementData, 
+        OnPageComplete, 
+        OnFailure
+    );
     
     void OnAchievementData(AchievementData data) 
     {
-        _currentUser?.AchievementList.SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        // This is the chocobo quest, a failsafe because chocobo mount is peepeepoopoo
+        if (data.AchievementID == 66698)
+        {
+            _currentUser?.GetDate(AcquirableDateType.Mount).SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        }
+
+        _currentUser?.GetDate(AcquirableDateType.Achievement).SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

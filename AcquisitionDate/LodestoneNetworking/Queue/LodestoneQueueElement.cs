@@ -1,9 +1,10 @@
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue.Enums;
 using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
+using AcquisitionDate.LodestoneNetworking.Structs;
 using HtmlAgilityPack;
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,22 +17,36 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
     public QueueState QueueState { get; private set; }
     public bool DISPOSED { get; private set; } = false;
 
-    readonly CancellationTokenSource CancellationTokenSource;
     readonly Action<HtmlDocument> OnSuccess;
     readonly Action<Exception> OnFailure;
-    readonly HttpRequestMessage MessageRequest;
+    readonly Action<int, Action> OnTick;
 
-    readonly HttpClient _HttpClient;
+    readonly string URL;
 
-    public LodestoneQueueElement(HttpClient httpClient, Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string actionURL)
+    readonly INetworkClient NetworkClient;
+
+    NetworkClientRequest? request = null;
+    readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+
+    readonly int TickCount = 1;
+    int atTick = 0;
+
+    public LodestoneQueueElement(INetworkClient networkClient, Action<HtmlDocument> onSuccess, Action<Exception> onFailure, Action<int, Action> onTick, string actionURL)
     {
-        _HttpClient = httpClient;
+        URL = actionURL;
+
+        NetworkClient = networkClient;
         OnSuccess = onSuccess;
         OnFailure = onFailure;
-        MessageRequest = new HttpRequestMessage(HttpMethod.Get, actionURL);
-        CancellationTokenSource = new CancellationTokenSource();
+        OnTick = onTick;
 
         QueueState = QueueState.Idle;
+    }
+
+    public LodestoneQueueElement(INetworkClient networkClient, Action<HtmlDocument> onSuccess, Action<Exception> onFailure, Action<int, Action> onTick, string actionURL, int tickCount) 
+        : this (networkClient, onSuccess, onFailure, onTick, actionURL)
+    {
+        TickCount = tickCount;
     }
 
     public void Tick(float deltaTime)
@@ -49,10 +64,28 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
     public void MarkAsInQueue()
     {
         QueueState = QueueState.InQueue;
+        TimeInQueue = 0;
+    }
+
+    public bool IsDone()
+    {
+        if (atTick >= TickCount) return true;
+
+        MarkAsInQueue();
+
+        return false;
     }
 
     public void SendRequest()
     {
+        atTick++;
+
+        if (atTick > 1)
+        {
+            SidewalkRequest();
+            return;
+        }
+
         if (QueueState != QueueState.InQueue)
         {
             OnFailure.Invoke(new Exception("Queue Request send whilst element is being handled or not in queue"));
@@ -68,43 +101,44 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
 
         QueueState = QueueState.BeingProcessed;
 
-        Task.Run(async () => await SendLodestoneRequest(), CancellationTokenSource.Token).ConfigureAwait(false);
+        request = NetworkClient.SendRequest
+        (
+            URL,
+            (response) =>
+            {
+                Task.Run
+                (
+                    async () => await OnResponse(response),
+                    CancellationTokenSource.Token
+                ).ConfigureAwait(false);
+            },
+            HandleFailure
+        );
     }
 
-    async Task SendLodestoneRequest()
+    void SidewalkRequest()
     {
-        HttpResponseMessage? response = null;
+        QueueState = QueueState.BeingProcessed;
 
-        try
-        {
-            response = await _HttpClient.SendAsync(MessageRequest, CancellationTokenSource.Token).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-        }
-        catch (Exception ex)
-        {
-            HandleFailure(ex);
-            return;
-        }
+        OnTick?.Invoke(atTick, OnTickComplete);
+    }
 
-        if (response == null)
-        {
-            HandleFailure(new Exception("Response is NULL."));
-            return;
-        }
+    void OnTickComplete()
+    {
+        QueueState = QueueState.Success;
+    }
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            HandleFailure(new Exception("Response not found."));
-            return;
-        }
+    public CancellationToken GetToken() => CancellationTokenSource.Token;
 
+    async Task OnResponse(HttpResponseMessage response)
+    {
         HtmlDocument document = new HtmlDocument();
 
         try
         {
             document.LoadHtml(await response.Content.ReadAsStringAsync(CancellationTokenSource.Token).ConfigureAwait(false));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             HandleFailure(ex);
             return;
@@ -117,36 +151,7 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
     void HandleFailure(Exception ex)
     {
         QueueState = QueueState.Failure;
-        PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex), CancellationTokenSource.Token);
-    }
-
-    public void Dispose()
-    {
-        try
-        {
-            CancellationTokenSource.Cancel();
-        }
-        catch (Exception ex)
-        {
-            PluginHandlers.PluginLog.Error(ex, "Couldn't cancel token");
-        }
-        try
-        {
-            CancellationTokenSource.Dispose();
-        }
-        catch (Exception ex)
-        {
-            PluginHandlers.PluginLog.Error(ex, "Couldn't Dispose token");
-        }
-        try
-        {
-            MessageRequest.Dispose();
-        }
-        catch (Exception ex)
-        {
-            PluginHandlers.PluginLog.Error(ex, "Couldn't Dispose Message");
-        }
-        DISPOSED = true;
+        PluginHandlers.Framework.Run(() => OnFailure?.Invoke(ex), CancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     public void Cancel()
@@ -154,10 +159,32 @@ internal class LodestoneQueueElement : ILodestoneQueueElement
         QueueState = QueueState.Cancelled;
         try
         {
-            CancellationTokenSource.Cancel();
+            CancellationTokenSource?.Cancel();
         }catch(Exception e)
         {
             PluginHandlers.PluginLog.Error(e, "Failed to cancel cancellationTokenSource.");
         }
+    }
+
+    public LodestoneQueueElementData GetQueueData()
+    {
+        return new LodestoneQueueElementData(TimeInQueue, QueueState, DISPOSED, URL, TickCount, atTick);
+    }
+
+    public void Dispose()
+    {
+        Cancel();
+
+        try
+        {
+            request?.Dispose();
+            CancellationTokenSource?.Dispose();
+        }
+        catch (Exception e)
+        {
+            PluginHandlers.PluginLog.Error(e, "Failed to Dispose request.");
+        }
+
+        DISPOSED = true;
     }
 }

@@ -49,6 +49,7 @@ internal static class Translator
         { "Config.ShowPlaceholderDates",        "Show Placeholder Dates" },
         { "Config.Toggle",                      "Quick Buttons toggle instead of open." },
         { "Config.Kofi",                        "Show Ko-fi Button." },
+        { "Config.DrawAlts",                    "Show Dates for Alt-Accounts if they are available." },
 
         { "Kofi.Title",                         "Ko-fi" },
         { "Kofi.Line1",                         "This is about real life money." },
@@ -61,7 +62,9 @@ internal static class Translator
         { "Acquiry.Start",                      "Download {0} dates from the Lodestone."},
         { "Acquiry.Stop",                       "Stop Lodestone Download." },
         { "Acquiry.CompPerc",                   "Completion Percentage: {0}%"},
+        { "Acquiry.Title",                      "Acquisition"},
 
+        { "DateTimeString.Before",              "Before {0}"},
     };
 
     static Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
@@ -97,6 +100,7 @@ internal static class Translator
         { "Config.ShowPlaceholderDates",        "Platzhalter für Erwerbsdaten anzeigen" },
         { "Config.Toggle",                      "Schnellschaltflächen werden umgeschaltet statt geöffnet." },
         { "Config.Kofi",                        "Ko-Fi-Button anzeigen." },
+        { "Config.DrawAlts",                    "Erwerbsdatum für Alt-Accounts anzeigen wann sie verfügbar sind." },
 
         { "Kofi.Title",                         "Ko-fi" },
         { "Kofi.Line1",                         "Hier geht es um echtes Geld." },
@@ -110,6 +114,7 @@ internal static class Translator
         { "Acquiry.Stop",                       "Lodestone-Download Stoppen." },
         { "Acquiry.CompPerc",                   "Abschlussprozentsatz: {0}%"},
 
+        { "DateTimeString.Before",              "Vor dem {0}"},
     };
 
     static Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()

@@ -9,16 +9,16 @@ using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 namespace AcquisitionDate.Windows.Windows;
 
 internal class AcquiryWindow : AcquisitionWindow
 {
-    protected override Vector2 MinSize { get; } = new Vector2(400, 450);
-    protected override Vector2 MaxSize { get; } = new Vector2(600, 740);
-    protected override Vector2 DefaultSize { get; } = new Vector2(600, 500);
+    protected override Vector2 MinSize { get; } = new Vector2(400, 788);
+    protected override Vector2 MaxSize { get; } = new Vector2(600, 940);
+    protected override Vector2 DefaultSize { get; } = new Vector2(600, 788);
     protected override bool HasHeaderBar { get; } = true;
 
     readonly IUserList UserList;
@@ -30,7 +30,6 @@ internal class AcquiryWindow : AcquisitionWindow
     float BarSize => 30 * ImGuiHelpers.GlobalScale;
 
     string sessionTokenInput = string.Empty;
-    string lastSessionTokenInput = string.Empty;
 
     IDatableData? currentActiveData = null;
 
@@ -53,7 +52,6 @@ internal class AcquiryWindow : AcquisitionWindow
     void OnReset()
     {
         sessionTokenInput = string.Empty;
-        lastSessionTokenInput = string.Empty;
         currentActiveData = null;
         OnDataSet();
     }
@@ -120,13 +118,26 @@ internal class AcquiryWindow : AcquisitionWindow
             }
             TextAligner.PopAlignment();
 
-            if (RenameLabel.Draw("Session Token: ", sessionTokenInput == lastSessionTokenInput, ref sessionTokenInput, new Vector2(ImGui.GetContentRegionAvail().X, BarSize)))
+            string currentSessionToken = LodestoneNetworker.GetSessionToken();
+            bool sessionTokenIsEqual = sessionTokenInput == currentSessionToken;
+
+            if (RenameLabel.Draw("Session Token: ", sessionTokenIsEqual, ref sessionTokenInput, new Vector2(ImGui.GetContentRegionAvail().X, BarSize), out bool validInput))
             {
-                lastSessionTokenInput = sessionTokenInput;
+                sessionTokenInput = sessionTokenInput.Replace("\n", string.Empty);  // Clear all accidental New Lines
+                sessionTokenInput = sessionTokenInput.Replace("\r", string.Empty);  // Clear all accidental New Lines
+                sessionTokenInput = sessionTokenInput.Trim();                       // Clear trailing and leading whitespaces
                 LodestoneNetworker.SetSessionToken(sessionTokenInput);
             }
 
             ImGui.NewLine();
+
+            if (!validInput)
+            {
+                BasicLabel.Draw("Your session token might contain a ... and thus will not be copied completely.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+                BasicLabel.Draw("Drag your network tab all the way to the left and copy the value after the ... disappears.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+
+                ImGui.NewLine();
+            }
 
             TextAligner.Align(TextAlignment.Centre);
             BasicLabel.Draw("!!!   NEVER SHARE YOUR SESSION TOKEN WITH ANYONE   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
@@ -147,6 +158,11 @@ internal class AcquiryWindow : AcquisitionWindow
 
         if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
         {
+            BasicLabel.Draw($"Active User: {currentActiveData.Name}@{currentActiveData.HomeworldName}", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+            BasicLabel.Draw("Disable your VPN... sorry", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+
+            DrawBar();
+
             AcquirerUI.Draw(AcquirerHandler.AchievementAcquirer, currentActiveData, "Achievements", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.QuestAcquirer, currentActiveData, "Quests", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.MinionAcquirer, currentActiveData, "Minions", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
@@ -154,5 +170,39 @@ internal class AcquiryWindow : AcquisitionWindow
             AcquirerUI.Draw(AcquirerHandler.FacewearAcquirer, currentActiveData, "Glasses", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             Listbox.End();
         }
+    }
+
+    void DrawBar()
+    {
+        ImGuiStylePtr style = ImGui.GetStyle();
+
+        string[] fetchDelays = Configuration.FetchDelay;
+
+        int fetchDelayLength = fetchDelays.Length;
+
+        Vector2 availableSize = ImGui.GetContentRegionAvail();
+
+        float elementWidth = (availableSize.X / (float)fetchDelayLength) - style.ItemSpacing.X;
+
+        ImGui.NewLine();
+
+        BasicLabel.Draw("Delay between requests.\n(Higher numbers are recommended if your interet is slow and you notice many timeout errors.)", new Vector2(ImGui.GetContentRegionAvail().X, BarSize * 1.5f));
+
+        ImGui.NewLine();
+
+        for (int i = 0; i < fetchDelayLength; i++)
+        {
+            string fetchDelay = fetchDelays[i];
+
+            ImGui.SameLine();
+            ImGui.BeginDisabled(i == Configuration.FetchDelaySeconds);
+            if (ImGui.Button(fetchDelay + $"##FetchDelay{WindowHandler.InternalCounter}", new Vector2(elementWidth, BarSize)))
+            {
+                Configuration.FetchDelaySeconds = i;
+                Configuration.Save();
+            }
+            ImGui.EndDisabled();
+        }
+        ImGui.NewLine();
     }
 }

@@ -14,15 +14,15 @@ internal unsafe class FishyUnlockHook : UnlockHook
 {
     public const uint SpearFishIdOffset = 20000;
 
-    byte[] _fishStore       = [];
-    byte[] _spearFishStore  = [];
+    private byte[] _fishStore       = [];
+    private byte[] _spearFishStore  = [];
 
     public FishyUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
     public override void Reset() 
     {
-        _fishStore      = PlayerState.Instance()->CaughtFishBitmask.ToArray();
-        _spearFishStore = PlayerState.Instance()->CaughtSpearfishBitmask.ToArray();
+        _fishStore      = PlayerState.Instance()->CaughtFish.ToArray();
+        _spearFishStore = PlayerState.Instance()->CaughtSpearfish.ToArray();
     }
 
     public uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
@@ -50,7 +50,7 @@ internal unsafe class FishyUnlockHook : UnlockHook
         return null;
     }
 
-    uint? CheckFishies(ref byte[] store, Span<byte> bitmask)
+    private uint? CheckFishies(ref byte[] store, Span<byte> bitmask)
     {
         Span<byte> span = bitmask;
 
@@ -71,18 +71,18 @@ internal unsafe class FishyUnlockHook : UnlockHook
 
         IDatableData data = localUser.Data;
 
-        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFishBitmask);
+        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFish);
         if (fishOutcome != null)
         {
-            data.FishingList.SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            data.GetDate(AcquirableDateType.Fishing).SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
             PluginHandlers.PluginLog.Information($"Found new fish caught with ID: {fishOutcome.Value}");
         }
 
-        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfishBitmask);
+        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfish);
         if (spfishOutcome != null)
         {
             spfishOutcome += SpearFishIdOffset;
-            data.FishingList.SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
+            data.GetDate(AcquirableDateType.Fishing).SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
             PluginHandlers.PluginLog.Information($"Found new spearfish caught with ID: {spfishOutcome.Value}");
         }
     }

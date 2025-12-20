@@ -1,31 +1,30 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using System;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
 internal unsafe class CharacterManagerHook : HookableElement
 {
-    delegate BattleChara* BattleChara_OnInitializeDelegate(BattleChara* battleChara);
-    delegate BattleChara* BattleChara_TerminateDelegate(BattleChara* battleChara);
-    delegate BattleChara* BattleChara_DestroyDelegate(BattleChara* battleChara, bool freeMemory);
-
-    [Signature("48 89 5C 24 ?? 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B D7", DetourName = nameof(InitializeBattleChara))]
-    readonly Hook<BattleChara_OnInitializeDelegate>? OnInitializeBattleCharaHook = null;
-
-    [Signature("40 53 48 83 EC 20 8B 91 ?? ?? ?? ?? 48 8B D9 E8 ?? ?? ?? ?? 48 8D 8B ?? ?? ?? ??", DetourName = nameof(TerminateBattleChara))]
-    readonly Hook<BattleChara_TerminateDelegate>? OnTerminateBattleCharaHook = null;
-
-    [Signature("48 89 5C 24 08 57 48 83 EC 20 48 8D 05 ?? ?? ?? ?? 48 8B F9 48 89 01 8B DA 48 8D 05 ?? ?? ?? ?? 48 89 81 A0 01 00 00 48 81 C1 90 36 00 00", DetourName = nameof(DestroyBattleChara))]
-    readonly Hook<BattleChara_DestroyDelegate>? OnDestroyBattleCharaHook = null;
+    private readonly Hook<BattleChara.Delegates.OnInitialize>   OnInitializeBattleCharaHook;
+    private readonly Hook<BattleChara.Delegates.Terminate>      OnTerminateBattleCharaHook;
+    private readonly Hook<BattleChara.Delegates.Dtor>           OnDestroyBattleCharaHook;
 
     readonly IUserList UserList;
+    readonly IAcquisitionServices Services;
 
-    public CharacterManagerHook(IUserList userList)
+    public CharacterManagerHook(IUserList userList, IAcquisitionServices services)
     {
-        UserList = userList;
+        UserList       = userList;
+        Services       = services;
+
+        OnInitializeBattleCharaHook = PluginHandlers.Hooking.HookFromAddress<BattleChara.Delegates.OnInitialize>   ((nint)BattleChara.StaticVirtualTablePointer->OnInitialize,     InitializeBattleChara);
+        OnTerminateBattleCharaHook  = PluginHandlers.Hooking.HookFromAddress<BattleChara.Delegates.Terminate>      ((nint)BattleChara.StaticVirtualTablePointer->Terminate,        TerminateBattleChara);
+        OnDestroyBattleCharaHook    = PluginHandlers.Hooking.HookFromAddress<BattleChara.Delegates.Dtor>           ((nint)BattleChara.StaticVirtualTablePointer->Dtor,             DestroyBattleChara);
     }
 
     public override void Init()
@@ -46,27 +45,48 @@ internal unsafe class CharacterManagerHook : HookableElement
         HandleAsCreated(bChara);
     }
 
-    BattleChara* InitializeBattleChara(BattleChara* bChara)
+    void InitializeBattleChara(BattleChara* bChara)
     {
-        BattleChara* initializedBattleChara = OnInitializeBattleCharaHook!.Original(bChara);
+        try
+        {
+            OnInitializeBattleCharaHook!.OriginalDisposeSafe(bChara);
+        }
+        catch (Exception e)
+        {
+            Services.PetLog.LogException(e);
+        }
 
         PluginHandlers.Framework.Run(() => HandleAsCreated(bChara));
-
-        return initializedBattleChara;
     }
 
-    BattleChara* TerminateBattleChara(BattleChara* bChara)
+    void TerminateBattleChara(BattleChara* bChara)
     {
         HandleAsDeleted(bChara);
 
-        return OnTerminateBattleCharaHook!.Original(bChara);
+        try
+        {
+            OnTerminateBattleCharaHook!.OriginalDisposeSafe(bChara);
+        }
+        catch (Exception e)
+        {
+            Services.PetLog.LogException(e);
+        }
     }
 
-    BattleChara* DestroyBattleChara(BattleChara* bChara, bool freeMemory)
+    GameObject* DestroyBattleChara(BattleChara* bChara, byte freeMemory)
     {
         HandleAsDeleted(bChara);
 
-        return OnDestroyBattleCharaHook!.Original(bChara, freeMemory);
+        try
+        {
+            return OnDestroyBattleCharaHook!.OriginalDisposeSafe(bChara, freeMemory);
+        }
+        catch (Exception e)
+        {
+            Services.PetLog.LogException(e);
+        }
+
+        return null;
     }
 
     void HandleAsCreated(BattleChara* newBattleChara)

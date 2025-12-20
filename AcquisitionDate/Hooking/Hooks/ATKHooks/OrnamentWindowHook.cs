@@ -6,7 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
-using System.Runtime.InteropServices;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -16,14 +16,14 @@ internal unsafe class OrnamentWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public OrnamentWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public OrnamentWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "OrnamentNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.FashionList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fashion);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFashionSelect;
 
     protected override void OnDispose()
@@ -52,7 +52,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
             tNode->BackgroundColor = titleNode->BackgroundColor;
         }
 
-        Ornament? ornament = Sheets.GetOrnamentByName(Marshal.PtrToStringUTF8((nint)titleNode->OriginalTextPointer) ?? string.Empty);
+        Ornament? ornament = Sheets.GetOrnamentByName(titleNode->NodeText.ToString());
         if (ornament == null)
         {
             tNode->ToggleVisibility(false);
@@ -63,7 +63,7 @@ internal unsafe class OrnamentWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Ornament Notebook clicked ID: {ornamentID}");
 
-        if (DrawDate(tNode, ornamentID, true))
+        if (DrawDate(tNode, ornamentID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, ornamentID);
         }

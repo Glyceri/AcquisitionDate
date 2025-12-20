@@ -1,3 +1,4 @@
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
@@ -8,6 +9,8 @@ namespace AcquisitionDate.Database;
 
 internal class DatableData : IDatableData
 {
+    readonly IDatableList[] AllDatableData = new IDatableList[(int)AcquirableDateType.COUNT];
+
     public ulong ContentID { get; private set; }
     public string Name { get; private set; } = "";
     public ushort Homeworld { get; private set; }
@@ -17,24 +20,6 @@ internal class DatableData : IDatableData
 
     public bool HasSearchedLodestoneID { get; set; } = false;
     public bool IsReady => LodestoneID != null;
-
-    public IDatableList AchievementList { get; }
-    public IDatableList QuestList { get; }
-    public IDatableList MinionList { get; }
-    public IDatableList MountList { get; }
-    public IDatableList FacewearList { get; }
-    public IDatableList OrchestrionList { get; }
-    public IDatableList ClassLVLList { get; }
-    public IDatableList CardList { get; }
-    public IDatableList FashionList { get; }
-    public IDatableList DutyList { get; }
-    public IDatableList FishingList { get; }
-    public IDatableList SightList { get; }
-    public IDatableList FramersList { get; }
-    public IDatableList SecretRecipeBookList { get; }
-    public IDatableList BuddyEquipList { get; }
-    public IDatableList UnlockLinkList { get; }
-    public IDatableList FolkloreTomeList { get; }
 
     readonly IAcquisitionServices Services;
     readonly IDirtySetter DirtySetter;
@@ -46,23 +31,23 @@ internal class DatableData : IDatableData
         ushort homeworld,
         ulong contentID,
         ulong? lodestoneID,
-        IDatableList achievementList,
-        IDatableList questList,
-        IDatableList minionList,
-        IDatableList mountList,
-        IDatableList facewearList,
-        IDatableList orchestrionList,
-        IDatableList classLVLList,
-        IDatableList cardList,
-        IDatableList fashionList,
-        IDatableList dutyList,
-        IDatableList fishingList,
-        IDatableList sightList,
-        IDatableList framerList,
-        IDatableList secretRecipeList,
-        IDatableList buddyEquipList,
-        IDatableList unlockLinkList,
-        IDatableList folkloreList)
+        IDatableList? achievementList       = null,
+        IDatableList? questList             = null,
+        IDatableList? minionList            = null,
+        IDatableList? mountList             = null,
+        IDatableList? facewearList          = null,
+        IDatableList? orchestrionList       = null,
+        IDatableList? classLVLList          = null,
+        IDatableList? cardList              = null,
+        IDatableList? fashionList           = null,
+        IDatableList? dutyList              = null,
+        IDatableList? fishingList           = null,
+        IDatableList? sightList             = null,
+        IDatableList? framerList            = null,
+        IDatableList? secretRecipeList      = null,
+        IDatableList? buddyEquipList        = null,
+        IDatableList? unlockLinkList        = null,
+        IDatableList? folkloreList          = null)
     {
         Services = services;
         DirtySetter = dirtySetter;
@@ -75,55 +60,23 @@ internal class DatableData : IDatableData
             SetLodestoneID(lodestoneID.Value);
         }
 
-        AchievementList = achievementList;
-        QuestList = questList;
-        MinionList = minionList;
-        MountList = mountList;
-        FacewearList = facewearList;
-        OrchestrionList = orchestrionList;
-        ClassLVLList = classLVLList;
-        CardList = cardList;
-        FashionList = fashionList;
-        DutyList = dutyList;
-        FishingList = fishingList;
-        SightList = sightList;
-        FramersList = framerList;
-        SecretRecipeBookList = secretRecipeList;
-        BuddyEquipList = buddyEquipList;
-        UnlockLinkList = unlockLinkList;
-        FolkloreTomeList = folkloreList;
-    }
-
-    public DatableData(IAcquisitionServices services, IDirtySetter dirtySetter, string name, ushort homeworld, ulong contentID, ulong? lodestoneID)
-    {
-        Services = services;
-        DirtySetter = dirtySetter;
-
-        SetName(name);
-        SetHomeworld(homeworld);
-        SetContentID(contentID);
-        if (lodestoneID != null)
-        {
-            SetLodestoneID(lodestoneID.Value);
-        }
-
-        AchievementList = new DatableList(DirtySetter);
-        QuestList = new DatableList(DirtySetter);
-        MinionList = new DatableList(DirtySetter);
-        MountList = new DatableList(DirtySetter);
-        FacewearList = new DatableList(DirtySetter);
-        OrchestrionList = new DatableList(DirtySetter);
-        ClassLVLList = new DatableList(DirtySetter);
-        CardList = new DatableList(DirtySetter);
-        FashionList = new DatableList(DirtySetter);
-        DutyList = new DatableList(DirtySetter);
-        FishingList = new DatableList(DirtySetter);
-        SightList = new DatableList(DirtySetter);
-        FramersList = new DatableList(DirtySetter);
-        SecretRecipeBookList = new DatableList(DirtySetter);
-        BuddyEquipList = new DatableList(DirtySetter);
-        UnlockLinkList = new DatableList(DirtySetter);
-        FolkloreTomeList = new DatableList(DirtySetter);
+        AllDatableData[(int)AcquirableDateType.Achievement]         = achievementList       ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Quest]               = questList             ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Minion]              = minionList            ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Mount]               = mountList             ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Facewear]            = facewearList          ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Orchestrion]         = orchestrionList       ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.ClassLVL]            = classLVLList          ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Card]                = cardList              ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Fashion]             = fashionList           ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Duty]                = dutyList              ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Fishing]             = fishingList           ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Incognita]           = sightList             ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.Framers]             = framerList            ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.SecretRecipeBook]    = secretRecipeList      ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.BuddyEquip]          = buddyEquipList        ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.UnlockLink]          = unlockLinkList        ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.FolkloreTome]        = folkloreList          ?? new DatableList(DirtySetter, Services.Configuration);
     }
 
     public void UpdateEntry(IDatableUser datableUser)
@@ -165,4 +118,10 @@ internal class DatableData : IDatableData
     }
 
     public SerializableUser SerializeEntry() => new SerializableUser(this);
+
+    // The plugin should straight up crash IMO if flag doesnt get found
+    public IDatableList GetDate(AcquirableDateType flag)
+    {
+        return AllDatableData[(int)flag];
+    }
 }

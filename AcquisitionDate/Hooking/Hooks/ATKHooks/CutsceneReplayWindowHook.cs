@@ -1,6 +1,7 @@
 ﻿using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate;
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
@@ -19,7 +20,7 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
     bool isQuest = false;
 
-    public CutsceneReplayWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public CutsceneReplayWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -28,8 +29,8 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData)
     {
-        if (isQuest) return userData.QuestList;
-        return userData.DutyList;
+        if (isQuest) return userData.GetDate(AcquirableDateType.Quest);
+        return userData.GetDate(AcquirableDateType.Duty);
     }
 
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnCutsceneReplay;
@@ -95,7 +96,7 @@ internal unsafe class CutsceneReplayWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {questID}");
 
-        if (DrawDate(tNode, questID, true))
+        if (DrawDate(tNode, questID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
             cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)

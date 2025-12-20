@@ -1,66 +1,46 @@
+using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.HtmlParser;
-using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Parser.Elements;
+using AcquisitionDate.Parser.Structs;
 using HtmlAgilityPack;
 using System;
+using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class LodestoneIDRequest : LodestoneRequest
 {
-    readonly IDatableData Data;
-    readonly ISheets Sheets;
+    protected readonly IDatableData Data;
+    readonly LodestoneIDParser LodestoneIDParser;
 
-    public LodestoneIDRequest(IDatableData datableData, ISheets sheets)
+    public LodestoneIDRequest(LodestoneIDParser lodestoneIDParser, IDatableData datableData)
     {
+        LodestoneIDParser = lodestoneIDParser;
         Data = datableData;
-        Sheets = sheets;
     }    
 
     public override void HandleFailure(Exception exception)
     {
-        // Maybe Don't do this... idk yet
-        Data.HasSearchedLodestoneID = true;
+        PluginHandlers.PluginLog.Error("Error in finding lodestone ID", exception);
     }
 
     public override void HandleSuccess(HtmlDocument document)
     {
         HtmlNode rootNode = document.DocumentNode;
 
-        HtmlNode? listNode = HtmlParserHelper.GetNode(rootNode, "ldst__window");
-        if (listNode == null) return;
-
-        HtmlNode? entryNode = HtmlParserHelper.GetNode(listNode, "entry");
-        if (entryNode == null) return;
-
-        HtmlNode? nameNode = HtmlParserHelper.GetNode(entryNode, "entry__name");
-        if (nameNode == null) return;
-
-        string userName = nameNode.InnerText;
-
-        HtmlNode? worldNode = HtmlParserHelper.GetNode(entryNode, "entry__world");
-        if (worldNode == null) return;
-
-        string[] splitArr = worldNode.InnerText.Split(' ');
-        if (splitArr.Length != 2) return;
-
-        string worldName = splitArr[0];
-
-        uint? worldID = Sheets.GetWorldID(worldName);
-        if (worldID == null) return;
-
-        HtmlNode? linkNode = HtmlParserHelper.GetNode(entryNode, "entry__link");
-        if (linkNode == null) return;
-
-        string IDvalue = linkNode.GetAttributeValue("href", string.Empty);
-
-        uint? lodestoneID = HtmlParserHelper.GetValueFromDashedLink(IDvalue);
-        if (lodestoneID == null) return;
-
-        if (!Data.Name.Equals(userName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)worldID.Value) return;
-
-        Data.SetLodestoneID(lodestoneID.Value);
+        LodestoneIDParser.Parse(rootNode, OnData, HandleFailure);
     }
 
-    public override string GetURL() => $"/lodestone/character/?q={Data.Name.Replace(" ", "+")}&worldname={Data.HomeworldName}";
+    protected virtual void OnData(LodestoneParseData lodestoneData)
+    {
+        if (!Data.Name.Equals(lodestoneData.UserName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)lodestoneData.Homeworld) return;
+
+        Data.SetLodestoneID(lodestoneData.LodestoneID);
+    }
+
+    public override string GetURL()
+    {
+        PluginHandlers.PluginLog.Verbose($"Searching for user with the url: '/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}'");
+        return $"/lodestone/character/?q={HttpUtility.UrlEncode(Data.Name.Replace(" ", "+"))}&worldname={Data.HomeworldName}";
+    }
 }

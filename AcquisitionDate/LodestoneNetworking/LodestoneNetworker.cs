@@ -5,23 +5,18 @@ using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue;
 using AcquisitionDate.LodestoneNetworking.Queue.Enums;
 using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
+using AcquisitionDate.LodestoneNetworking.Structs;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using Dalamud.Game;
-using HtmlAgilityPack;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 
 namespace AcquisitionDate.LodestoneNetworking;
 
 internal class LodestoneNetworker : ILodestoneNetworker
 {
-    // 1.5 seconds between release.
-    // SE times out your request if you send more than 1 a second
-    const float TIME_BETWEEN_RELEASES = 1.5f;
-
-    readonly HttpClient HttpClient = new HttpClient();
+    readonly INetworkClient NetworkClient;
 
     public LodestoneRegion PreferredRegion { get; private set; } = LodestoneRegion.Germany;
 
@@ -29,31 +24,28 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     float lodestoneQueueReleaseTimer = 0;
 
-    readonly IDirtyListener DirtyListener;
+    float refreshTimer = 0;
 
-    public LodestoneNetworker(IDirtyListener dirtyListener)
+    readonly IDirtyListener DirtyListener;
+    readonly Configuration Configuration;
+
+    public LodestoneNetworker(INetworkClient networkClient, IDirtyListener dirtyListener, Configuration configuration)
     {
+        NetworkClient = networkClient;
+
         DirtyListener = dirtyListener;
+        Configuration = configuration;
 
         PreferredRegion = PluginHandlers.ClientState.ClientLanguage switch
         {
             ClientLanguage.Japanese => LodestoneRegion.Japan,
-            ClientLanguage.German => LodestoneRegion.Germany,
-            ClientLanguage.French => LodestoneRegion.France,
-            ClientLanguage.English => GetLodestoneRegion(),
+            ClientLanguage.German   => LodestoneRegion.Germany,
+            ClientLanguage.French   => LodestoneRegion.France,
+            ClientLanguage.English  => LodestoneRegion.America,
             _ => LodestoneRegion.Germany,
         };
 
         DirtyListener.RegisterDirtyUser(OnDirty);
-    }
-
-    LodestoneRegion GetLodestoneRegion()
-    {
-        World? currentWorld = PluginHandlers.ClientState.LocalPlayer?.CurrentWorld.Value;
-        if (currentWorld == null) return LodestoneRegion.America;
-        if (currentWorld.Value.DataCenter.Value.PvPRegion == 3) return LodestoneRegion.Europe;
-
-        return LodestoneRegion.America;
     }
 
     void OnDirty()
@@ -61,34 +53,23 @@ internal class LodestoneNetworker : ILodestoneNetworker
         SetSessionToken(string.Empty);
 
         ClearQueue();
-        CancelRequests();
+        NetworkClient.CancelPendingRequests();
     }
 
     public void SetSessionToken(string sessionToken)
     {
-        HttpClient.DefaultRequestHeaders.Remove("Cookie");
-        HttpClient.DefaultRequestHeaders.Add("Cookie", $"ldst_sess={sessionToken}");
+        NetworkClient.SetSessionToken(sessionToken);
+    }
+
+    public string GetSessionToken()
+    {
+        return NetworkClient.GetSessionToken(); ;
     }
 
     public ILodestoneQueueElement AddElementToQueue(ILodestoneRequest request)
     {
-        ILodestoneQueueElement queueElement = new LodestoneQueueElement(HttpClient, request.HandleSuccess, request.HandleFailure, GetBaseString() + request.GetURL());
-        queueElement.MarkAsInQueue();
-
-        _queueElements.Add(queueElement);
-
-        return queueElement;
-    }
-
-    /// <summary>
-    /// Adds an element to the queue that will handle itself.
-    /// </summary>
-    /// <param name="onSuccess">Gives the HTML page back upon success.</param>
-    /// <param name="onFailure">Gives the exception back upon failure.</param>
-    /// <param name="URL">The lodestone URL WITHOUT the ##.finalfantasyxiv.com part (Note this does NOT end with a /)</param>
-    public ILodestoneQueueElement AddElementToQueue(Action<HtmlDocument> onSuccess, Action<Exception> onFailure, string URL)
-    {
-        ILodestoneQueueElement queueElement = new LodestoneQueueElement(HttpClient, onSuccess, onFailure, GetBaseString() + URL);
+        ILodestoneQueueElement queueElement = new LodestoneQueueElement(NetworkClient, request.HandleSuccess, request.HandleFailure, request.OnTick, GetBaseString() + request.GetURL(), request.TickCount);
+        request.SetCancellationToken(queueElement.GetToken());
         queueElement.MarkAsInQueue();
 
         _queueElements.Add(queueElement);
@@ -115,6 +96,15 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public void Update(float deltaTime)
     {
+        refreshTimer += deltaTime;
+
+        if (refreshTimer > 60 * 10) // 10 minutes
+        {
+            refreshTimer = 0;
+
+            NetworkClient.RefreshHttpClient();
+        }
+
         int queueCount = _queueElements.Count;
 
         lodestoneQueueReleaseTimer += deltaTime;
@@ -125,7 +115,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
             queueElement.Tick(deltaTime);
         }
 
-        if (lodestoneQueueReleaseTimer < TIME_BETWEEN_RELEASES) return;
+        if (lodestoneQueueReleaseTimer < Configuration.FetchDelayInSeconds) return;
         lodestoneQueueReleaseTimer = 0;
 
         for (int i = 0; i < _queueElements.Count; i++)
@@ -140,9 +130,15 @@ internal class LodestoneNetworker : ILodestoneNetworker
         for (int i = _queueElements.Count - 1; i >= 0; i--)
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
+
             if (queueElement.QueueState != QueueState.Failure &&
                 queueElement.QueueState != QueueState.Success &&
                 queueElement.QueueState != QueueState.Cancelled) continue;
+
+            if (queueElement.QueueState == QueueState.Success)
+            {
+                if (!queueElement.IsDone()) continue;
+            }
 
             queueElement.Dispose();
             _queueElements.RemoveAt(i);
@@ -156,22 +152,29 @@ internal class LodestoneNetworker : ILodestoneNetworker
         for (int i = 0; i < queueCount; i++)
         {
             ILodestoneQueueElement queueElement = _queueElements[i];
-            queueElement.Dispose(); // This also calls the cancellation token c:
+            try
+            {
+                queueElement.Dispose(); // This also calls the cancellation token c:
+            }
+            catch (Exception ex)
+            {
+                PluginHandlers.PluginLog.Error("Error in disposal of queue element", ex);
+            }
         }
 
         _queueElements.Clear();
     }
 
-    void CancelRequests()
+    public LodestoneQueueElementData[] GetAllQueueData()
     {
-        try
+        LodestoneQueueElementData[] queueData = new LodestoneQueueElementData[_queueElements.Count];
+
+        for (int i = 0; i < _queueElements.Count; i++)
         {
-            HttpClient.CancelPendingRequests();
+            queueData[i] = _queueElements[i].GetQueueData();
         }
-        catch (Exception e)
-        {
-            PluginHandlers.PluginLog.Error(e, "Couldn't cancel pending requests.");
-        }
+
+        return queueData;
     }
 
     public void Dispose()
@@ -179,15 +182,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
         DirtyListener.UnregisterDirtyUser(OnDirty);
 
         ClearQueue();
-        CancelRequests();
-
-        try
-        {
-            HttpClient.Dispose();
-        }
-        catch (Exception e)
-        {
-            PluginHandlers.PluginLog.Error(e, "Couldn't dispose HTTP client :c.");
-        }
     }
+
+
 }

@@ -7,5 +7,5 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class MountPageListRequest : ItemPageListRequest
 {
-    public MountPageListRequest(IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(data, pageUrlCallback, "mount") { }
+    public MountPageListRequest(ItemPageListParser itemPageListParser, IDatableData data, Action<PageURLListData?> pageUrlCallback) : base(itemPageListParser, data, pageUrlCallback, "mount") { }
 }

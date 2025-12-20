@@ -8,24 +8,32 @@ namespace AcquisitionDate.Serializiation;
 [Serializable]
 internal class SerializableList
 {
-    public readonly uint[] IDS = [];
-    public readonly DateTime?[] LodestoneTimes = [];
-    public readonly DateTime?[] ManualTimes = [];
+    [JsonProperty] public uint[] IDS { get; set; }                  = [];
+    [JsonProperty] public DateTime?[] LodestoneTimes { get; set; }  = [];
+    [JsonProperty] public DateTime?[] ManualTimes { get; set; }     = [];
 
-    [JsonConstructor]
+    public SerializableList()
+    {
+        IDS             = [];
+        LodestoneTimes  = [];
+        ManualTimes     = [];
+    }
+
     public SerializableList(uint[] ids, DateTime?[] lodestoneTimes, DateTime?[] manualTimes)
     {
-        IDS = ids;
-        LodestoneTimes = lodestoneTimes;
-        ManualTimes = manualTimes;
+        IDS             = ids;
+        LodestoneTimes  = lodestoneTimes;
+        ManualTimes     = manualTimes;
     }
 
     public SerializableList(IDatableList list)
     {
         if (list is not DatableList dList) return;
 
-        IDS = dList.IDs;
-        LodestoneTimes = dList.LodestoneTimes;
-        ManualTimes = dList.ManualTimes;
+        IDS             = dList.IDs;
+        LodestoneTimes  = dList.LodestoneTimes;
+        ManualTimes     = dList.ManualTimes;
     }
+
+    public static SerializableList CreateEmpty() => new SerializableList([], [], []);
 }

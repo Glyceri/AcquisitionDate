@@ -1,5 +1,6 @@
 ﻿using AcquisitionDate.AcquisitionDate.Commands.Commands;
 using AcquisitionDate.AcquisitionDate.Commands.Interfaces;
+using AcquisitionDate.Commands.Commands;
 using AcquisitionDate.Windows;
 using System.Collections.Generic;
 
@@ -22,9 +23,11 @@ internal class CommandHandler : ICommandHandler
 
     void RegisterCommands()
     {
-        RegisterCommand(new AcquisitionMainCommand      (WindowHandler));
-        RegisterCommand(new AcquisitionSettingsCommand  (WindowHandler));
-        RegisterCommand(new DevCommand                  (Configuration, WindowHandler));
+        RegisterCommand(new AcquisitionMainCommand          (WindowHandler));
+        RegisterCommand(new AcquisitionMainSubCommand       (WindowHandler));
+        RegisterCommand(new AcquisitionSettingsCommand      (WindowHandler));
+        RegisterCommand(new AcquisitionSettingsSubCommand   (WindowHandler));
+        RegisterCommand(new DevCommand                      (Configuration, WindowHandler));
     }
 
     void RegisterCommand(ICommand command)

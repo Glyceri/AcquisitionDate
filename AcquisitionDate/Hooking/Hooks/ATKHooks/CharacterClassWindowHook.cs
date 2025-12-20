@@ -11,6 +11,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -27,7 +28,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
     uint lastIndex = 0;
     bool lastValid = false;
 
-    public CharacterClassWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
+    public CharacterClassWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
     {
         ReceiveEventHook = PluginHandlers.Hooking.HookFromAddress<AddonCharacterClass.Delegates.ReceiveEvent>((nint)AddonCharacterClass.StaticVirtualTablePointer->ReceiveEvent, ReceiveEventDetour);
     }
@@ -64,7 +65,6 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
             tNode->SetAlignment(AlignmentType.Left);
             tNode->DrawFlags = baseTextNode->DrawFlags;
             tNode->TextFlags = baseTextNode->TextFlags;
-            tNode->TextFlags2 = baseTextNode->TextFlags2;
 
             tNode->EdgeColor = baseTextNode->EdgeColor;
             tNode->Color = baseTextNode->Color;
@@ -86,8 +86,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
             tNode2->AlignmentFontType = 5;
             tNode2->AlignmentType = AlignmentType.Right;
             tNode2->DrawFlags = 8;
-            tNode2->TextFlags = 16;
-            tNode2->TextFlags2 = 0;
+            tNode2->TextFlags = TextFlags.Glare;
             tNode2->SetWidth(165);
 
             tNode2->EdgeColor = baseTextNode->EdgeColor;
@@ -100,7 +99,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
 
         PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-        lastValid = DrawDate(tNode, lastIndex, true);
+        lastValid = DrawDate(tNode, lastIndex, showAlt: false, stillDraw: false);
         tNode2->ToggleVisibility(lastValid);
     }
 
@@ -124,14 +123,14 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         {
             int eventIndex = eventParam - 2;
             if (eventIndex < 0) return false;
-            if (eventIndex >= thisPtr->ButtonNodes.Length) return false;
+            if (eventIndex >= thisPtr->ClassComponents.Length) return false;
 
             uint classLevel = thisPtr->ClassEntries[eventIndex].Level;
 
-            AtkComponentButton* buttonComponent = thisPtr->ButtonNodes[eventIndex].Value;
-            if (buttonComponent == null) return false;
+            AtkComponentBase* atkBase = thisPtr->ClassComponents[eventIndex].Value;
+            if (atkBase == null) return false;
 
-            AtkResNode* resNode = buttonComponent->AtkResNode;
+            AtkResNode* resNode = atkBase->AtkResNode;
             if (resNode == null) return false;
 
             AtkResNode* parentNode = resNode->ParentNode;
@@ -143,10 +142,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
             AtkComponentBase* componentBase = componentNode->Component;
             if (componentBase == null) return false;
 
-            AtkResNode* atkTextResNode = componentBase->GetTextNodeById(3);
-            if (atkTextResNode == null) return false;
-
-            AtkTextNode* atkTextNode = atkTextResNode->GetAsAtkTextNode();
+            AtkTextNode* atkTextNode = componentBase->GetTextNodeById(3);
             if (atkTextNode == null) return false;
 
             string classJobName = atkTextNode->NodeText.ToString();
@@ -186,7 +182,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
 
     void CharacterHookDetour(AddonEvent type, AddonArgs args)
     {
-        AddonCharacter* addon = (AddonCharacter*)args.Addon;
+        AddonCharacter* addon = (AddonCharacter*)args.Addon.Address;
 
         BaseNode baseNode = new BaseNode(&addon->AtkUnitBase);
         
@@ -206,7 +202,7 @@ internal unsafe class CharacterClassWindowHook : DateTextHook
         }
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.ClassLVLList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.ClassLVL);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnLevelScreen;
 
     protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon) { }

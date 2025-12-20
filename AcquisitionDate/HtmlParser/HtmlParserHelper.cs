@@ -4,20 +4,25 @@ using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AcquisitionDate.LodestoneNetworking.Enums;
+using AcquisitionDate.Core.Handlers;
+using System.Globalization;
+using System.ComponentModel;
 
 namespace AcquisitionDate.HtmlParser;
 
 internal static class HtmlParserHelper
 {
-    const string PATTERN = @"ldst_strftime\((\d+),";
+    const string LDST_STRFTIME_PATTERN = @"ldst_strftime\((\d+),";
+    const string DATE_PATTERN = @"(\d{4}/\d{2}/\d{2}|\d{2}/\d{2}/\d{4}|\d{1,2}\.\d{1,2}\.\d{4})";
 
-    public static DateTime? GetAcquiredTime(HtmlNode node)
+    public static DateTime? GetAcquiredTime(HtmlNode node, LodestoneRegion lodestoneRegion)
     {
         string? innerHTML = node.InnerHtml;
-        if (innerHTML.IsNullOrWhitespace()) return null;
+        if (innerHTML.IsNullOrWhitespace()) return GetAlternativeAcquiredTime(node, lodestoneRegion);
 
-        Match match = Regex.Match(innerHTML, PATTERN);
-        if (!match.Success) return null;
+        Match match = Regex.Match(innerHTML, LDST_STRFTIME_PATTERN);
+        if (!match.Success) return GetAlternativeAcquiredTime(node, lodestoneRegion);
 
         int groupCount = match.Groups.Count;
         if (groupCount <= 1) return null;
@@ -26,6 +31,37 @@ internal static class HtmlParserHelper
         if (!long.TryParse(timeString, out long timeLong)) return null;
 
         return DateTimeOffset.FromUnixTimeSeconds(timeLong).LocalDateTime;
+    }
+
+    static DateTime? GetAlternativeAcquiredTime(HtmlNode node, LodestoneRegion lodestoneRegion)
+    {
+        string? innerText = node.InnerText;
+        if (innerText.IsNullOrWhitespace()) return null;
+
+        Match match = Regex.Match(innerText, DATE_PATTERN);
+        if (!match.Success) return null;
+
+        string dateText = match.Value;
+
+        DateTime? parsedTime = ParseTime(dateText, lodestoneRegion);
+
+        return parsedTime;
+    }
+
+    static DateTime? ParseTime(string dateText, LodestoneRegion lodestoneRegion)
+    {
+        DescriptionAttribute? description = lodestoneRegion.GetAttribute<DescriptionAttribute>();
+        if (description == null) return null;
+
+        string dateFormatText = description.Description.Trim();
+        if (dateFormatText.IsNullOrWhitespace()) return null;
+
+        if (DateTime.TryParseExact(dateText, description.Description, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+        {
+            return date;
+        }
+
+        return null;
     }
 
     public static HtmlNode? GetNode(HtmlNode baseNode, string nodeName)

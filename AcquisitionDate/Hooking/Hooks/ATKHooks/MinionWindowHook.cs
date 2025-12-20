@@ -6,6 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -15,14 +16,14 @@ internal unsafe class MinionWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MinionWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public MinionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "MinionNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.MinionList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Minion);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMinionNotebook;
 
     protected override void OnDispose()
@@ -67,7 +68,7 @@ internal unsafe class MinionWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Minion Notebook notebook clicked ID: {minionID}");
 
-        if (DrawDate(tNode, minionID, true))
+        if (DrawDate(tNode, minionID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, minionID);
         }

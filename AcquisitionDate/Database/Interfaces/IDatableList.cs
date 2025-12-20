@@ -1,4 +1,6 @@
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Database.Structs;
+using AcquisitionDate.Serializiation;
 using System;
 
 namespace AcquisitionDate.Database.Interfaces;
@@ -6,12 +8,14 @@ namespace AcquisitionDate.Database.Interfaces;
 internal interface IDatableList
 {
     int Length { get; }
-    DateTime? LowestDateTime { get; }
 
-    // Get's the prefferred most accurate date!
-    DateTime? GetDate(uint ID);
-    DateTime? GetDate(uint ID, AcquiredDateType dateType);
+    uint GetID(int index);
+
+    UnlockedDate? GetDate(uint ID);
+
     void SetDate(uint ID, DateTime? value, AcquiredDateType dateType);
     bool RemoveDate(uint ID, AcquiredDateType dateType);
     bool RemoveDate(uint ID);
+
+    SerializableList Serialise();
 }

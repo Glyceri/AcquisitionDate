@@ -6,6 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -17,7 +18,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
 
     uint lastID = 0;
 
-    public FishGuideWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) 
+    public FishGuideWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
     {
 
     }
@@ -28,7 +29,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "FishGuide2", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.FishingList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fishing);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFishGuide;
 
     protected override void OnDispose() 
@@ -85,7 +86,6 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 tNode->SetAlignment(AlignmentType.Left);
                 tNode->DrawFlags = stuffeNode->DrawFlags;
                 tNode->TextFlags = stuffeNode->TextFlags;
-                tNode->TextFlags2 = stuffeNode->TextFlags2;
 
                 tNode->EdgeColor = stuffeNode->EdgeColor;
                 tNode->Color = stuffeNode->Color;
@@ -105,7 +105,7 @@ internal unsafe class FishGuideWindowHook : DateTextHook
                 return;
             }
 
-            if (DrawDate(tNode, lastID, true))
+            if (DrawDate(tNode, lastID, showAlt: false, stillDraw: true))
             {
                 GiveTooltip(baseAddon, tNode, lastID);
             }

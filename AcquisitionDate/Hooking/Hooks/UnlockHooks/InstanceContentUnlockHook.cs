@@ -12,7 +12,7 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class InstanceContentUnlockHook : UnlockHook
 {
-    readonly List<uint> InstancedContentCompleted = new List<uint>();
+    private readonly List<uint> InstancedContentCompleted = new List<uint>();
 
     public InstanceContentUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
@@ -34,7 +34,7 @@ internal unsafe class InstanceContentUnlockHook : UnlockHook
         }
     }
 
-    void OnDutyCompleted(object? sender, ushort dutyID)
+    private void OnDutyCompleted(object? sender, ushort dutyID)
     {
         ushort contentFinderConditionID = GameMain.Instance()->CurrentContentFinderConditionId;
         bool instanceHasAlreadyBeenCompleted = true;
@@ -54,7 +54,7 @@ internal unsafe class InstanceContentUnlockHook : UnlockHook
             return;
         }
 
-        UserList.ActiveUser?.Data.DutyList.SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
+        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Duty).SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Dispose()

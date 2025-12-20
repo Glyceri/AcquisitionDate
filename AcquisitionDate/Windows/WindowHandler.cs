@@ -11,6 +11,8 @@ using AcquisitionDate.AcquisitionDate.Windowing.Windows;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
+using AcquisitionDate.ImageDatabase.Interfaces;
 
 namespace AcquisitionDate.Windows;
 
@@ -27,8 +29,10 @@ internal class WindowHandler : IDisposable
     readonly IAcquirerHandler AcquirerHandler;
     readonly ILodestoneNetworker LodestoneNetworker;
     readonly IDirtyListener DirtyListener;
+    readonly IAcquisitionParser Parser;
+    readonly IImageDatabase ImageDatabase;
 
-    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener)
+    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener, IAcquisitionParser parser, IImageDatabase imageDatabase)
     {
         WindowSystem = new WindowSystem("AcquisitionDate");
         PluginHandlers.PluginInterface.UiBuilder.Draw += Draw;
@@ -41,17 +45,20 @@ internal class WindowHandler : IDisposable
         AcquirerHandler = acquirerHandler;
         LodestoneNetworker = lodestoneNetworker;
         DirtyListener = dirtyListener;
+        Parser = parser;
+        ImageDatabase = imageDatabase;
 
         Register();
     }
 
     void Register()
     {
-        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database, this, Services.Configuration));
+        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database, this, Services.Configuration, Parser, LodestoneNetworker));
         AddWindow(new AcquisitionConfigWindow(this, Services.Configuration));
         AddWindow(new KofiWindow(this, Services.Configuration));
         AddWindow(new AcquiryWindow(this, Services.Configuration, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyListener));
         AddWindow(new SessionTokenWindow(this, Services.Configuration));
+        AddWindow(new AcquisitionListWindow(this, Services, UserList, Database, ImageDatabase));
     }
 
     void Draw()

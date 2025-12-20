@@ -1,38 +1,39 @@
 using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
+using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneRequests.Requests.Abstractions;
-using AcquisitionDate.Services.Interfaces;
-using Dalamud.Utility;
+using AcquisitionDate.Parser.Elements;
 using HtmlAgilityPack;
-using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class QuestDataRequest : CharacterRequest
 {
-    readonly System.Action? SuccessCallback;
+    readonly Action? SuccessCallback;
     readonly Action<Exception>? FailureCallback;
     readonly Action<QuestData> ContinuousSuccessCallback;
     readonly int Page;
-
-    readonly ISheets Sheets;
+    readonly LodestoneRegion PageLanguage;
 
     readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-    public QuestDataRequest(ISheets sheets, IDatableData data, int page, Action<QuestData> continuousSuccessCallback, System.Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
+    readonly QuestListParser QuestListParser;
+    readonly QuestDataParser QuestDataParser;
+
+    public QuestDataRequest(QuestListParser questListParser, QuestDataParser questDataParser, IDatableData data, int page, LodestoneRegion pageLanguage, Action<QuestData> continuousSuccessCallback, System.Action? successCallback = null, Action<Exception>? failureCallback = null) : base(data)
     {
-        Sheets = sheets;
+        QuestListParser = questListParser;
+        QuestDataParser = questDataParser;
 
         SuccessCallback = successCallback;
         FailureCallback = failureCallback;
         Page = page;
+        PageLanguage = pageLanguage;
+
         ContinuousSuccessCallback = continuousSuccessCallback;
     }
 
@@ -44,51 +45,19 @@ internal class QuestDataRequest : CharacterRequest
 
         HtmlNode rootNode = document.DocumentNode;
 
-        HtmlNode? listNode = HtmlParserHelper.GetNode(rootNode, "ldst__achievement");
-        if (listNode == null) return;
-
-        List<HtmlNode> nodes = HtmlParserHelper.GetNodes(listNode, "entry__quest");
-        foreach (HtmlNode node in nodes)
-        {
-            HtmlNode? entryQuestName = HtmlParserHelper.GetNode(node, "entry__quest__name");
-            if (entryQuestName == null) continue;
-            if (entryQuestName.ChildNodes.Count < 2) continue;
-
-            DateTime? time = HtmlParserHelper.GetAcquiredTime(entryQuestName);
-            if (time == null) continue;
-
-            string value = entryQuestName.ChildNodes[1].GetDirectInnerText().Trim();
-            string decoded = HttpUtility.HtmlDecode(value);
-
-            if (decoded.IsNullOrWhitespace()) continue;
-
-            Task.Run(async () => await HandleQuestSearch(decoded, time.Value), tokenSource.Token);
-        }
+        QuestListParser.Parse(rootNode, OnListAcquire, PrintFailure);
     }
 
-    async Task HandleQuestSearch(string decoded, DateTime time)
+    void OnListAcquire(List<HtmlNode> questNodes)
     {
-        await Task.Yield();
-
-        List<(int size, Quest validQuest)> questsThatFit = new List<(int size, Quest validQuest)>();
-
-        foreach (Quest quest in Sheets.AllQuests)
+        foreach (HtmlNode node in questNodes)
         {
-            string qName = quest.Name.ExtractText();
-            if (qName.IsNullOrWhitespace()) continue;
-            if (!decoded.Contains(qName, StringComparison.InvariantCultureIgnoreCase)) continue;
-
-            questsThatFit.Add((qName.Length, quest));
+            QuestDataParser.SetPageLanguage(PageLanguage);
+            QuestDataParser.Parse(node, ContinuousSuccessCallback, PrintFailure);
         }
-
-        if (questsThatFit.Count == 0) return;
-
-        questsThatFit.Sort((quest1, quest2) => quest1.size.CompareTo(quest2.size));
-
-        uint rowID = questsThatFit[questsThatFit.Count - 1].validQuest.RowId;
-
-        await PluginHandlers.Framework.Run(() => ContinuousSuccessCallback?.Invoke(new QuestData(rowID, time)), tokenSource.Token);
     }
+
+    void PrintFailure(Exception exception) => PluginHandlers.PluginLog.Error(exception, "Failure in QuestDataRequest");   
 
     public override string GetURL() =>  base.GetURL() + $"quest/?page={Page}#anchor_quest";
 }

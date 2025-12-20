@@ -43,12 +43,6 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
         unlockHook.Reset();
     }
 
-    void Dispose(UnlockHook unlockHook)
-    {
-        DirtyListener.UnregisterDirtyUser(unlockHook.Reset);
-        unlockHook.Dispose();
-    }
-
     public void Update(float deltaTime)
     {
         if (UserList.ActiveUser == null) return;

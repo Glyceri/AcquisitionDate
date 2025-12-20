@@ -10,7 +10,7 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class LevelupUnlockHook : UnlockHook
 {
-    short[] currentClassJobLevels = [];
+    private short[] currentClassJobLevels = [];
 
     public LevelupUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
 
@@ -58,7 +58,7 @@ internal unsafe class LevelupUnlockHook : UnlockHook
 
         // Because I can only have one indexer im storing multiple pieces of data in one number, the 10000 part is the class job, the small number is the level
 
-        UserList.ActiveUser?.Data.ClassLVLList.SetDate(preparedClassJobID, DateTime.Now, AcquiredDateType.Manual);
+        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.ClassLVL).SetDate(preparedClassJobID, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Dispose()

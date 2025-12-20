@@ -1,6 +1,6 @@
 ﻿using AcquistionDate.PetNicknames.TranslatorSystem;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Numerics;
 
 
@@ -26,6 +26,7 @@ internal class AcquisitionConfigWindow : AcquisitionWindow
             DrawMenu(Translator.GetLine("Config.DateFormat"), Configuration.DateFormatString, ref Configuration.DateType, 120);
             DrawMenu(Translator.GetLine("Config.PluginLanguage"), Configuration.Languages, ref Configuration.AcquisitionLanuage, 120);
             if (ImGui.Checkbox(Translator.GetLine("Config.ShowPlaceholderDates") + " [??/??/????]", ref Configuration.ShowPlaceholderDates)) Configuration.Save();
+            if (ImGui.Checkbox(Translator.GetLine("Config.DrawAlts"), ref Configuration.ShowDatesFromAlts)) Configuration.Save();
         }
 
         if (ImGui.CollapsingHeader(Translator.GetLine("Config.Header.UISettings")))

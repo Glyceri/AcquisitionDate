@@ -3,6 +3,7 @@ using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
 using AcquisitionDate.LodestoneRequests.Interfaces;
+using AcquisitionDate.Parser.Interfaces;
 using System.Collections.Generic;
 
 namespace AcquisitionDate.Acquisition;
@@ -15,14 +16,16 @@ internal abstract class AcquirerBase : IAcquirer
     public bool HasSucceeded { get; private set; }
 
     protected readonly ILodestoneNetworker Networker;
+    protected readonly IAcquisitionParser AcquisitionParser;
 
     protected IDatableData _currentUser = null!;
 
     List<ILodestoneQueueElement> queueElements = new List<ILodestoneQueueElement>();
 
-    public AcquirerBase(ILodestoneNetworker networker)
+    public AcquirerBase(ILodestoneNetworker networker, IAcquisitionParser acquistionParser)
     {
         Networker = networker;
+        AcquisitionParser = acquistionParser;
     }
 
     public void Acquire(IDatableData user)

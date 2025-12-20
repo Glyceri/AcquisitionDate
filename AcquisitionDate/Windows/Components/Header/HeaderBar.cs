@@ -1,12 +1,13 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using AcquistionDate.PetNicknames.TranslatorSystem;
 using System.Numerics;
 using AcquisitionDate.Windows;
 using AcquisitionDate;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.AcquisitionDate.Windowing.Windows;
+using AcquisitionDate.Core.Handlers;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Header;
 
@@ -20,6 +21,8 @@ internal static class HeaderBar
         Vector2 contentSize = ImGui.GetContentRegionAvail();
         contentSize.Y = HEADER_BAR_HEIGHT * ImGuiHelpers.GlobalScale;
 
+        Vector2 currentCursorPos = ImGui.GetCursorPos();
+
         if (Listbox.Begin($"##headerbar_{WindowHandler.InternalCounter}", contentSize))
         {
             Vector2 lastPos = ImGui.GetCursorPos();
@@ -32,7 +35,7 @@ internal static class HeaderBar
             WindowStruct<KofiWindow> kofiWindow = new WindowStruct<KofiWindow>(in windowHandler, in configuration, FontAwesomeIcon.Coffee, Translator.GetLine("Kofi.Title"), configuration.showKofiButton && window is not KofiWindow);
             WindowStruct<AcquisitionConfigWindow> petConfigWindow = new WindowStruct<AcquisitionConfigWindow>(in windowHandler, in configuration, FontAwesomeIcon.Cogs, Translator.GetLine("Config.Title"), window is not AcquisitionConfigWindow || configuration.quickButtonsToggle);
             WindowStruct<AcquiryWindow> petListWindow = new WindowStruct<AcquiryWindow>(in windowHandler, in configuration, FontAwesomeIcon.FileImport, Translator.GetLine("Acquiry.Title"), true);
-            //WindowStruct<PetListWindow> actualPetListWindow = new WindowStruct<PetListWindow>(in windowHandler, in configuration, FontAwesomeIcon.List, Translator.GetLine("PetList.Title"), (window is not PetListWindow) && (configuration.listButtonLayout == 0 || configuration.listButtonLayout == 2));
+            //WindowStruct<AcquisitionListWindow> actualPetListWindow = new WindowStruct<AcquisitionListWindow>(in windowHandler, in configuration, FontAwesomeIcon.List, Translator.GetLine("PetList.Title"), (window is not AcquisitionListWindow));
             //WindowStruct<PetRenameWindow> petRenameWindow = new WindowStruct<PetRenameWindow>(in windowHandler, in configuration, FontAwesomeIcon.PenSquare, Translator.GetLine("ContextMenu.Rename"), window is not PetRenameWindow || configuration.quickButtonsToggle);
             
             float availableWidth = ImGui.GetContentRegionAvail().X;
@@ -49,6 +52,14 @@ internal static class HeaderBar
 
             Listbox.End();
         }
+
+        Vector2 newCursorPos = ImGui.GetCursorPos();
+
+        ImGui.SetCursorPos(currentCursorPos + new Vector2(0, contentSize.Y * 0.25f));
+
+        ImGui.Text($"v{PluginHandlers.Plugin.Version}");
+
+        ImGui.SetCursorPos(newCursorPos);
     }
 }
 

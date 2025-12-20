@@ -1,6 +1,7 @@
 using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate;
 using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
@@ -17,7 +18,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
     uint lastID = 0;
     bool isQuest = false;
 
-    public QuestJournalWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public QuestJournalWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
@@ -28,8 +29,8 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData)
     {
-        if (isQuest) return userData.QuestList;
-        return userData.DutyList;
+        if (isQuest) return userData.GetDate(AcquirableDateType.Quest);
+        return userData.GetDate(AcquirableDateType.Duty);
     }
 
     protected override bool HandleConfig(Configuration configuration)
@@ -113,7 +114,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {currentID}");
 
-        DrawDate(tNode, currentID, stillDraw);
+        DrawDate(tNode, currentID, showAlt: false, stillDraw: stillDraw);
         journalDetail->SetX((short)(journalDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
     }
 

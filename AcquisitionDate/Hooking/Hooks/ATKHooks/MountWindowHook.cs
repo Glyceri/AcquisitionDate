@@ -6,6 +6,7 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
+using AcquisitionDate.Database.Enums;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
@@ -15,14 +16,14 @@ internal unsafe class MountWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MountWindowHook(IUserList userList, ISheets sheets, Configuration configuration) : base(userList, sheets, configuration) { }
+    public MountWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "MountNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.MountList;
+    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Mount);
     protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMountNotebook;
 
     protected override void OnDispose()
@@ -59,7 +60,7 @@ internal unsafe class MountWindowHook : DateTextHook
 
         PluginHandlers.PluginLog.Verbose($"Mount Notebook notebook clicked ID: {mountID}");
 
-        if (DrawDate(tNode, mountID, true))
+        if (DrawDate(tNode, mountID, showAlt: false, stillDraw: true))
         {
             GiveTooltip(baseAddon, tNode, mountID);
         }
