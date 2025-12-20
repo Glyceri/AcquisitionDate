@@ -11,15 +11,27 @@ namespace AcquisitionDate.LodestoneNetworking;
 
 internal class NetworkClient : INetworkClient
 {
-    readonly HttpClient HttpClient;
-    readonly CancellationTokenSource CancellationTokenSource;
+    private HttpClient HttpClient;
+    private readonly CancellationTokenSource CancellationTokenSource;
 
-    string _sessionToken = string.Empty;
+    private string _sessionToken = string.Empty;
 
     public NetworkClient()
     {
-        HttpClient = new HttpClient();
+        HttpClient              = new HttpClient();
         CancellationTokenSource = new CancellationTokenSource();
+    }
+
+    private void CreateNewHttpClient()
+    {
+        HttpClient.Dispose();
+
+        HttpClient = new HttpClient();
+    }
+
+    public void RefreshHttpClient()
+    {
+        CreateNewHttpClient();
     }
 
     public void CancelPendingRequests()
@@ -55,14 +67,14 @@ internal class NetworkClient : INetworkClient
         return request;
     }
 
-    NetworkClientRequest CreateRequest(string URL)
+    private NetworkClientRequest CreateRequest(string URL)
     {
         NetworkClientRequest request = new NetworkClientRequest(URL);
 
         return request;
     }
 
-    async Task AsyncSendRequest(HttpRequestMessage request, Action<HttpResponseMessage> onResponse, Action<Exception> onFailure)
+    private async Task AsyncSendRequest(HttpRequestMessage request, Action<HttpResponseMessage> onResponse, Action<Exception> onFailure)
     {
         HttpResponseMessage? response = null;
 

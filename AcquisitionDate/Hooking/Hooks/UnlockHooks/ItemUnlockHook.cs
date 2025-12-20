@@ -86,7 +86,7 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
         if (item.ItemAction.RowId == 0) return false;
 
-        switch ((ItemActionType)item.ItemAction.Value.Type)
+        switch ((ItemActionType)item.ItemAction.Value.Action.RowId)
         {
             case ItemActionType.Companion:
                 itemIsUnlocked = UIState.Instance()->IsCompanionUnlocked(GetCompanionID(item));
@@ -147,7 +147,7 @@ internal unsafe class ItemUnlockHook : UnlockHook
 
         PluginHandlers.PluginLog.Verbose($"Detected Item Completion with ID: {item.RowId}");
 
-        switch ((ItemActionType)item.ItemAction.Value.Type)
+        switch ((ItemActionType)item.ItemAction.Value.Action.RowId)
         {
             case ItemActionType.Companion:
                 data.GetDate(AcquirableDateType.Minion).SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);

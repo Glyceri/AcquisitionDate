@@ -21,8 +21,8 @@ internal unsafe class FishyUnlockHook : UnlockHook
 
     public override void Reset() 
     {
-        _fishStore      = PlayerState.Instance()->CaughtFishBitmask.ToArray();
-        _spearFishStore = PlayerState.Instance()->CaughtSpearfishBitmask.ToArray();
+        _fishStore      = PlayerState.Instance()->CaughtFish.ToArray();
+        _spearFishStore = PlayerState.Instance()->CaughtSpearfish.ToArray();
     }
 
     public uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
@@ -71,14 +71,14 @@ internal unsafe class FishyUnlockHook : UnlockHook
 
         IDatableData data = localUser.Data;
 
-        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFishBitmask);
+        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFish);
         if (fishOutcome != null)
         {
             data.GetDate(AcquirableDateType.Fishing).SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
             PluginHandlers.PluginLog.Information($"Found new fish caught with ID: {fishOutcome.Value}");
         }
 
-        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfishBitmask);
+        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfish);
         if (spfishOutcome != null)
         {
             spfishOutcome += SpearFishIdOffset;

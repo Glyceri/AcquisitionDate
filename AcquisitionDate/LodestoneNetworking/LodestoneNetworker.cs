@@ -24,6 +24,8 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     float lodestoneQueueReleaseTimer = 0;
 
+    float refreshTimer = 0;
+
     readonly IDirtyListener DirtyListener;
     readonly Configuration Configuration;
 
@@ -94,6 +96,15 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public void Update(float deltaTime)
     {
+        refreshTimer += deltaTime;
+
+        if (refreshTimer > 60 * 10) // 10 minutes
+        {
+            refreshTimer = 0;
+
+            NetworkClient.RefreshHttpClient();
+        }
+
         int queueCount = _queueElements.Count;
 
         lodestoneQueueReleaseTimer += deltaTime;

@@ -12,4 +12,6 @@ internal interface INetworkClient : IDisposable
     string GetSessionToken();
 
     NetworkClientRequest SendRequest(string URL, Action<HttpResponseMessage> onResponse, Action<Exception> onFailure);
+
+    void RefreshHttpClient();
 }
