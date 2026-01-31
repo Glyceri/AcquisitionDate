@@ -75,17 +75,15 @@ internal unsafe class AchievementUnlockHook : UnlockHook
 
     private void AchievementUnlockedDetour(Achievement* achievement, uint achievementId)
     {
+        AchievementUnlockingHook!.Original(achievement, achievementId);
+
         if (IsAchievementSilly(achievement, achievementId))
         {
-            AchievementUnlockingHook!.Original(achievement, achievementId);
-
             return;
         }
 
         if (IsAchievementCompleted(achievement, achievementId))
         {
-            AchievementUnlockingHook!.Original(achievement, achievementId);
-
             return;
         }
 
