@@ -4,6 +4,7 @@ using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Enums;
 using AcquisitionDate.Services.Interfaces;
+using Dalamud.Game.Gui;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -16,20 +17,14 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class ItemUnlockHook : UnlockHook
 {
-    private readonly List<uint> UnlockedItems = new List<uint>();
+    private readonly List<uint> UnlockedItems = [];
 
-    private readonly Hook<RaptureAtkModuleUpdateDelegate>? RaptureAtkModuleUpdateHook;
-
-    private delegate void RaptureAtkModuleUpdateDelegate(RaptureAtkModule* ram, float deltaTime);
-
-    public ItemUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets)
-    {
-        RaptureAtkModuleUpdateHook = PluginHandlers.Hooking.HookFromAddress<RaptureAtkModuleUpdateDelegate>((nint)RaptureAtkModule.StaticVirtualTablePointer->Update, RaptureAtkModule_UpdateDetour);
-    }
+    public ItemUnlockHook(IUserList userList, ISheets sheets) 
+        : base(userList, sheets) { }
 
     public override void Init()
     {
-        RaptureAtkModuleUpdateHook?.Enable();
+        PluginHandlers.GameGui.AgentUpdate += OnAgentUpdate;
     }
 
     public override void Reset()
@@ -195,44 +190,33 @@ internal unsafe class ItemUnlockHook : UnlockHook
         }
     }
 
-    void RaptureAtkModule_UpdateDetour(RaptureAtkModule* module, float deltaTime)
+    private void OnAgentUpdate(AgentUpdateFlag updateFlag)
     {
-        if (UserList.ActiveUser != null)
+        if (UserList.ActiveUser == null)
         {
-            try
-            {
-                if (module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.UnlocksUpdate) || 
-                    module->AgentUpdateFlag.HasFlag(RaptureAtkModule.AgentUpdateFlags.InventoryUpdate))
-                {
-                    PluginHandlers.PluginLog.Verbose($"Unlocks Update Flag got set High: {module->AgentUpdateFlag}");
-                    List<Item> unlockedItems = GetNewlyUnlockedItems();
-
-                    foreach (Item item in unlockedItems)
-                    {
-                        PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
-                        StoreItemUnlock(item);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                PluginHandlers.PluginLog.Error(ex, "Error during RaptureAtkModule_UpdateDetour");
-            }
+            return;
         }
 
-        try
+        if (!updateFlag.HasFlag(AgentUpdateFlag.UnlocksUpdate) && !updateFlag.HasFlag(AgentUpdateFlag.InventoryUpdate))
         {
-            RaptureAtkModuleUpdateHook!.OriginalDisposeSafe(module, deltaTime);
+            return;
         }
-        catch (Exception e)
+
+        PluginHandlers.PluginLog.Verbose($"Unlocks Update Flag got set High: {updateFlag}");
+
+        List<Item> unlockedItems = GetNewlyUnlockedItems();
+
+        foreach (Item item in unlockedItems)
         {
-            PluginHandlers.PluginLog.Error(e, "Failed ATKModuleUpdate");
+            PluginHandlers.PluginLog.Verbose($"Detected Acquired Item with ID: {item.RowId} and the name: {item.Name.ExtractText()}");
+
+            StoreItemUnlock(item);
         }
     }
 
     public override void Dispose()
     {
-        RaptureAtkModuleUpdateHook?.Dispose();
+        PluginHandlers.GameGui.AgentUpdate -= OnAgentUpdate;
     }
 
     public override void Update(float deltaTime) { } // No update needed for this one
