@@ -58,8 +58,8 @@ internal unsafe class MinionWindowHook : DateTextHook
         uint minionID = 0;
 
         // Instead of reading text I use hover ID because Pet Nicknames LMAOOOO
-        PluginHandlers.PluginLog.Verbose($"Clicked minion: {(ushort)PluginHandlers.GameGui.HoveredAction.ActionID}");
-        IPetSheetData? acquiredPet = Sheets.GetCompanion((ushort)PluginHandlers.GameGui.HoveredAction.ActionID);
+        PluginHandlers.PluginLog.Verbose($"Clicked minion: {(ushort)PluginHandlers.GameGui.HoveredAction.ActionId}");
+        IPetSheetData? acquiredPet = Sheets.GetCompanion((ushort)PluginHandlers.GameGui.HoveredAction.ActionId);
         
         if (acquiredPet != null)
         {

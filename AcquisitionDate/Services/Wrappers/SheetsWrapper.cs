@@ -79,7 +79,7 @@ internal class SheetsWrapper : ISheets
 
             string plural = glass.Plural.ExtractText();
 
-            sbyte pronoun = glass.Unknown_70_5;
+            sbyte pronoun = glass.Pronoun;
 
             glassesSheetCache.Add(new GlassesSheetData((int)rowId, pronoun, singular, plural));
         }

@@ -7,6 +7,8 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using Dalamud.Game.DutyState;
+using Lumina.Excel;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
@@ -28,33 +30,33 @@ internal unsafe class InstanceContentUnlockHook : UnlockHook
         foreach (ContentFinderCondition iContent in Sheets.AllContentFinderConditions)
         {
             uint contentRowID = iContent.Content.RowId;
-            if (!UIState.IsInstanceContentCompleted(contentRowID)) continue;
+            
+            if (!UIState.IsInstanceContentCompleted(contentRowID))
+            {
+                continue;
+            }
 
             InstancedContentCompleted.Add(contentRowID);
         }
     }
 
-    private void OnDutyCompleted(object? sender, ushort dutyID)
+    private void OnDutyCompleted(IDutyStateEventArgs args)
     {
-        ushort contentFinderConditionID = GameMain.Instance()->CurrentContentFinderConditionId;
-        bool instanceHasAlreadyBeenCompleted = true;
-
-        ContentFinderCondition? contentFinderCondition = Sheets.GetContentFinderCondition(contentFinderConditionID);
-        string ccName = "[ERROR]";
-        if (contentFinderCondition != null)
-        {
-            ccName = contentFinderCondition.Value.Name.ExtractText();
-            instanceHasAlreadyBeenCompleted = InstancedContentCompleted.Contains(contentFinderCondition.Value.Content.RowId);
-        }
-
-        PluginHandlers.PluginLog.Information($"Detected a duty completed with the ID: {dutyID} with the detected ContentFinderConditionID: {contentFinderConditionID} with the name: {ccName}");
+        RowRef<ContentFinderCondition> contentFinderCondition = args.ContentFinderCondition;
+        
+        string ccName = contentFinderCondition.Value.Name.ExtractText();
+        
+        bool instanceHasAlreadyBeenCompleted = InstancedContentCompleted.Contains(contentFinderCondition.Value.Content.RowId);
+        
+        PluginHandlers.PluginLog.Information($"Detected a duty completed with the ID: {args.TerritoryType.RowId} with the detected ContentFinderConditionID: {contentFinderCondition.RowId} with the name: {ccName}");
+        
         if (instanceHasAlreadyBeenCompleted)
         {
             PluginHandlers.PluginLog.Information("This instance has already been completed however.");
             return;
         }
 
-        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Duty).SetDate(contentFinderConditionID, DateTime.Now, AcquiredDateType.Manual);
+        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Duty).SetDate(contentFinderCondition.RowId, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Dispose()
