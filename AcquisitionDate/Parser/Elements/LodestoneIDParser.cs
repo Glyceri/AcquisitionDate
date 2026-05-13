@@ -78,5 +78,7 @@ internal class LodestoneIDParser : IAcquistionParserElement<LodestoneParseData>
 
             onSuccess?.Invoke(new LodestoneParseData(userName, worldID.Value, lodestoneID.Value, imageURL));
         }
+
+        onFailure?.Invoke(new Exception("User was not found in the search results!"));
     }
 }
