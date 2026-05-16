@@ -20,11 +20,11 @@ internal abstract class AcquisitionWindow : Window, IAcquisitionWindow
 
     public AcquisitionWindow(WindowHandler windowHandler, Configuration configuration, string name, ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse, bool forceMainWindow = false) : base(name, flags, forceMainWindow) 
     {
-        WindowHandler = windowHandler;
-        Configuration = configuration;
+        WindowHandler   = windowHandler;
+        Configuration   = configuration;
 
-        SizeCondition = ImGuiCond.FirstUseEver;
-        Size = DefaultSize;
+        SizeCondition   = ImGuiCond.FirstUseEver;
+        Size            = DefaultSize;
 
         SizeConstraints = new WindowSizeConstraints()
         {

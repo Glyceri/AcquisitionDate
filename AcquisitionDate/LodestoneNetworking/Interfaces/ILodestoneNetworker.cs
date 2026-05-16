@@ -17,4 +17,5 @@ internal interface ILodestoneNetworker : IDisposable, IUpdatable
 
     void SetSessionToken(string sessionToken);
     string GetSessionToken();
+    void RefreshNetworkClient();
 }

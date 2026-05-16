@@ -34,6 +34,8 @@ internal class LodestoneIDParser : IAcquistionParserElement<LodestoneParseData>
             return;
         }
 
+        bool foundAny = false;
+        
         foreach (HtmlNode entryNode in entryNodes)
         {
             string? imageURL = null;
@@ -77,8 +79,15 @@ internal class LodestoneIDParser : IAcquistionParserElement<LodestoneParseData>
             if (lodestoneID == null) continue;
 
             onSuccess?.Invoke(new LodestoneParseData(userName, worldID.Value, lodestoneID.Value, imageURL));
+            
+            foundAny = true;
         }
 
+        if (foundAny)
+        {
+            return;
+        }
+        
         onFailure?.Invoke(new Exception("User was not found in the search results!"));
     }
 }

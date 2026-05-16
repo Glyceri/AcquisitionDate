@@ -17,8 +17,8 @@ namespace AcquisitionDate.Windows.Windows;
 internal class AcquiryWindow : AcquisitionWindow
 {
     protected override Vector2 MinSize { get; } = new Vector2(400, 788);
-    protected override Vector2 MaxSize { get; } = new Vector2(600, 940);
-    protected override Vector2 DefaultSize { get; } = new Vector2(600, 788);
+    protected override Vector2 MaxSize { get; } = new Vector2(600, 1000);
+    protected override Vector2 DefaultSize { get; } = new Vector2(600, 842);
     protected override bool HasHeaderBar { get; } = true;
 
     readonly IUserList UserList;
@@ -33,7 +33,8 @@ internal class AcquiryWindow : AcquisitionWindow
 
     IDatableData? currentActiveData = null;
 
-    public AcquiryWindow(WindowHandler windowHandler, Configuration configuration, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener) : base(windowHandler, configuration, "Acquisition Window")
+    public AcquiryWindow(WindowHandler windowHandler, Configuration configuration, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener) 
+        : base(windowHandler, configuration, "Acquisition Window")
     {
         UserList = userList;
         Database = database;
@@ -107,7 +108,7 @@ internal class AcquiryWindow : AcquisitionWindow
 
         ImGui.NewLine();
 
-        if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", new Vector2(ImGui.GetContentRegionAvail().X, 262 * ImGuiHelpers.GlobalScale)))
+        if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", new Vector2(ImGui.GetContentRegionAvail().X, 296 * ImGuiHelpers.GlobalScale)))
         {
             TextAligner.Align(TextAlignment.Left);
             BasicLabel.Draw("Some dates can be obtained retroactively from the Lodestone.", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
@@ -143,6 +144,7 @@ internal class AcquiryWindow : AcquisitionWindow
             BasicLabel.Draw("!!!   NEVER SHARE YOUR SESSION TOKEN WITH ANYONE   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             BasicLabel.Draw("!!!   (YES THIS TECHNICALLY INCLUDES ME AND THIS PLUGIN)   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             BasicLabel.Draw("!!!   ALWAYS LOG OUT OF LODESTONE WHEN YOU ARE DONE   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+            BasicLabel.Draw("!!!   DISABLE YOUR VPN IF YOU HAVE ONE ON   !!!", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             TextAligner.PopAlignment();
 
             Listbox.End();
@@ -159,16 +161,36 @@ internal class AcquiryWindow : AcquisitionWindow
         if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
         {
             BasicLabel.Draw($"Active User: {currentActiveData.Name}@{currentActiveData.HomeworldName}", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
-            BasicLabel.Draw("Disable your VPN... sorry", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
+            
 
             DrawBar();
-
+            
+            ImGui.NewLine();
+            
+            DrawRefresh();
+            
+            ImGui.NewLine();
+            
             AcquirerUI.Draw(AcquirerHandler.AchievementAcquirer, currentActiveData, "Achievements", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.QuestAcquirer, currentActiveData, "Quests", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.MinionAcquirer, currentActiveData, "Minions", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.MountAcquirer, currentActiveData, "Mounts", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             AcquirerUI.Draw(AcquirerHandler.FacewearAcquirer, currentActiveData, "Glasses", new Vector2(ImGui.GetContentRegionAvail().X, BarSize));
             Listbox.End();
+        }
+    }
+    
+    void DrawRefresh()
+    {
+        if (LabledLabel.DrawButton("Refresh the HTTP Client ###REFRESH_HTTP_CLIENT", "Click Here", new Vector2(ImGui.GetContentRegionAvail().X, BarSize), "This helps if you get repeated errors when acquiring data.", "!! Warning !!\nThis cancels your current downloads!"))
+        {
+            AcquirerHandler.AchievementAcquirer.Cancel();
+            AcquirerHandler.QuestAcquirer.Cancel();
+            AcquirerHandler.MinionAcquirer.Cancel();
+            AcquirerHandler.MountAcquirer.Cancel();
+            AcquirerHandler.FacewearAcquirer.Cancel();
+            
+            LodestoneNetworker.RefreshNetworkClient();
         }
     }
 
@@ -203,6 +225,5 @@ internal class AcquiryWindow : AcquisitionWindow
             }
             ImGui.EndDisabled();
         }
-        ImGui.NewLine();
     }
 }

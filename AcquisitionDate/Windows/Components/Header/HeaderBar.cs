@@ -35,9 +35,7 @@ internal static class HeaderBar
             WindowStruct<KofiWindow> kofiWindow = new WindowStruct<KofiWindow>(in windowHandler, in configuration, FontAwesomeIcon.Coffee, Translator.GetLine("Kofi.Title"), configuration.showKofiButton && window is not KofiWindow);
             WindowStruct<AcquisitionConfigWindow> petConfigWindow = new WindowStruct<AcquisitionConfigWindow>(in windowHandler, in configuration, FontAwesomeIcon.Cogs, Translator.GetLine("Config.Title"), window is not AcquisitionConfigWindow || configuration.quickButtonsToggle);
             WindowStruct<AcquiryWindow> petListWindow = new WindowStruct<AcquiryWindow>(in windowHandler, in configuration, FontAwesomeIcon.FileImport, Translator.GetLine("Acquiry.Title"), true);
-            //WindowStruct<AcquisitionListWindow> actualPetListWindow = new WindowStruct<AcquisitionListWindow>(in windowHandler, in configuration, FontAwesomeIcon.List, Translator.GetLine("PetList.Title"), (window is not AcquisitionListWindow));
-            //WindowStruct<PetRenameWindow> petRenameWindow = new WindowStruct<PetRenameWindow>(in windowHandler, in configuration, FontAwesomeIcon.PenSquare, Translator.GetLine("ContextMenu.Rename"), window is not PetRenameWindow || configuration.quickButtonsToggle);
-            
+
             float availableWidth = ImGui.GetContentRegionAvail().X;
             availableWidth -= HeaderBarWidth;
 
@@ -47,8 +45,6 @@ internal static class HeaderBar
             kofiWindow.Draw();
             petConfigWindow.Draw();
             petListWindow.Draw();
-            //actualPetListWindow.Draw();
-            //petRenameWindow.Draw();
 
             Listbox.End();
         }
@@ -57,7 +53,7 @@ internal static class HeaderBar
 
         ImGui.SetCursorPos(currentCursorPos + new Vector2(0, contentSize.Y * 0.25f));
 
-        ImGui.Text($"v{PluginHandlers.Plugin.Version}");
+        ImGui.Text($"   v{PluginHandlers.Plugin.Version}");
 
         ImGui.SetCursorPos(newCursorPos);
     }

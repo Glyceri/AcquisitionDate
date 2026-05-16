@@ -8,7 +8,6 @@ using AcquisitionDate.LodestoneNetworking.Queue.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Structs;
 using AcquisitionDate.LodestoneRequests.Interfaces;
 using Dalamud.Game;
-using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 
@@ -16,15 +15,13 @@ namespace AcquisitionDate.LodestoneNetworking;
 
 internal class LodestoneNetworker : ILodestoneNetworker
 {
-    readonly INetworkClient NetworkClient;
+    private readonly INetworkClient NetworkClient;
 
     public LodestoneRegion PreferredRegion { get; private set; } = LodestoneRegion.Germany;
 
     List<ILodestoneQueueElement> _queueElements = new List<ILodestoneQueueElement>();
 
     float lodestoneQueueReleaseTimer = 0;
-
-    float refreshTimer = 0;
 
     readonly IDirtyListener DirtyListener;
     readonly Configuration Configuration;
@@ -47,7 +44,7 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
         DirtyListener.RegisterDirtyUser(OnDirty);
     }
-
+    
     void OnDirty()
     {
         SetSessionToken(string.Empty);
@@ -56,6 +53,11 @@ internal class LodestoneNetworker : ILodestoneNetworker
         NetworkClient.CancelPendingRequests();
     }
 
+    public void RefreshNetworkClient()
+    {
+        NetworkClient.RefreshHttpClient();
+    }
+    
     public void SetSessionToken(string sessionToken)
     {
         NetworkClient.SetSessionToken(sessionToken);
@@ -96,15 +98,6 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
     public void Update(float deltaTime)
     {
-        refreshTimer += deltaTime;
-
-        if (refreshTimer > 60 * 10) // 10 minutes
-        {
-            refreshTimer = 0;
-
-            NetworkClient.RefreshHttpClient();
-        }
-
         int queueCount = _queueElements.Count;
 
         lodestoneQueueReleaseTimer += deltaTime;
