@@ -4,7 +4,6 @@ using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
 using Dalamud.Utility;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System;
 using System.Collections.Generic;
@@ -13,10 +12,7 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class AchievementUnlockHook : UnlockHook
 {
-    private delegate void OnAchievementUnlockDelegate(Achievement* achievement, uint achievementID);
-
-    [Signature("81 FA ?? ?? ?? ?? 0F 87 ?? ?? ?? ?? 53", DetourName = nameof(AchievementUnlockedDetour))]
-    private readonly Hook<OnAchievementUnlockDelegate>? AchievementUnlockingHook = null;
+    private readonly Hook<Achievement.Delegates.SetAchievementCompleted> AchievementUnlockingHook;
 
     private readonly List<uint> SquareEnixSillyAchievements =
     [
@@ -24,7 +20,10 @@ internal unsafe class AchievementUnlockHook : UnlockHook
     ];
 
     public AchievementUnlockHook(IUserList userList, ISheets sheets)
-        : base(userList, sheets) { }
+        : base(userList, sheets)
+    {
+        AchievementUnlockingHook = PluginHandlers.Hooking.HookFromAddress<Achievement.Delegates.SetAchievementCompleted>((nint)Achievement.MemberFunctionPointers.SetAchievementCompleted, AchievementUnlockedDetour);
+    }
 
     public override void Init()
     {
