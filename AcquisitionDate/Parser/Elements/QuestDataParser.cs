@@ -1,5 +1,4 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.HtmlParser;
+﻿using AcquisitionDate.HtmlParser;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.Parser.Interfaces;

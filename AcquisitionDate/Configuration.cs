@@ -1,9 +1,8 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Serializiation;
 using Dalamud.Configuration;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
+using AcquisitionDate.Translation;
 using Newtonsoft.Json;
 using Dalamud.Game;
 
@@ -59,6 +58,8 @@ internal class Configuration : IPluginConfiguration
 
     public void Initialise(IDatabase database)
     {
+        // TODO: Make a migrator and clear ALL of the duty dates (sorry).
+        
         Database = database;
         hasSetUp = true;
 
@@ -124,7 +125,8 @@ internal class Configuration : IPluginConfiguration
     };
 
     [JsonIgnore]
-    public AcquisitionDateLanguage GetLanguage => (AcquisitionDateLanguage)AcquisitionLanuage;
+    public AcquisitionDateLanguage GetLanguage
+        => (AcquisitionDateLanguage)AcquisitionLanuage;
 
     [JsonIgnore]
     public string[] DateFormatString =>
@@ -170,5 +172,37 @@ internal class Configuration : IPluginConfiguration
         $"4.5s",
         $"5s",
     ];
+    
+    [Serializable]
+    public class ListSetting
+    {
+        public bool ShowDates = true;
+        public bool ShowPlaceholder;
+        
+        [JsonConstructor]
+        public ListSetting(bool showDates, bool showPlaceholder)
+        {
+            ShowDates       = showDates;
+            ShowPlaceholder = showPlaceholder;
+        }
+        
+        public ListSetting(bool defaultShowPlaceholder = true)
+        {
+            ShowPlaceholder = defaultShowPlaceholder;
+        }
+    }
+    
+    [Serializable]
+    public class AltListSetting : ListSetting
+    {
+        public bool ShowAltData;
+        
+        [JsonConstructor]
+        public AltListSetting(bool showAltData = true)
+        {
+            ShowAltData = showAltData;
+        }
+    }
+    
     #endregion
 }

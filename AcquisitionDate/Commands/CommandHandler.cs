@@ -1,46 +1,42 @@
-﻿using AcquisitionDate.AcquisitionDate.Commands.Commands;
-using AcquisitionDate.AcquisitionDate.Commands.Interfaces;
+﻿using System.Collections.Generic;
 using AcquisitionDate.Commands.Commands;
+using AcquisitionDate.Commands.Interfaces;
 using AcquisitionDate.Windows;
-using System.Collections.Generic;
 
-namespace AcquisitionDate.AcquisitionDate.Commands;
+namespace AcquisitionDate.Commands;
 
 internal class CommandHandler : ICommandHandler
 {
-    readonly WindowHandler WindowHandler;
-    readonly Configuration Configuration;
+    private readonly WindowHandler  WindowHandler;
+    private readonly List<ICommand> _commands = [];
 
-    readonly List<ICommand> Commands = new List<ICommand>();
-
-    public CommandHandler(Configuration configuration, WindowHandler windowHandler)
+    public CommandHandler(WindowHandler windowHandler)
     {
-        Configuration = configuration;
         WindowHandler = windowHandler;
 
         RegisterCommands();
     }
-
-    void RegisterCommands()
-    {
-        RegisterCommand(new AcquisitionMainCommand          (WindowHandler));
-        RegisterCommand(new AcquisitionMainSubCommand       (WindowHandler));
-        RegisterCommand(new AcquisitionSettingsCommand      (WindowHandler));
-        RegisterCommand(new AcquisitionSettingsSubCommand   (WindowHandler));
-        RegisterCommand(new DevCommand                      (Configuration, WindowHandler));
-    }
-
-    void RegisterCommand(ICommand command)
-    {
-        Commands.Add(command);
-    }
-
+    
     public void Dispose()
     {
-        foreach(ICommand command in Commands)
+        foreach(ICommand command in _commands)
         {
-            command?.Dispose();
+            command.Dispose();
         }   
-        Commands.Clear();
+        _commands.Clear();
+    }
+
+    private void RegisterCommands()
+    {
+        RegisterCommand(new AcquisitionMainCommand       (WindowHandler));
+        RegisterCommand(new AcquisitionMainSubCommand    (WindowHandler));
+        RegisterCommand(new AcquisitionSettingsCommand   (WindowHandler));
+        RegisterCommand(new AcquisitionSettingsSubCommand(WindowHandler));
+        RegisterCommand(new DevCommand                   (WindowHandler));
+    }
+
+    private void RegisterCommand(ICommand command)
+    {
+        _commands.Add(command);
     }
 }

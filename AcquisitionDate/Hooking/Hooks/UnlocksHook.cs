@@ -1,9 +1,9 @@
-﻿using AcquisitionDate.DatableUsers.Interfaces;
-using AcquisitionDate.DirtySystem.Interfaces;
+﻿using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Hooking.Hooks.Interfaces;
 using AcquisitionDate.Hooking.Hooks.UnlockHooks;
 using AcquisitionDate.Services.Interfaces;
 using System.Collections.Generic;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
@@ -12,13 +12,13 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
     readonly List<UnlockHook> unlockHooks = new List<UnlockHook>();
 
     readonly ISheets Sheets;
-    readonly IUserList UserList;
+    readonly IDatabase Database;
     readonly IDirtyListener DirtyListener;
 
-    public UnlocksHook(ISheets sheets, IUserList userList, IDirtyListener dirtyListener)
+    public UnlocksHook(ISheets sheets, IDatabase database, IDirtyListener dirtyListener)
     {
-        Sheets = sheets;
-        UserList = userList;
+        Sheets        = sheets;
+        Database      = database;
         DirtyListener = dirtyListener;
     }
 
@@ -26,13 +26,13 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
     {
         DirtyListener.RegisterDirtyUser(Reset);
 
-        Register(new AchievementUnlockHook(UserList, Sheets));
-        Register(new FishyUnlockHook(UserList, Sheets));
-        Register(new InstanceContentUnlockHook(UserList, Sheets));
-        Register(new ItemUnlockHook(UserList, Sheets));
-        Register(new LevelupUnlockHook(UserList, Sheets));
-        Register(new QuestUnlockHook(UserList, Sheets));
-        Register(new EorzeaIncognitaUnlockHook(UserList, Sheets));
+        Register(new AchievementUnlockHook(Database, Sheets));
+        Register(new FishyUnlockHook(Database, Sheets));
+        Register(new InstanceContentUnlockHook(Database, Sheets));
+        Register(new ItemUnlockHook(Database, Sheets));
+        Register(new LevelupUnlockHook(Database, Sheets));
+        Register(new QuestUnlockHook(Database, Sheets));
+        Register(new EorzeaIncognitaUnlockHook(Database, Sheets));
     }
 
     void Register(UnlockHook unlockHook)
@@ -45,7 +45,7 @@ internal unsafe class UnlocksHook : HookableElement, IUnlocksHook
 
     public void Update(float deltaTime)
     {
-        if (UserList.ActiveUser == null) return;
+        if (Database.GetLocalUser() == null) return;
 
         foreach (UnlockHook unlockHook in unlockHooks)
         {

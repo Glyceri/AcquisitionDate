@@ -33,7 +33,7 @@ internal class MinionAcquirer : AcquirerItem
 
     void OnItemData(ItemData itemData)
     {
-        _currentUser.GetDate(AcquirableDateType.Minion).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDateList(AcquirableDateType.Minion).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

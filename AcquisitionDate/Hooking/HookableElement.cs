@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Hooking.Interfaces;
 
 namespace AcquisitionDate.Hooking;

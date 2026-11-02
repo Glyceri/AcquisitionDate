@@ -1,11 +1,12 @@
-﻿namespace AcquisitionDate.Database.Structs;
+﻿using AcquisitionDate.Database.Enums;
+
+namespace AcquisitionDate.Database.Structs;
 
 internal readonly struct UnlockedDate
 {
-    readonly Configuration Configuration;
-
-    readonly AcquisitionDateTime? ManualDate;
-    readonly AcquisitionDateTime? LodestoneDate;
+    private readonly Configuration        Configuration;
+    private readonly AcquisitionDateTime? ManualDate;
+    private readonly AcquisitionDateTime? LodestoneDate;
 
     public UnlockedDate(Configuration configuration, AcquisitionDateTime? manualTime, AcquisitionDateTime? lodestoneTime)
     {
@@ -14,7 +15,17 @@ internal readonly struct UnlockedDate
         LodestoneDate   = lodestoneTime;
     }
 
-    public AcquisitionDateTime? GetDateTime() => ManualDate ?? LodestoneDate;
+    public AcquisitionDateTime? GetDateTime() 
+        => ManualDate ?? LodestoneDate;
 
-    public string? GetTimeString() => GetDateTime()?.DateTime.ToString(Configuration.DateParseString());
+    public AcquisitionDateTime? GetSpecificDateTime(AcquiredDateType dateType)
+    {
+        switch (dateType)
+        {
+            case AcquiredDateType.Lodestone: return LodestoneDate;
+            case AcquiredDateType.Manual:    return ManualDate;
+        }
+        
+        return null;
+    }
 }

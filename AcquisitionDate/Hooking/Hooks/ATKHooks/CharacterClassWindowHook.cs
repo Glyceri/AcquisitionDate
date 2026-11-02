@@ -1,219 +1,174 @@
-﻿using Acquisition.PetNicknames.Hooking;
-using AcquisitionDate.Core.Handlers;
+﻿using System;
+using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Hooking;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.Sheets;
-using AcquistionDate.PetNicknames.TranslatorSystem;
-using System;
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Nodes;
+using Dalamud.Game.Addon.Events;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using Lumina.Excel.Sheets;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
 internal unsafe class CharacterClassWindowHook : DateTextHook
 {
-    const uint CustomDateTextNodeID = 800;
-    const uint CustomLabelTextNodeID = 801;
-
-    AtkTextNode* tNode;
-    AtkTextNode* tNode2;
-
-    readonly Hook<AddonCharacterClass.Delegates.ReceiveEvent>? ReceiveEventHook;
-
-    uint lastIndex = 0;
-    bool lastValid = false;
-
-    public CharacterClassWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
-    {
-        ReceiveEventHook = PluginHandlers.Hooking.HookFromAddress<AddonCharacterClass.Delegates.ReceiveEvent>((nint)AddonCharacterClass.StaticVirtualTablePointer->ReceiveEvent, ReceiveEventDetour);
-    }
-
-    void ReceiveEventDetour(AddonCharacterClass* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData)
-    {
-        try
-        {
-            ReceiveEventHook!.Original(thisPtr, eventType, eventParam, atkEvent, atkEventData);            
-        }
-        catch(Exception e) 
-        { 
-            PluginHandlers.PluginLog.Error(e, "Calling Origial on the Receive Event hook failed.");
-        }
-
-        if (!HandleLastIndex(thisPtr, eventParam)) return;
-
-        HandleTextNode(new BaseNode(&thisPtr->AtkUnitBase), thisPtr);
-    }
-
-    void HandleTextNode(BaseNode baseNode, AddonCharacterClass* thisPtr)
-    {
-        AtkTextNode* baseTextNode = baseNode.GetNode<AtkTextNode>(90);
-        if (baseTextNode == null) return;
-
-        tNode = GetTextNode(thisPtr, CustomDateTextNodeID);
-        if (tNode == null)
-        {
-            tNode = CreateTextNode(CustomDateTextNodeID);
-            if (tNode == null) return;
-
-            AddSibling(tNode, &baseTextNode->AtkResNode, &thisPtr->UldManager);
-
-            tNode->SetAlignment(AlignmentType.Left);
-            tNode->DrawFlags = baseTextNode->DrawFlags;
-            tNode->TextFlags = baseTextNode->TextFlags;
-
-            tNode->EdgeColor = baseTextNode->EdgeColor;
-            tNode->Color = baseTextNode->Color;
-            tNode->TextColor = baseTextNode->TextColor;
-
-            tNode->SetYFloat(baseTextNode->Y + 18);
-            tNode->SetXFloat(185);
-        }
-
-        tNode2 = GetTextNode(thisPtr, CustomLabelTextNodeID);
-        if (tNode2 == null)
-        {
-            tNode2 = CreateTextNode(CustomLabelTextNodeID);
-            if (tNode2 == null) return;
-
-            AddSibling(tNode2, &tNode->AtkResNode, &thisPtr->UldManager);
-
-            tNode2->LineSpacing = 12;
-            tNode2->AlignmentFontType = 5;
-            tNode2->AlignmentType = AlignmentType.Right;
-            tNode2->DrawFlags = 8;
-            tNode2->TextFlags = TextFlags.Glare;
-            tNode2->SetWidth(165);
-
-            tNode2->EdgeColor = baseTextNode->EdgeColor;
-            tNode2->Color = baseTextNode->Color;
-            tNode2->TextColor = baseTextNode->TextColor;
-
-            tNode2->SetYFloat(baseTextNode->Y + 18);
-            tNode2->SetXFloat(7);
-            tNode2->SetText(Translator.GetLine("AchievedOn"));
-        }
-
-        PluginHandlers.PluginLog.Verbose($"Level Log Hovered index: {lastIndex}");
-        lastValid = DrawDate(tNode, lastIndex, showAlt: false, stillDraw: false);
-        tNode2->ToggleVisibility(lastValid);
-    }
-
-    AtkTextNode* GetTextNode(AddonCharacterClass* thisPtr, uint id)
-    {
-        for (int i = 0; i < thisPtr->UldManager.NodeListCount; i++)
-        {
-            AtkResNode* rNode = thisPtr->UldManager.NodeList[i];
-            if (rNode == null) continue;
-            if (rNode->NodeId != id) continue;
-
-            return rNode->GetAsAtkTextNode();
-        }
-
-        return null;
-    }
-
-    bool HandleLastIndex(AddonCharacterClass* thisPtr, int eventParam)
-    {
-        try
-        {
-            int eventIndex = eventParam - 2;
-            if (eventIndex < 0) return false;
-            if (eventIndex >= thisPtr->ClassComponents.Length) return false;
-
-            uint classLevel = thisPtr->ClassEntries[eventIndex].Level;
-
-            AtkComponentBase* atkBase = thisPtr->ClassComponents[eventIndex].Value;
-            if (atkBase == null) return false;
-
-            AtkResNode* resNode = atkBase->AtkResNode;
-            if (resNode == null) return false;
-
-            AtkResNode* parentNode = resNode->ParentNode;
-            if (parentNode == null) return false;
-
-            AtkComponentNode* componentNode = parentNode->GetAsAtkComponentNode();
-            if (componentNode == null) return false;
-
-            AtkComponentBase* componentBase = componentNode->Component;
-            if (componentBase == null) return false;
-
-            AtkTextNode* atkTextNode = componentBase->GetTextNodeById(3);
-            if (atkTextNode == null) return false;
-
-            string classJobName = atkTextNode->NodeText.ToString();
-            classJobName = classJobName.Trim();
-
-            ClassJob? outcome = null;
-
-            foreach (ClassJob cJob in Sheets.AllClassJobs)
-            {
-                if (!string.Equals(cJob.Name.ExtractText(), classJobName, StringComparison.InvariantCultureIgnoreCase)) continue;
-
-                outcome = cJob;
-                break;
-            }
-
-            sbyte expIndex = outcome?.ExpArrayIndex ?? 0;
-            uint indexBase = (uint)expIndex * 10000;
-            indexBase += classLevel;
-
-            lastIndex = indexBase;
-            PluginHandlers.PluginLog.Verbose($"Found hovered class to be: {lastIndex}");
-            return true;
-        }
-        catch (Exception e)
-        {
-            PluginHandlers.PluginLog.Error(e, "Issue in reading class.");
-            return false;
-        } 
-    }
+    private CharacterClassResNode? CharacterClassResNode;
+    
+    public CharacterClassWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services) 
+        { }
 
     public override void Init()
     {
-        ReceiveEventHook?.Enable();
-
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "Character", CharacterHookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "Character",      OnReceiveEventCharacter);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "CharacterClass", OnReceiveEventCharacterClass);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup,        "CharacterClass", SetupCharacterClass);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize,      "CharacterClass", FinalizeCharacterClass);
     }
-
-    void CharacterHookDetour(AddonEvent type, AddonArgs args)
-    {
-        AddonCharacter* addon = (AddonCharacter*)args.Addon.Address;
-
-        BaseNode baseNode = new BaseNode(&addon->AtkUnitBase);
-        
-        ComponentNode componentNode = baseNode.GetComponentNode(82);
-        if (componentNode == null) return;
-
-        AtkComponentNode* atkComponentNode = componentNode.GetPointer();
-        if (atkComponentNode == null) return;
-
-        if (addon->TabIndex == 2 && lastValid)
-        {
-            atkComponentNode->SetScaleY(1.02f);
-        }
-        else
-        {
-            atkComponentNode->SetScaleY(1f);
-        }
-    }
-
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.ClassLVL);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnLevelScreen;
-
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon) { }
-
+    
     protected override void OnDispose()
     {
-        ReceiveEventHook?.Dispose();
-
-        PluginHandlers.AddonLifecycle.UnregisterListener(CharacterHookDetour);
-
-        TrySafeInvalidateUIElement(ref tNode);
-        TrySafeInvalidateUIElement(ref tNode2);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnReceiveEventCharacterClass);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnReceiveEventCharacter);
+        PluginHandlers.AddonLifecycle.UnregisterListener(FinalizeCharacterClass);
+        PluginHandlers.AddonLifecycle.UnregisterListener(SetupCharacterClass);
     }
+    
+    protected override bool HandleConfig(Configuration configuration)
+        => configuration.DrawDatesOnLevelScreen;
+    
+    private void SetupCharacterClass(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        CharacterClassResNode = new CharacterClassResNode();
+        CharacterClassResNode.AttachNode((AtkUnitBase*)addonArgs.Addon.Address);
+    }
+    
+    private void FinalizeCharacterClass(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        CharacterClassResNode = null;
+    }
+    
+    private void OnReceiveEventCharacter(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        AddonCharacter* addonCharacter = (AddonCharacter*)addonArgs.Addon.Address;
+        
+        if (addonCharacter == null)
+        {
+            return;
+        }
+        
+        HandleTab(addonCharacter, addonCharacter->TabIndex == 2);
+    }
+    
+    private void OnReceiveEventCharacterClass(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        if (addonArgs is not AddonReceiveEventArgs eventArgs)
+        {
+            return;
+        }
+        
+        AddonCharacterClass* addonCharacterClass = (AddonCharacterClass*)eventArgs.Addon.Address;
+        
+        if (addonCharacterClass == null)
+        {
+            return;
+        }
+        
+        int classHoverIndex = eventArgs.EventParam - 2;
+        
+        if (classHoverIndex > 0x21)
+        {
+            return;
+        }
+        
+        switch (eventArgs.AtkEventType)
+        {
+            case AddonEventType.MouseOver: HandleMouseIn(addonCharacterClass, classHoverIndex); break;
+            case AddonEventType.MouseOut:  HandleMouseOut(); break;
+        }
+    }
+    
+    private void HandleMouseIn(AddonCharacterClass* addonCharacterClass, int classIndex)
+    {
+        if (CharacterClassResNode == null)
+        {
+            return;
+        }
+
+        if (!GetClassJob(addonCharacterClass, classIndex, out uint classJobIndex))
+        {
+            return;
+        }
+        
+        bool drew = DrawDateString(CharacterClassResNode.DateTextNode.Node, DrawTextFlags.None, AcquirableDateType.ClassLVL, classJobIndex);
+        
+        CharacterClassResNode.IsVisible = (addonCharacterClass->ClassEntries[classIndex].Level > 0 && drew);
+    }
+
+    private bool GetClassJob(AddonCharacterClass* addonCharacterClass, int classIndex, out uint classJobIndex)
+    {
+        classJobIndex = 0;
+        
+        uint              classLevel       = addonCharacterClass->ClassEntries[classIndex].Level;
+        AtkComponentBase* atkComponentBase = addonCharacterClass->ClassComponents[classIndex];
+        
+        if (atkComponentBase == null)
+        {
+            return false;
+        }
+        
+        AtkTextNode* textNode = atkComponentBase->GetTextNodeById(3);
+        
+        if (textNode == null)
+        {
+            return false;
+        }
+        
+        string    classJobName = textNode->NodeText.ToString().Trim();
+        ClassJob? outcome      = null;
+
+        foreach (ClassJob cJob in Services.Sheets.AllClassJobs)
+        {
+            if (!string.Equals(cJob.Name.ExtractText(), classJobName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                continue;
+            }
+
+            outcome = cJob;
+            
+            break;
+        }
+        
+        if (outcome == null)
+        {
+            return false;
+        }
+        
+        sbyte expIndex  = outcome.Value.ExpArrayIndex;
+        uint  indexBase = (uint)expIndex * 10000;
+        
+        indexBase += classLevel;
+        
+        classJobIndex = indexBase;
+        
+        return true;
+    }
+    
+    private void HandleMouseOut()
+    {
+        CharacterClassResNode?.IsVisible = false;
+    }
+    
+    private void HandleTab(AddonCharacter* addonCharacter, bool isCharacterTab)
+    {
+        addonCharacter->WindowNode->SetScaleY(isCharacterTab ? 1.02f : 1.0f);
+    }
+    
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.ClassLVL);
+
+    protected override void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon) { }
 }

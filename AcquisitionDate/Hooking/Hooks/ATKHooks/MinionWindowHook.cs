@@ -1,8 +1,6 @@
-﻿using AcquisitionDate.Core.Handlers;
-using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
@@ -16,15 +14,20 @@ internal unsafe class MinionWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MinionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    public MinionWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "MinionNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Minion);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMinionNotebook;
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.Minion);
+    
+    protected override bool HandleConfig(Configuration configuration)
+        => configuration.DrawDatesOnMinionNotebook;
 
     protected override void OnDispose()
     {
@@ -59,7 +62,7 @@ internal unsafe class MinionWindowHook : DateTextHook
 
         // Instead of reading text I use hover ID because Pet Nicknames LMAOOOO
         PluginHandlers.PluginLog.Verbose($"Clicked minion: {(ushort)PluginHandlers.GameGui.HoveredAction.ActionId}");
-        IPetSheetData? acquiredPet = Sheets.GetCompanion((ushort)PluginHandlers.GameGui.HoveredAction.ActionId);
+        IPetSheetData? acquiredPet = Services.Sheets.GetCompanion((ushort)PluginHandlers.GameGui.HoveredAction.ActionId);
         
         if (acquiredPet != null)
         {

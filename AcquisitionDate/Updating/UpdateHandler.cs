@@ -1,15 +1,13 @@
-using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.ImageDatabase.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Serializiation;
-using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
 using AcquisitionDate.Updating.Updatables;
 using Dalamud.Plugin.Services;
 using System.Collections.Generic;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Updating;
 
@@ -17,18 +15,18 @@ internal class UpdateHandler : IUpdateHandler
 {
     readonly ILodestoneNetworker LodestoneNetworker;
     readonly IImageDatabase ImageDatabase;
-    readonly IUserList UserList;
+    readonly IDatabase Database;
     readonly SaveHandler SaveHandler;
     readonly IHookHandler HookHandler;
     readonly IAcquisitionParser AcquistionParser;
 
     readonly List<IUpdatable> _updatables = new List<IUpdatable>();
 
-    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IImageDatabase imageDatabase, IUserList userList, IAcquisitionParser acquistionParser, SaveHandler saveHandler, IHookHandler hookHandler)
+    public UpdateHandler(ILodestoneNetworker lodestoneNetworker, IImageDatabase imageDatabase, IDatabase database, IAcquisitionParser acquistionParser, SaveHandler saveHandler, IHookHandler hookHandler)
     {
         LodestoneNetworker = lodestoneNetworker;
         ImageDatabase = imageDatabase;
-        UserList = userList;
+        Database = database;
         SaveHandler = saveHandler;
         HookHandler = hookHandler;
         AcquistionParser = acquistionParser;
@@ -43,7 +41,8 @@ internal class UpdateHandler : IUpdateHandler
         _updatables.Add(ImageDatabase);
         _updatables.Add(LodestoneNetworker);
         _updatables.Add(HookHandler.UnlocksHook);
-        _updatables.Add(new LodestoneIDHelper(AcquistionParser, LodestoneNetworker, UserList));
+        _updatables.Add(Database);
+        _updatables.Add(new LodestoneIDHelper(AcquistionParser, LodestoneNetworker, Database));
     }
 
     public void Dispose()

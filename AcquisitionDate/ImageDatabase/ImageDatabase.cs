@@ -1,5 +1,4 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Interfaces;
+﻿using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.ImageDatabase.Interfaces;
 using AcquisitionDate.ImageDatabase.Structs;
 using AcquisitionDate.ImageDatabase.Texture;

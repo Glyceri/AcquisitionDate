@@ -1,21 +1,20 @@
-﻿using AcquisitionDate;
-using AcquisitionDate.Core.Handlers;
+﻿using System.Collections.Generic;
 using Dalamud.Game;
-using System.Collections.Generic;
 
-namespace AcquistionDate.PetNicknames.TranslatorSystem;
+namespace AcquisitionDate.Translation;
 
-// Trying to stay away from statics, but in this case it just made MUCH more sense.
 internal static class Translator
 {
-    static Configuration? Configuration;
+    private static Configuration? Configuration;
 
-    static Dictionary<string, string> EnglishTranslations = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> EnglishTranslations = new Dictionary<string, string>()
     {
         { "...",                                "..." },
 
-        { "AchievedOn",                         "Acquired:" },
-        { "NoDate",                             "Date unavailable." },
+        { "AchievedOn",                         "Achieved On" },
+        { "AcquiredOn",                         "Acquired On" },
+        { "CompletedOn",                        "Completed On" },
+        { "NoDate",                             "Date Unavailable." },
         { "NotAccurate",                        "May not be accurate." },
 
         { "Day",                                "Day" },
@@ -67,9 +66,9 @@ internal static class Translator
         { "DateTimeString.Before",              "Before {0}"},
     };
 
-    static Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> GermanTranslations = new Dictionary<string, string>()
     {
-        { "AchievedOn",                         "Erhalten:" },
+        { "AchievedOn",                         "Erhalten" },
         { "NoDate",                             "Datum nicht verfügbar." },
         { "NotAccurate",                        "Möglicherweise nicht genau." },
         { "Day",                                "Tag" },
@@ -117,9 +116,9 @@ internal static class Translator
         { "DateTimeString.Before",              "Vor dem {0}"},
     };
 
-    static Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> FrenchTranslations = new Dictionary<string, string>()
     {
-        { "AchievedOn", "Date d'obtention :" },
+        { "AchievedOn", "Date d'obtention" },
         { "NoDate", "Date indisponible." },
         { "NotAccurate", "Ce n'est peut-être pas exact." },
         { "Day", "Jour" },
@@ -137,9 +136,9 @@ internal static class Translator
         { "Config.Header.NativeSettings", "Paramètres de l'interface du jeu" },
     };
 
-    static Dictionary<string, string> JapaneseTranslations = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> JapaneseTranslations = new Dictionary<string, string>()
     {
-        { "AchievedOn", "修得日:" },
+        { "AchievedOn", "修得日" },
         { "NoDate", "日付が利用できません。" },
         { "NotAccurate", "正確ではない可能性があります。" },
         { "Day", "日" },
@@ -164,31 +163,32 @@ internal static class Translator
 
     internal static string GetLine(string identifier)
     {
-        ClientLanguage language = PluginHandlers.ClientState.ClientLanguage;
-
+        ClientLanguage          language = PluginHandlers.ClientState.ClientLanguage;
         AcquisitionDateLanguage Language = Configuration?.GetLanguage ?? AcquisitionDateLanguage.Default;
 
         if (Language != AcquisitionDateLanguage.Default)
         {
-            if (Language == AcquisitionDateLanguage.English) language = ClientLanguage.English;
-            else if (Language == AcquisitionDateLanguage.German) language = ClientLanguage.German;
-            else if (Language == AcquisitionDateLanguage.French) language = ClientLanguage.French;
+            if      (Language == AcquisitionDateLanguage.English)  language = ClientLanguage.English;
+            else if (Language == AcquisitionDateLanguage.German)   language = ClientLanguage.German;
+            else if (Language == AcquisitionDateLanguage.French)   language = ClientLanguage.French;
             else if (Language == AcquisitionDateLanguage.Japanese) language = ClientLanguage.Japanese;
         }
 
-        if (language == ClientLanguage.German) return GetTranslation(ref GermanTranslations, identifier);
-        if (language == ClientLanguage.French) return GetTranslation(ref FrenchTranslations, identifier);
-        if (language == ClientLanguage.Japanese) return GetTranslation(ref JapaneseTranslations, identifier);
+        if (language == ClientLanguage.German)   return GetTranslation(GermanTranslations, identifier);
+        if (language == ClientLanguage.French)   return GetTranslation(FrenchTranslations, identifier);
+        if (language == ClientLanguage.Japanese) return GetTranslation(JapaneseTranslations, identifier);
 
-        return GetTranslation(ref EnglishTranslations, identifier);
+        return GetTranslation(EnglishTranslations, identifier);
     }
 
-    static string GetTranslation(ref Dictionary<string, string> translationDictionary, string identifier)
+    private static string GetTranslation(Dictionary<string, string> translationDictionary, string identifier)
     {
-        if (translationDictionary.TryGetValue(identifier, out string? translation)) return translation;
-        if (EnglishTranslations.TryGetValue(identifier, out string? englishTranslations)) return englishTranslations;
-
-        return identifier;
+        if (translationDictionary.TryGetValue(identifier, out string? translation))
+        {
+            return translation;
+        }
+        
+        return EnglishTranslations.GetValueOrDefault(identifier, identifier);
     }
 }
 

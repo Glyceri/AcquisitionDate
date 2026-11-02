@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneData;
 using System;
@@ -7,7 +6,7 @@ namespace AcquisitionDate.LodestoneRequests.Requests.Abstractions.PageCount;
 
 internal abstract class PageCountRequest : CharacterRequest
 {
-    readonly Action<PageCountData?> PageCountCallback;
+    private readonly Action<PageCountData?> PageCountCallback;
 
     public PageCountRequest(IDatableData data, Action<PageCountData?> pageCountCallback) : base(data)
     {

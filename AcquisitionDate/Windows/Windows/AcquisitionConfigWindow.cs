@@ -1,7 +1,7 @@
-﻿using AcquistionDate.PetNicknames.TranslatorSystem;
-using Dalamud.Interface.Utility;
+﻿using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
 using System.Numerics;
+using AcquisitionDate.Translation;
 
 
 namespace AcquisitionDate.Windows.Windows;

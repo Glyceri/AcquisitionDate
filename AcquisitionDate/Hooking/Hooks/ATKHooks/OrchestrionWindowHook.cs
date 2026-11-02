@@ -1,8 +1,6 @@
-using AcquisitionDate.Core.Handlers;
 using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using System.Runtime.InteropServices;
@@ -38,9 +36,12 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         31018,
         31019,
         ];
+    
     uint[] lastOrchestrionDate = new uint[20];
 
-    public OrchestrionWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    public OrchestrionWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
@@ -48,8 +49,11 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "OrchestrionINN", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Orchestrion);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnOrchestrion;
+    protected override IDatableList GetList(IDatableData userData)
+        => userData.GetDateList(AcquirableDateType.Orchestrion);
+    
+    protected override bool HandleConfig(Configuration configuration) 
+        => configuration.DrawDatesOnOrchestrion;
 
     protected override void OnDispose() { }
 
@@ -91,7 +95,7 @@ internal unsafe class OrchestrionWindowHook : DateTextHook
             string? songName = Marshal.PtrToStringUTF8((nint)fullStringPointer);
             if (songName.IsNullOrWhitespace()) continue;
 
-            Orchestrion? orchestrion = Sheets.GetOrchestrionByName(songName);
+            Orchestrion? orchestrion = Services.Sheets.GetOrchestrionByName(songName);
             if (orchestrion == null) continue;
 
             uint orchestrionDate = orchestrion?.RowId ?? 0;

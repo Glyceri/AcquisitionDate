@@ -19,6 +19,9 @@
         "requested": "[1.11.71, )",
         "resolved": "1.11.71",
         "contentHash": "HlEThQBnob4/29DIiyrPSYlGXXSZUtOH7571PRev+yu8FW8n5pdxqHyun+PMm17cp3ovCrxFhXedC+1HUSdRMA=="
+      },
+      "kamitoolkit": {
+        "type": "Project"
       }
     }
   }

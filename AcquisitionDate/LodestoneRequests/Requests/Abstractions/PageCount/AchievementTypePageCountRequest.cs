@@ -10,7 +10,8 @@ internal abstract class AchievementTypePageCountRequest : PageCountRequest
 {
     readonly AchievementListPageCountParser PageCountParser;
 
-    public AchievementTypePageCountRequest(AchievementListPageCountParser countParser, IDatableData data, Action<PageCountData?> pageCountCallback) : base(data, pageCountCallback) 
+    public AchievementTypePageCountRequest(AchievementListPageCountParser countParser, IDatableData data, Action<PageCountData?> pageCountCallback)
+        : base(data, pageCountCallback) 
     {
         PageCountParser = countParser;
     }

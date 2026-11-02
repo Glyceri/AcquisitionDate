@@ -1,8 +1,6 @@
-﻿using AcquisitionDate.Core.Handlers;
-using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
@@ -16,15 +14,20 @@ internal unsafe class MountWindowHook : DateTextHook
 
     AtkTextNode* tNode;
 
-    public MountWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    public MountWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
         PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "MountNoteBook", HookDetour);
     }
 
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Mount);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnMountNotebook;
+    protected override IDatableList GetList(IDatableData userData)
+        => userData.GetDateList(AcquirableDateType.Mount);
+    
+    protected override bool HandleConfig(Configuration configuration)
+        => configuration.DrawDatesOnMountNotebook;
 
     protected override void OnDispose()
     {
@@ -55,7 +58,7 @@ internal unsafe class MountWindowHook : DateTextHook
             tNode->BackgroundColor = titleNode->BackgroundColor;
         }
 
-        Mount? mount = Sheets.GetMountByName(titleNode->NodeText.ToString());
+        Mount? mount = Services.Sheets.GetMountByName(titleNode->NodeText.ToString());
         uint mountID = mount?.RowId ?? 0;
 
         PluginHandlers.PluginLog.Verbose($"Mount Notebook notebook clicked ID: {mountID}");

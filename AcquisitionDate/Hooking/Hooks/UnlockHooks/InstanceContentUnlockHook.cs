@@ -1,68 +1,100 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
-using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Services.Interfaces;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using AcquisitionDate.Database.Interfaces;
+using AcquisitionDate.Database.Structs;
+using AcquisitionDate.Hooking.Enums;
 using Dalamud.Game.DutyState;
 using Lumina.Excel;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
-internal unsafe class InstanceContentUnlockHook : UnlockHook
+internal class InstanceContentUnlockHook : UnlockHook
 {
-    private readonly List<uint> InstancedContentCompleted = new List<uint>();
+    private readonly List<uint> _instancedContentCompleted = [];
 
-    public InstanceContentUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public InstanceContentUnlockHook(IDatabase database, ISheets sheets) 
+        : base(database, sheets) 
+        { }
 
     public override void Init()
     {
         PluginHandlers.DutyState.DutyCompleted += OnDutyCompleted;
     }
+    
+    public override void Dispose()
+    {
+        PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
+    }
 
     public override void Reset()
     {
-        InstancedContentCompleted.Clear();
+        _instancedContentCompleted.Clear();
 
         foreach (ContentFinderCondition iContent in Sheets.AllContentFinderConditions)
         {
-            uint contentRowID = iContent.Content.RowId;
+            ContentLinkType contentLinkType = (ContentLinkType)iContent.ContentLinkType;
+        
+            if (contentLinkType != ContentLinkType.InstanceContent)
+            {
+                continue;   
+            }
             
-            if (!UIState.IsInstanceContentCompleted(contentRowID))
+            uint contentRowId = iContent.Content.RowId;
+            
+            if (!UIState.IsInstanceContentCompleted(contentRowId))
             {
                 continue;
             }
 
-            InstancedContentCompleted.Add(contentRowID);
+            _instancedContentCompleted.Add(contentRowId);
         }
     }
 
     private void OnDutyCompleted(IDutyStateEventArgs args)
     {
         RowRef<ContentFinderCondition> contentFinderCondition = args.ContentFinderCondition;
+        ContentLinkType                contentLinkType        = (ContentLinkType)contentFinderCondition.Value.ContentLinkType;
         
-        string ccName = contentFinderCondition.Value.Name.ExtractText();
-        
-        bool instanceHasAlreadyBeenCompleted = InstancedContentCompleted.Contains(contentFinderCondition.Value.Content.RowId);
-        
-        PluginHandlers.PluginLog.Information($"Detected a duty completed with the ID: {args.TerritoryType.RowId} with the detected ContentFinderConditionID: {contentFinderCondition.RowId} with the name: {ccName}");
-        
-        if (instanceHasAlreadyBeenCompleted)
+        if (contentLinkType != ContentLinkType.InstanceContent)
         {
-            PluginHandlers.PluginLog.Information("This instance has already been completed however.");
+            return;   
+        }
+        
+        string ccName       = contentFinderCondition.Value.Name.ExtractText();
+        uint   contentRowId = contentFinderCondition.Value.Content.RowId;
+        bool   completed    = _instancedContentCompleted.Contains(contentRowId);
+        
+        PluginHandlers.PluginLog.Information($"Detected [duty]{ccName} completed with the ContentFinderConditionId: {contentFinderCondition.RowId}, ContentId: {contentFinderCondition.Value.Content.RowId}, territory: {args.TerritoryType.RowId}");
+        
+        IDatableData? localUser = Database.GetLocalUser();
+        
+        if (localUser == null)
+        {
             return;
         }
-
-        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Duty).SetDate(contentFinderCondition.RowId, DateTime.Now, AcquiredDateType.Manual);
+        
+        IDatableList  dateList         = localUser.GetDateList(AcquirableDateType.Duty);
+        UnlockedDate? date             = dateList.GetDate(contentRowId);
+        bool          hasLodestoneDate = date?.GetSpecificDateTime(AcquiredDateType.Lodestone) != null;
+        
+        if (date == null && completed)
+        {
+            dateList.SetDate(contentRowId, DateTime.Now, AcquiredDateType.Lodestone);
+        }
+        else if (date == null && !completed)
+        {
+            dateList.SetDate(contentRowId, DateTime.Now, AcquiredDateType.Manual);
+        }
+        else if (date != null && !hasLodestoneDate)
+        {
+            dateList.SetDate(contentRowId, DateTime.Now, AcquiredDateType.Lodestone);
+        }
     }
 
-    public override void Dispose()
-    {
-        PluginHandlers.DutyState.DutyCompleted -= OnDutyCompleted;
-    }
-
-    public override void Update(float deltaTime) { } // No update needed for this one
+    public override void Update(float deltaTime) // No update needed for this one
+        { } 
 }

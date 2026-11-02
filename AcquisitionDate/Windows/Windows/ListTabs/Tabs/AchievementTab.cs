@@ -18,7 +18,7 @@ internal class AchievementTab : DataTab
     {
         for (int i = 0; i < dataList.Length; i++)
         {
-            uint id = dataList.GetID(i);
+            uint id = dataList.GetId(i);
             UnlockedDate? currentDate = dataList.GetDate(id);
 
             if (currentDate == null) continue;

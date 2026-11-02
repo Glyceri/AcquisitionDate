@@ -24,6 +24,7 @@ internal class SerializableUser
     [JsonProperty] public SerializableList FashionList          { get; set; }
     [JsonProperty] public SerializableList DutyList             { get; set; }
     [JsonProperty] public SerializableList FishingList          { get; set; }
+    [JsonProperty] public SerializableList FishingSpotList      { get; set; }
     [JsonProperty] public SerializableList SightList            { get; set; }
     [JsonProperty] public SerializableList FramersList          { get; set; }
     [JsonProperty] public SerializableList SecretRecipeBookList { get; set; } //Idk what this is tbf, but im tracking it c:
@@ -49,6 +50,7 @@ internal class SerializableUser
         FashionList             = SerializableList.CreateEmpty();
         DutyList                = SerializableList.CreateEmpty();
         FishingList             = SerializableList.CreateEmpty();
+        FishingSpotList         = SerializableList.CreateEmpty();
         SightList               = SerializableList.CreateEmpty();
         FramersList             = SerializableList.CreateEmpty();
         SecretRecipeBookList    = SerializableList.CreateEmpty();
@@ -59,27 +61,28 @@ internal class SerializableUser
 
     public SerializableUser(IDatableData data)
     {
-        ContentID               = data.ContentID;
-        LodestoneID             = data.LodestoneID;
+        ContentID               = data.ContentId;
+        LodestoneID             = data.LodestoneId;
         Name                    = data.Name;
         Homeworld               = data.Homeworld;
 
-        AchievementList         = data.GetDate(AcquirableDateType.Achievement)          .Serialise();
-        QuestList               = data.GetDate(AcquirableDateType.Quest)                .Serialise();
-        MinionList              = data.GetDate(AcquirableDateType.Minion)               .Serialise();
-        MountList               = data.GetDate(AcquirableDateType.Mount)                .Serialise();
-        FacewearList            = data.GetDate(AcquirableDateType.Facewear)             .Serialise();
-        OrchestrionList         = data.GetDate(AcquirableDateType.Orchestrion)          .Serialise();
-        ClassLVLList            = data.GetDate(AcquirableDateType.ClassLVL)             .Serialise();
-        CardList                = data.GetDate(AcquirableDateType.Card)                 .Serialise();
-        FashionList             = data.GetDate(AcquirableDateType.Fashion)              .Serialise();
-        DutyList                = data.GetDate(AcquirableDateType.Duty)                 .Serialise();
-        FishingList             = data.GetDate(AcquirableDateType.Fishing)              .Serialise();
-        SightList               = data.GetDate(AcquirableDateType.Incognita)            .Serialise();
-        FramersList             = data.GetDate(AcquirableDateType.Framers)              .Serialise();
-        SecretRecipeBookList    = data.GetDate(AcquirableDateType.SecretRecipeBook)     .Serialise();
-        BuddyEquipList          = data.GetDate(AcquirableDateType.BuddyEquip)           .Serialise();
-        UnlockLinkList          = data.GetDate(AcquirableDateType.UnlockLink)           .Serialise();
-        FolkloreTomeList        = data.GetDate(AcquirableDateType.FolkloreTome)         .Serialise();
+        AchievementList         = data.GetDateList(AcquirableDateType.Achievement)          .Serialise();
+        QuestList               = data.GetDateList(AcquirableDateType.Quest)                .Serialise();
+        MinionList              = data.GetDateList(AcquirableDateType.Minion)               .Serialise();
+        MountList               = data.GetDateList(AcquirableDateType.Mount)                .Serialise();
+        FacewearList            = data.GetDateList(AcquirableDateType.Facewear)             .Serialise();
+        OrchestrionList         = data.GetDateList(AcquirableDateType.Orchestrion)          .Serialise();
+        ClassLVLList            = data.GetDateList(AcquirableDateType.ClassLVL)             .Serialise();
+        CardList                = data.GetDateList(AcquirableDateType.Card)                 .Serialise();
+        FashionList             = data.GetDateList(AcquirableDateType.Fashion)              .Serialise();
+        DutyList                = data.GetDateList(AcquirableDateType.Duty)                 .Serialise();
+        FishingList             = data.GetDateList(AcquirableDateType.Fishing)              .Serialise();
+        FishingSpotList         = data.GetDateList(AcquirableDateType.FishingSpot)          .Serialise();
+        SightList               = data.GetDateList(AcquirableDateType.Incognita)            .Serialise();
+        FramersList             = data.GetDateList(AcquirableDateType.Framers)              .Serialise();
+        SecretRecipeBookList    = data.GetDateList(AcquirableDateType.SecretRecipeBook)     .Serialise();
+        BuddyEquipList          = data.GetDateList(AcquirableDateType.BuddyEquip)           .Serialise();
+        UnlockLinkList          = data.GetDateList(AcquirableDateType.UnlockLink)           .Serialise();
+        FolkloreTomeList        = data.GetDateList(AcquirableDateType.FolkloreTome)         .Serialise();
     }
 }

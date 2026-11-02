@@ -1,6 +1,5 @@
 ﻿using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.Windows.Components.Labels;
@@ -21,7 +20,6 @@ internal class AcquiryWindow : AcquisitionWindow
     protected override Vector2 DefaultSize { get; } = new Vector2(600, 842);
     protected override bool HasHeaderBar { get; } = true;
 
-    readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquirerHandler AcquirerHandler;
     readonly ILodestoneNetworker LodestoneNetworker;
@@ -33,10 +31,9 @@ internal class AcquiryWindow : AcquisitionWindow
 
     IDatableData? currentActiveData = null;
 
-    public AcquiryWindow(WindowHandler windowHandler, Configuration configuration, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener) 
+    public AcquiryWindow(WindowHandler windowHandler, Configuration configuration, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener) 
         : base(windowHandler, configuration, "Acquisition Window")
     {
-        UserList = userList;
         Database = database;
         AcquirerHandler = acquirerHandler;
         LodestoneNetworker = lodestoneNetworker;
@@ -66,10 +63,10 @@ internal class AcquiryWindow : AcquisitionWindow
     {
         if (currentActiveData == null)
         {
-            IDatableUser? localUser = UserList.ActiveUser;
-            if (localUser != null)
+            currentActiveData = Database.GetLocalUser();
+            
+            if (currentActiveData != null)
             {
-                currentActiveData = localUser.Data;
                 OnDataSet();
             }
         }

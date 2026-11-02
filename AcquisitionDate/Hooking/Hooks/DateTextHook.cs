@@ -2,25 +2,23 @@
 using Dalamud.Game.Addon.Lifecycle;
 using Acquisition.PetNicknames.Hooking;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using AcquisitionDate.Core.Handlers;
 using System;
+using AcquisitionDate.Database.Enums;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Database.Structs;
 using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Translation;
 using Dalamud.Game.Addon.Events;
 using Dalamud.Utility;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using Dalamud.Game.Addon.Events.EventDataTypes;
 
 namespace AcquisitionDate.Hooking.Hooks;
 
 internal unsafe abstract class DateTextHook : HookableElement
 {
-    protected readonly Configuration Configuration;
-    protected readonly IUserList UserList;
-    protected readonly ISheets Sheets;
-    protected readonly IDatabase Database;
+    protected readonly IDatabase            Database;
+    protected readonly IAcquisitionServices Services;
 
     protected AddonEvent _lastEventType;
     protected string _lastAddonName = string.Empty;
@@ -30,12 +28,10 @@ internal unsafe abstract class DateTextHook : HookableElement
     // Make tooltips work properly again :/
     string? lastDateTimeString = null;
 
-    public DateTextHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration)
+    public DateTextHook(IDatabase database, IAcquisitionServices acquisitionServices)
     {
-        Configuration = configuration;
-        UserList = userList;
-        Sheets = sheets;
         Database = database;
+        Services = acquisitionServices;
     }
 
     protected void HookDetour(AddonEvent type, AddonArgs args)
@@ -55,19 +51,20 @@ internal unsafe abstract class DateTextHook : HookableElement
     protected abstract void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon);
     protected abstract IDatableList GetList(IDatableData userData);
     protected abstract bool HandleConfig(Configuration config);
-
+    
+    
     protected AtkTextNode* CreateTextNode(uint nodeID)
     {
         AtkTextNode* tNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
+        
         if (tNode == null)
         {
-            PluginHandlers.PluginLog.Fatal("Tried to create an ATKTextNode but failed. This should be fatal.");
             return null;
         }
-
-        tNode->AtkResNode.Type = NodeType.Text;
+        
+        tNode->AtkResNode.Type  = NodeType.Text;
         tNode->AtkResNode.NodeId = nodeID;
-
+        
         tNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorBottom;
         tNode->AtkResNode.DrawFlags = 0;
         tNode->SetAlignment(AlignmentType.BottomLeft);
@@ -100,6 +97,78 @@ internal unsafe abstract class DateTextHook : HookableElement
         return null;
     }
 
+    protected bool DrawDateString(AtkTextNode* dateTextNode, DrawTextFlags textFlags, AcquirableDateType dateType, uint listId)
+        => DrawDateString(dateTextNode, null, textFlags, dateType, listId);
+    
+    protected bool DrawDateString(AtkTextNode* dateTextNode, AtkTextNode* altTextNode, DrawTextFlags textFlags, AcquirableDateType dateType, uint listId)
+        => DrawDateString(dateTextNode, altTextNode, null, textFlags, dateType, listId);
+    
+    protected bool DrawDateString(AtkTextNode* dateTextNode, AtkTextNode* altTextNode, AtkTextNode* altHomeWorldNode, DrawTextFlags textFlags, AcquirableDateType dateType, uint listId)
+    {
+        if (dateTextNode == null)
+        {
+            return false;
+        }
+        
+        dateTextNode->SetText(string.Empty);
+        
+        if (altTextNode != null)
+        {
+            altTextNode->SetText(string.Empty);
+        }
+        
+        if (altHomeWorldNode != null)
+        {
+            altHomeWorldNode->SetText(string.Empty);
+        }
+        
+        bool configSaysVisible = HandleConfig(Services.Configuration);
+        
+        if (!configSaysVisible)
+        {
+            return false;
+        }
+        
+        TypedDatabaseEntry[] dateList = Database.GetDateLists(dateType);
+
+        if (!Services.StringBuilder.CreateDateString(dateList, listId, textFlags, out string? dateString, out string? nameString, out string? homeworldNameString))
+        {
+            return false;
+        }
+        
+        if (dateString.IsNullOrWhitespace())
+        {
+            return false;
+        }
+        
+        if (altTextNode == null && nameString != null)
+        {
+            return false;
+        }
+        
+        dateTextNode->SetText(dateString);
+        
+        if (nameString.IsNullOrWhitespace() || homeworldNameString.IsNullOrWhitespace())
+        {
+            return true;
+        }
+        
+        if (altTextNode != null)
+        {
+            if (altHomeWorldNode == null)
+            {
+                altTextNode->SetText($"({nameString}@{homeworldNameString})");
+            }
+            else
+            {
+                altTextNode->SetText(nameString);
+                altHomeWorldNode->SetText(homeworldNameString);
+            }
+        }
+        
+        return true;
+    }
+    
     protected bool DrawDate(AtkTextNode* textNode, uint listID, bool showAlt, bool stillDraw = false)
     {
         if (textNode == null) return false;
@@ -107,19 +176,14 @@ internal unsafe abstract class DateTextHook : HookableElement
         textNode->ToggleVisibility(false);
         textNode->SetText(string.Empty);
 
-        IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null) return false;            // Should really be possible that this is false whilst the hooks still update but who knows
+        IDatableData? data = Database.GetLocalUser();
+        if (data == null) return false;
 
-        bool configSaysVisible = HandleConfig(Configuration);
+        bool configSaysVisible = HandleConfig(Services.Configuration);
         if (!configSaysVisible) return false;
 
-        string? dateTimeString = Database.GetDateTimeString(listID, GetList, showAlt, localUser.Data);
+        string? dateTimeString = Database.GetDateTimeString(listID, GetList, showAlt, data);
 
-        // Temporary fix until I fully flesh out this update
-        // Fucking PVP tournament taking all my time
-        // My team sucks ass
-        // I suck ass
-        // Why did I join LLLLLLLLLLLLL
         lastDateTimeString = dateTimeString;
 
         if (dateTimeString.IsNullOrWhitespace())
@@ -179,11 +243,11 @@ internal unsafe abstract class DateTextHook : HookableElement
                 }
             }
 
-            AtkStage.Instance()->TooltipManager.ShowTooltip((ushort)((AtkResNode*)atkResNode)->ParentNode->NodeId, (AtkResNode*)atkResNode, newLine);
+            AtkStage.Instance()->TooltipManager.ShowTooltip((ushort)((AtkResNode*)atkResNode)->NodeId, (AtkResNode*)atkResNode, newLine);
         }
         else if (atkEventType == AddonEventType.MouseOut)
         {
-            AtkStage.Instance()->TooltipManager.HideTooltip((ushort)((AtkResNode*)atkResNode)->ParentNode->NodeId);
+            AtkStage.Instance()->TooltipManager.HideTooltip((ushort)((AtkResNode*)atkResNode)->NodeId);
         }
     }
 
@@ -250,4 +314,12 @@ internal unsafe abstract class DateTextHook : HookableElement
             PluginHandlers.PluginLog.Error(e, "Error during safe node cleanup");
         }
     }
+}
+
+[Flags]
+public enum DrawTextFlags
+{
+    None                  = 0,
+    DisallowQuestionmarks = 1 << 0,
+    AllowAlts             = 1 << 1,
 }

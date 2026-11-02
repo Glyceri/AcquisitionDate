@@ -1,26 +1,24 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
-using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Hooking;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System;
-using System.Collections.Generic;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class AchievementUnlockHook : UnlockHook
 {
-    private readonly Hook<Achievement.Delegates.SetAchievementCompleted> AchievementUnlockingHook;
-
-    private readonly List<uint> SquareEnixSillyAchievements =
+    private static readonly uint[] SquareEnixSillyAchievements =
     [
         3811, // Some deep dungeon achievement that gets granted EVERY. SINGLE. LOGIN.
     ];
-
-    public AchievementUnlockHook(IUserList userList, ISheets sheets)
-        : base(userList, sheets)
+    
+    private readonly Hook<Achievement.Delegates.SetAchievementCompleted> AchievementUnlockingHook;
+    
+    public AchievementUnlockHook(IDatabase database, ISheets sheets)
+        : base(database, sheets)
     {
         AchievementUnlockingHook = PluginHandlers.Hooking.HookFromAddress<Achievement.Delegates.SetAchievementCompleted>((nint)Achievement.MemberFunctionPointers.SetAchievementCompleted, AchievementUnlockedDetour);
     }
@@ -49,9 +47,8 @@ internal unsafe class AchievementUnlockHook : UnlockHook
         }
 
         // Like the decomp code
-        int byteIndex = (int)achievementId >> 3;
-        int bitMask = 1 << ((int)achievementId & 7);
-
+        int byteIndex         = (int)achievementId >> 3;
+        int bitMask           = 1 << ((int)achievementId & 7);
         int achievementStatus = (achievement->CompletedAchievements[byteIndex] & bitMask);
 
         return achievementStatus != 0;
@@ -88,7 +85,7 @@ internal unsafe class AchievementUnlockHook : UnlockHook
 
         PluginHandlers.PluginLog.Information($"Detected Acquired Achievement with ID: [{achievementId}].{Environment.NewLine}This achievement has the name: [{Sheets.GetAchievementByID(achievementId)?.Name.ToDalamudString().TextValue ?? "No achievement name found."}].");
 
-        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Achievement).SetDate(achievementId, DateTime.Now, AcquiredDateType.Manual);
+        Database.GetLocalUser()?.GetDateList(AcquirableDateType.Achievement).SetDate(achievementId, DateTime.Now, AcquiredDateType.Manual);
     }
 
     public override void Reset() 

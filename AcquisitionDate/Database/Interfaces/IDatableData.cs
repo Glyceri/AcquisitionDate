@@ -1,25 +1,23 @@
 using AcquisitionDate.Database.Enums;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Serializiation;
 
 namespace AcquisitionDate.Database.Interfaces;
 
 internal interface IDatableData
 {
-    string Name { get; }
-    ushort Homeworld { get; }
-    string HomeworldName { get; }
-    ulong ContentID { get; }
-    ulong? LodestoneID { get; }
+    string Name                   { get; }
+    ushort Homeworld              { get; }
+    string HomeworldName          { get; }
+    ulong  ContentId              { get; }
+    ulong? LodestoneId            { get; }
+    bool   IsLocalPlayer          { get; }
+    bool   HasSearchedLodestoneId { get; }
+    bool   IsReady                { get; }
 
-    // Should NOT be serialized
-    bool HasSearchedLodestoneID { get; set; }
-    bool IsReady { get; }
+    IDatableList GetDateList(AcquirableDateType acquireableDate);
 
-    IDatableList GetDate(AcquirableDateType acquireableDate);
-
-    void UpdateEntry(IDatableUser datableUser);
-    void SetLodestoneID(ulong lodestoneID);
+    void UpdateEntry(ulong contentId, string name, ushort homeworld);
+    void SetLodestoneId(ulong lodestoneId);
 
     SerializableUser SerializeEntry();
 }

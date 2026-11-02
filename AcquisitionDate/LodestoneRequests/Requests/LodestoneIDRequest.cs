@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Parser.Elements;
 using AcquisitionDate.Parser.Structs;
@@ -35,7 +34,7 @@ internal class LodestoneIDRequest : LodestoneRequest
     {
         if (!Data.Name.Equals(lodestoneData.UserName, StringComparison.InvariantCultureIgnoreCase) || Data.Homeworld != (ushort)lodestoneData.Homeworld) return;
 
-        Data.SetLodestoneID(lodestoneData.LodestoneID);
+        Data.SetLodestoneId(lodestoneData.LodestoneID);
     }
 
     public override string GetURL()

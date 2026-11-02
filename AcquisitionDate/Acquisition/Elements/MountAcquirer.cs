@@ -33,7 +33,7 @@ internal class MountAcquirer : AcquirerItem
 
     void OnItemData(ItemData itemData)
     {
-        _currentUser.GetDate(AcquirableDateType.Mount).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDateList(AcquirableDateType.Mount).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

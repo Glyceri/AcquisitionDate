@@ -1,14 +1,11 @@
 using Dalamud.Plugin;
 using AcquisitionDate.Windows;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking;
 using AcquisitionDate.Updating.Interfaces;
 using AcquisitionDate.Updating;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Database;
-using AcquisitionDate.DatableUsers;
 using AcquisitionDate.Hooking.Interfaces;
 using AcquisitionDate.Hooking;
 using AcquisitionDate.Services.Interfaces;
@@ -17,47 +14,54 @@ using AcquisitionDate.Serializiation;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.Acquisition;
 using AcquisitionDate.DirtySystem;
-using AcquistionDate.PetNicknames.TranslatorSystem;
-using AcquisitionDate.AcquisitionDate.Commands;
 using System.Reflection;
 using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Parser;
 using AcquisitionDate.ImageDatabase.Interfaces;
 using AcquisitionDate.ImageDatabase;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using AcquisitionDate.Commands;
+using AcquisitionDate.Translation;
+using Dalamud.IoC;
+using KamiToolKit;
 
 namespace AcquisitionDate;
 
-public sealed class AcquisitionDatePlugin : IDalamudPlugin
+public sealed class AcquisitionDatePlugin : IAsyncDalamudPlugin
 {
-    public readonly string Version;
+    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; set; } = null!;
+    
+    public string Version;
 
     internal WindowHandler WindowHandler { get; private set; }
 
-    readonly IImageDatabase ImageDatabase;
-    readonly IImageReader ImageReader;
-    readonly IAcquisitionParser AcquistionParser;
-    readonly IAcquisitionServices Services;
-    readonly IUpdateHandler UpdateHandler;
-    readonly INetworkClient NetworkClient;
-    readonly ILodestoneNetworker LodestoneNetworker;
-    readonly IHookHandler HookHandler;
+    IImageDatabase ImageDatabase;
+    IImageReader ImageReader;
+    IAcquisitionParser AcquistionParser;
+    IAcquisitionServices Services;
+    IUpdateHandler UpdateHandler;
+    INetworkClient NetworkClient;
+    ILodestoneNetworker LodestoneNetworker;
+    IHookHandler HookHandler;
 
-    readonly IDatabase Database;
-    readonly IUserList UserList;
-    readonly IAcquirerHandler AcquirerHandler;
+    IDatabase Database;
+    IAcquirerHandler AcquirerHandler;
 
-    readonly CommandHandler CommandHandler;
-    readonly DirtyHandler DirtyHandler;
-    readonly SaveHandler SaveHandler;
-
-    public AcquisitionDatePlugin(IDalamudPluginInterface pluginInterface)
+    CommandHandler CommandHandler;
+    DirtyHandler DirtyHandler;
+    SaveHandler SaveHandler;
+    
+    public async Task LoadAsync(CancellationToken cancellationToken)
     {
         Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version";
 
-        PluginHandlers.Initialise(ref pluginInterface, this);
+        await PluginHandlers.Initialise(PluginInterface, this);
         Services = new AcquisitionSevices();
 
+        await KamiToolKitLibrary.InitializeAsync(PluginInterface, "Acquisition Date");
+        
         AcquistionParser = new AcquisitionParser(Services.Sheets);
         Translator.Initialise(Services.Configuration);
 
@@ -67,26 +71,26 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         SaveHandler = new SaveHandler(DirtyHandler, Services.Configuration);
 
         Database = new DatableDatabase(Services, DirtyHandler);
-        UserList = new UserList(Database, DirtyHandler);
 
         LodestoneNetworker = new LodestoneNetworker(NetworkClient, DirtyHandler, Services.Configuration);
 
         ImageReader = new ImageReader();
         ImageDatabase = new ImageDatabase.ImageDatabase(LodestoneNetworker, ImageReader, AcquistionParser.LodestoneIDParser, NetworkClient);
 
-        HookHandler = new HookHandler(Services, UserList, Database, DirtyHandler);
-        UpdateHandler = new UpdateHandler(LodestoneNetworker, ImageDatabase, UserList, AcquistionParser, SaveHandler, HookHandler);
+        HookHandler = new HookHandler(Services, Database, DirtyHandler);
+        UpdateHandler = new UpdateHandler(LodestoneNetworker, ImageDatabase, Database, AcquistionParser, SaveHandler, HookHandler);
         AcquirerHandler = new AcquirerHandler(Services, LodestoneNetworker, AcquistionParser);
-        WindowHandler = new WindowHandler(Services, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler, AcquistionParser, ImageDatabase);
+        WindowHandler = new WindowHandler(Services, Database, AcquirerHandler, LodestoneNetworker, DirtyHandler, AcquistionParser, ImageDatabase);
 
-        CommandHandler = new CommandHandler(Services.Configuration, WindowHandler);
+        CommandHandler = new CommandHandler(WindowHandler);
 
         Services.Configuration.Initialise(Database);
     }
-
-    public void Dispose()
+    
+    public async ValueTask DisposeAsync()
     {
-        SafeDispose(NetworkClient.CancelPendingRequests);
+        await KamiToolKitLibrary.DisposeAsync();
+        
         SafeDispose(NetworkClient.Dispose);
         SafeDispose(ImageReader.Dispose);
         SafeDispose(ImageDatabase.Dispose);
@@ -100,7 +104,7 @@ public sealed class AcquisitionDatePlugin : IDalamudPlugin
         SafeDispose(LodestoneNetworker.Dispose);
     }
 
-    void SafeDispose(Action disposeAction)
+    private void SafeDispose(Action disposeAction)
     {
         try
         {

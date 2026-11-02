@@ -4,12 +4,17 @@ namespace AcquisitionDate.Database.Structs;
 
 internal readonly struct AcquisitionDateTime
 {
-    public readonly DateTime DateTime;
-    public readonly bool IsLowest;
+    private readonly Configuration Configuration;
+    public  readonly DateTime      DateTime;
+    public  readonly bool          IsLowest;
 
-    public AcquisitionDateTime(DateTime dateTime, bool isLowest)
+    public AcquisitionDateTime(Configuration configuration, DateTime dateTime, bool isLowest)
     {
-        DateTime = dateTime;
-        IsLowest = isLowest;
+        Configuration = configuration;
+        DateTime      = dateTime;
+        IsLowest      = isLowest;
     }
+    
+    public string GetTimeString()
+        => DateTime.ToString(Configuration.DateParseString());
 }

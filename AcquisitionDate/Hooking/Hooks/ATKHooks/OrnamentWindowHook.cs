@@ -1,71 +1,99 @@
-﻿using AcquisitionDate.Core.Handlers;
-using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using Lumina.Excel.Sheets;
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Hooking.Structs;
+using AcquisitionDate.Nodes;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
 internal unsafe class OrnamentWindowHook : DateTextHook
 {
-    const uint customDateTextNodeID = 800;
-
-    AtkTextNode* tNode;
-
-    public OrnamentWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    private FasionSelectDateResNode? _ornamentSelectDateResNode;
+    
+    public OrnamentWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "OrnamentNoteBook", HookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize,      "OrnamentNoteBook", OnFinalize);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "OrnamentNoteBook", OnReceiveEvent);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup,        "OrnamentNoteBook", OnSetup);
     }
-
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fashion);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFashionSelect;
 
     protected override void OnDispose()
     {
-        TrySafeInvalidateUIElement(ref tNode);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnFinalize);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnReceiveEvent);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnSetup);
     }
-
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+    
+    protected override bool HandleConfig(Configuration configuration) 
+        => configuration.DrawDatesOnGlassesSelect;
+    
+    private void OnSetup(AddonEvent addonEvent, AddonArgs addonArgs)
     {
-        AtkTextNode* titleNode = baseNode.GetNode<AtkTextNode>(60);
-        if (titleNode == null) return;
-
-        tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
-        if (tNode == null)
+        _ornamentSelectDateResNode = new FasionSelectDateResNode();
+        _ornamentSelectDateResNode.AttachNode((AtkUnitBase*)addonArgs.Addon.Address);
+    }
+    
+    private void OnFinalize(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        _ornamentSelectDateResNode?.Dispose();
+        _ornamentSelectDateResNode = null;
+    }
+    
+    private void OnReceiveEvent(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        if (_ornamentSelectDateResNode == null)
         {
-            tNode = CreateTextNode(customDateTextNodeID);
-            if (tNode == null) return;
-
-            AddSibling(tNode, &titleNode->AtkResNode, &baseAddon->UldManager);
-
-            tNode->SetYFloat(-37);
-            tNode->SetXFloat(210);
-
-            tNode->TextColor = titleNode->TextColor;
-            tNode->EdgeColor = titleNode->EdgeColor;
-            tNode->BackgroundColor = titleNode->BackgroundColor;
+            return;
         }
-
-        Ornament? ornament = Sheets.GetOrnamentByName(titleNode->NodeText.ToString());
+        
+        _ornamentSelectDateResNode.IsVisible = false;
+        
+        MyAddonOrnamentBook*   myAddonOrnamentNoteBook = (MyAddonOrnamentBook*)addonArgs.Addon.Address;
+        AddonOrnamentNoteBook* addonOrnamentNoteBook   = (AddonOrnamentNoteBook*)addonArgs.Addon.Address;
+        
+        if (myAddonOrnamentNoteBook == null)
+        {
+            return;
+        }
+        
+        ushort selectedFashionIndex = myAddonOrnamentNoteBook->SelectedFashionIndex;
+        
+        selectedFashionIndex *= 27; // To get the array index
+        selectedFashionIndex += 13; // The array start (well, icon array start)
+        
+        if (selectedFashionIndex >= addonOrnamentNoteBook->AtkValuesCount)
+        {
+            return;
+        }
+        
+        uint      fashionIconId = addonOrnamentNoteBook->AtkValues[selectedFashionIndex].UInt;
+        Ornament? ornament      = Services.Sheets.GetOrnamentByIconId(fashionIconId);
+        
         if (ornament == null)
         {
-            tNode->ToggleVisibility(false);
             return;
         }
 
-        uint ornamentID = ornament.Value.RowId;
-
-        PluginHandlers.PluginLog.Verbose($"Ornament Notebook clicked ID: {ornamentID}");
-
-        if (DrawDate(tNode, ornamentID, showAlt: false, stillDraw: true))
-        {
-            GiveTooltip(baseAddon, tNode, ornamentID);
-        }
+        bool draw = DrawDateString(_ornamentSelectDateResNode.DateTextNode, DrawTextFlags.None, AcquirableDateType.Fashion, ornament.Value.RowId);
+        
+        _ornamentSelectDateResNode.IsVisible = draw;
     }
+    
+    // TODO: REMOVE VVV
+    
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.Facewear);
+
+    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+        { }
 }

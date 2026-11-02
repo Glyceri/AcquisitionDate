@@ -13,6 +13,7 @@ internal enum AcquirableDateType
     Fashion,
     Duty,
     Fishing,
+    FishingSpot,
     Incognita,
     Framers,
     SecretRecipeBook,

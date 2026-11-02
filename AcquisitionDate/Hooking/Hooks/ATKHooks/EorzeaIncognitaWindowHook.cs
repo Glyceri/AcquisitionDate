@@ -1,70 +1,71 @@
-﻿using AcquisitionDate.Core.Handlers;
-using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Nodes;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
 internal unsafe class EorzeaIncognitaWindowHook : DateTextHook
 {
-    const uint customDateTextNodeID = 80;
-
-    AtkTextNode* tNode;
-
-    public EorzeaIncognitaWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    private EorzeaIncognitaResNode? EorzeaIncognitaResNode;
+    
+    public EorzeaIncognitaWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "AdventureNoteBook", HookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "AdventureNoteBook", OnRequestedUpdate);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup,          "AdventureNoteBook", OnSetup);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize,        "AdventureNoteBook", OnFinalize);
     }
-
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Incognita);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnEorzeaIncognita;
 
     protected override void OnDispose() 
     {
-        TrySafeInvalidateUIElement(ref tNode);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnRequestedUpdate);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnFinalize);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnSetup);
     }
-
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+    
+    private void OnSetup(AddonEvent addonEvent, AddonArgs addonArgs)
     {
-        uint selectedIndex = (uint)AtkStage.Instance()->GetNumberArrayData(NumberArrayType.AdventureNoteBook)->IntArray[0]; // This is how you get the selected index in the log window
-
-        AtkTextNode* siblingNode = baseNode.GetNode<AtkTextNode>(59);
-        if (siblingNode == null) return;
-
-        AtkImageNode* nextNode = baseNode.GetNode<AtkImageNode>(60);
-        if (nextNode == null) return;
-
-        tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
-        if (tNode == null)
-        {
-            tNode = CreateTextNode(customDateTextNodeID);
-            if (tNode == null) return;
-
-            MergeTextBetweenElements(tNode, &siblingNode->AtkResNode, &nextNode->AtkResNode, &baseAddon->UldManager);
-
-            tNode->SetYFloat(siblingNode->Y);
-            tNode->SetXFloat(0);
-
-            tNode->TextColor.R = 204;
-            tNode->TextColor.G = 204;
-            tNode->TextColor.B = 204;
-        }
-
-        PluginHandlers.PluginLog.Verbose($"Adventure notebook clicked index: {selectedIndex}");
-
-        if (DrawDate(tNode, selectedIndex, showAlt: true, stillDraw: true))
-        {
-            GiveTooltip(baseAddon, tNode, selectedIndex);
-        }
-        else
-        {
-            ClearOldTooldtips();
-        }
+        EorzeaIncognitaResNode = new EorzeaIncognitaResNode();
+        EorzeaIncognitaResNode.AttachNode((AtkUnitBase*)addonArgs.Addon.Address);
     }
+    
+    private void OnFinalize(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        EorzeaIncognitaResNode?.Dispose();
+        EorzeaIncognitaResNode = null;
+    }
+    
+    private void OnRequestedUpdate(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        if (EorzeaIncognitaResNode == null)
+        {
+            return;
+        }
+        
+        // This is how you get the selected index in the log window
+        uint selectedIndex = (uint)AtkStage.Instance()->GetNumberArrayData(NumberArrayType.AdventureNoteBook)->IntArray[0]; 
+        bool draw          = DrawDateString(EorzeaIncognitaResNode.DateTextNode, DrawTextFlags.DisallowQuestionmarks, AcquirableDateType.Incognita, selectedIndex);
+        
+        EorzeaIncognitaResNode.IsVisible = draw;
+    }
+    
+    protected override bool HandleConfig(Configuration configuration) 
+        => configuration.DrawDatesOnEorzeaIncognita;
+    
+    
+    // TODO: REMOVE
+    
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.Incognita);
+    
+    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+        { }
 }

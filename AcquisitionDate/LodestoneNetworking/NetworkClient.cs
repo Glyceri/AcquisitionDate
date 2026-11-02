@@ -1,5 +1,4 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.LodestoneNetworking.Interfaces;
+﻿using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Structs;
 using System;
 using System.Net;

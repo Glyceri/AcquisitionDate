@@ -1,11 +1,13 @@
-﻿using AcquisitionDate.AcquisitionDate.Commands.Commands;
-using AcquisitionDate.Windows;
+﻿using AcquisitionDate.Windows;
 
 namespace AcquisitionDate.Commands.Commands;
 
 internal class AcquisitionMainSubCommand : AcquisitionMainCommand
 {
-    public override string CommandCode => "/acqdate";
-
-    public AcquisitionMainSubCommand(WindowHandler windowHandler) : base(windowHandler) { }
+    public AcquisitionMainSubCommand(WindowHandler windowHandler) 
+        : base(windowHandler) 
+        { }
+    
+    public override string CommandCode 
+        => "/acqdate";
 }

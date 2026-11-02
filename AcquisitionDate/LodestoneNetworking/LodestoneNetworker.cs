@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
@@ -43,6 +42,13 @@ internal class LodestoneNetworker : ILodestoneNetworker
         };
 
         DirtyListener.RegisterDirtyUser(OnDirty);
+    }
+    
+    public void Dispose()
+    {
+        DirtyListener.UnregisterDirtyUser(OnDirty);
+
+        ClearQueue();
     }
     
     void OnDirty()
@@ -169,13 +175,4 @@ internal class LodestoneNetworker : ILodestoneNetworker
 
         return queueData;
     }
-
-    public void Dispose()
-    {
-        DirtyListener.UnregisterDirtyUser(OnDirty);
-
-        ClearQueue();
-    }
-
-
 }

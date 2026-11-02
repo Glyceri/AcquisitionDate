@@ -1,4 +1,4 @@
-﻿using AcquisitionDate.Core.Handlers;
+﻿using AcquisitionDate;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 //Code from daily duties

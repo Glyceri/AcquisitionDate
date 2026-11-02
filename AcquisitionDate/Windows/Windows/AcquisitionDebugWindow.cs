@@ -1,14 +1,11 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.LodestoneData;
 using AcquisitionDate.LodestoneNetworking.Enums;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Structs;
 using AcquisitionDate.Parser.Interfaces;
 using AcquisitionDate.Services.Interfaces;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using Dalamud.Interface.Utility;
 using HtmlAgilityPack;
@@ -16,12 +13,13 @@ using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using AcquisitionDate.Database.Structs;
+using AcquisitionDate.Translation;
 
 namespace AcquisitionDate.Windows.Windows;
 
 internal class AcquisitionDebugWindow : AcquisitionWindow
 {
-    readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquisitionServices Services;
     readonly IAcquisitionParser Parser;
@@ -35,10 +33,9 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
     int currentActive = 0;
     List<DevStruct> devStructList = new List<DevStruct>();
 
-    public AcquisitionDebugWindow(IAcquisitionServices services, IUserList userList, IDatabase database, WindowHandler windowHandler, Configuration configuration, IAcquisitionParser parser, ILodestoneNetworker lodestoneNetworker) : base(windowHandler, configuration,"Acquisition Dev Window")
+    public AcquisitionDebugWindow(IAcquisitionServices services, IDatabase database, WindowHandler windowHandler, Configuration configuration, IAcquisitionParser parser, ILodestoneNetworker lodestoneNetworker) : base(windowHandler, configuration,"Acquisition Dev Window")
     {
         Services = services;
-        UserList = userList;
         Database = database;
         Parser = parser;
         LodestoneNetworker = lodestoneNetworker;
@@ -116,18 +113,24 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
         PluginHandlers.PluginLog.Error(e, "Error in parse!");
     }
 
-    unsafe void DrawUserList()
+    void DrawUserList()
     {
-        Vector2 size = new Vector2(ImGui.GetContentRegionAvail().X, 30 * ImGuiHelpers.GlobalScale);
-
-        IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null)
+        ulong activeContentId = PluginHandlers.PlayerState.ContentId;
+        string name = PluginHandlers.PlayerState.CharacterName;
+        uint homeworld = PluginHandlers.PlayerState.HomeWorld.RowId;
+        bool isLoaded = PluginHandlers.PlayerState.IsLoaded;
+        
+        ImGui.Text($"Is Loaded: {isLoaded}, Active ContentId: {activeContentId}, Name: {name}, Homeworld: {homeworld}");
+        
+        IDatableData? data = Database.GetLocalUser();
+        
+        if (data == null)
         {
             ImGui.LabelText("", "No Local User Found");
         }
         else
         {
-            DrawUser(localUser.Data);
+            DrawUser(data);
         }
     }
 
@@ -136,8 +139,8 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
         ImGui.LabelText(user.Name, "Name: ");
         ImGui.LabelText(user.Homeworld.ToString(), "Homeworld: ");
         ImGui.LabelText(user.HomeworldName.ToString(), "Homeworld Name: ");
-        ImGui.LabelText(user.ContentID.ToString(), "ContentID: ");
-        ImGui.LabelText(user.LodestoneID?.ToString() ?? "...", "Lodestone ID: ");
+        ImGui.LabelText(user.ContentId.ToString(), "ContentID: ");
+        ImGui.LabelText(user.LodestoneId?.ToString() ?? "...", "Lodestone ID: ");
     }
 
     void DrawUserDatabase()
@@ -156,25 +159,25 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                 }
                 DrawUser(entry);
                 ImGui.Indent();
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Achievement), "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Quest), "Quests", (id) => Services.Sheets.GetQuest(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Minion), "Minions", (id) => Services.Sheets.GetCompanion((ushort)id)?.BaseSingular ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Mount), "Mounts", (id) => Services.Sheets.GetMountByID(id)?.Singular.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.ClassLVL), "Levels", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Achievement), "Achievements", (id) => Services.Sheets.GetAchievementByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Quest), "Quests", (id) => Services.Sheets.GetQuest(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Minion), "Minions", (id) => Services.Sheets.GetCompanion((ushort)id)?.BaseSingular ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Mount), "Mounts", (id) => Services.Sheets.GetMountByID(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.ClassLVL), "Levels", (id) => $"{id}");
 
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Facewear), "Facewear", (id) => Services.Sheets.GetGlassesByID(id)?.BaseSingular ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Orchestrion), "Orchestrion Roll", (id) => Services.Sheets.GetOrchestrionByID(id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Card), "Cards", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Fashion), "Fashion", (id) => Services.Sheets.GetOrnamentByID(id)?.Singular.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Duty), "Duties", (id) => Services.Sheets.GetContentFinderCondition((ushort)id)?.Name.ExtractText() ?? "[Unknown]");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Fishing), "Fishing", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Incognita), "Sightseeing List", (id) => Services.Sheets.GetAdventureByIndex(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Facewear), "Facewear", (id) => Services.Sheets.GetGlassesById(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Orchestrion), "Orchestrion Roll", (id) => Services.Sheets.GetOrchestrionByID(id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Card), "Cards", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Fashion), "Fashion", (id) => Services.Sheets.GetOrnamentById(id)?.Singular.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Duty), "Duties", (id) => Services.Sheets.GetContentFinderCondition((ushort)id)?.Name.ExtractText() ?? "[Unknown]");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Fishing), "Fishing", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Incognita), "Sightseeing List", (id) => Services.Sheets.GetAdventureByIndex(id)?.Name.ExtractText() ?? "[Unknown]");
 
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.Framers), "Framing Kits", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.SecretRecipeBook), "Secret Recipe Book", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.BuddyEquip), "Bardings", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.UnlockLink), "Unlock Link???? (idk what this is)", (id) => $"{id}");
-                DrawDatableList(entry, entry.GetDate(AcquirableDateType.FolkloreTome), "Folklores", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.Framers), "Framing Kits", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.SecretRecipeBook), "Secret Recipe Book", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.BuddyEquip), "Bardings", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.UnlockLink), "Unlock Link???? (idk what this is)", (id) => $"{id}");
+                DrawDatableList(entry, entry.GetDateList(AcquirableDateType.FolkloreTome), "Folklores", (id) => $"{id}");
                 ImGui.Unindent();
             }
         }
@@ -201,12 +204,9 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                     bool visible = ImGui.IsItemVisible();
                     ImGui.TableSetColumnIndex(0);
 
-                    uint elementID = list.GetID(i);
-                    //DateTime? lodestoneDate = list.GetDate(elementID, AcquiredDateType.Lodestone);
-                    //DateTime? manualDate = list.GetDate(elementID, AcquiredDateType.Manual);
-
-                    DateTime? lodestoneDate = null;
-                    DateTime? manualDate = null;
+                    uint elementID = list.GetId(i);
+                    UnlockedDate? lodestoneDate = list.GetDate(elementID);
+                    UnlockedDate? manualDate = list.GetDate(elementID);
 
                     if (EraserButton.Draw(new Vector2(25,20), Translator.GetLine("ClearButton.Label"), Translator.GetLine("Acquiry.Clear")))
                     {
@@ -227,9 +227,9 @@ internal class AcquisitionDebugWindow : AcquisitionWindow
                         ImGui.Text($"{elementID}");
                     }
                     ImGui.TableSetColumnIndex(1);
-                    ImGui.Text($"{lodestoneDate?.ToString(Services.Configuration.DateParseString()) ?? "[No Date Found]"}");
+                    ImGui.Text($"{lodestoneDate?.GetSpecificDateTime(AcquiredDateType.Lodestone)?.GetTimeString() ?? "[No Date Found]"}");
                     ImGui.TableSetColumnIndex(2);
-                    ImGui.Text($"{manualDate?.ToString(Services.Configuration.DateParseString()) ?? "[No Date Found]"}");
+                    ImGui.Text($"{manualDate?.GetSpecificDateTime(AcquiredDateType.Manual)?.GetTimeString() ?? "[No Date Found]"}");
                 }
 
                 ImGui.EndTable();

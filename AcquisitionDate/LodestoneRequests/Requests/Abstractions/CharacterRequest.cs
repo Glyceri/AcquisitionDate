@@ -14,7 +14,7 @@ internal abstract class CharacterRequest : LodestoneRequest
             return;
         }
 
-        LodestoneCharacterID = data.LodestoneID;
+        LodestoneCharacterID = data.LodestoneId;
     }
 
     public override string GetURL() => $"/lodestone/character/{LodestoneCharacterID}/";

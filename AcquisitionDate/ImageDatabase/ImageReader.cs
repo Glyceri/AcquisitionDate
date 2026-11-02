@@ -5,7 +5,6 @@ using Dalamud.Interface.Textures;
 using System;
 using System.Threading.Tasks;
 using System.IO;
-using AcquisitionDate.Core.Handlers;
 using System.Threading;
 
 namespace AcquisitionDate.ImageDatabase;

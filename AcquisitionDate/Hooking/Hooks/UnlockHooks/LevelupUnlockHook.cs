@@ -1,10 +1,9 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
-using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Services.Interfaces;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
@@ -12,11 +11,18 @@ internal unsafe class LevelupUnlockHook : UnlockHook
 {
     private short[] currentClassJobLevels = [];
 
-    public LevelupUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public LevelupUnlockHook(IDatabase database, ISheets sheets) 
+        : base(database, sheets) 
+        { }
 
     public override void Init()
     {
         PluginHandlers.ClientState.LevelChanged += OnLevelChanged;
+    }
+    
+    public override void Dispose()
+    {
+        PluginHandlers.ClientState.LevelChanged -= OnLevelChanged;
     }
 
     public override void Reset()
@@ -58,13 +64,9 @@ internal unsafe class LevelupUnlockHook : UnlockHook
 
         // Because I can only have one indexer im storing multiple pieces of data in one number, the 10000 part is the class job, the small number is the level
 
-        UserList.ActiveUser?.Data.GetDate(AcquirableDateType.ClassLVL).SetDate(preparedClassJobID, DateTime.Now, AcquiredDateType.Manual);
+        Database.GetLocalUser()?.GetDateList(AcquirableDateType.ClassLVL).SetDate(preparedClassJobID, DateTime.Now, AcquiredDateType.Manual);
     }
 
-    public override void Dispose()
-    {
-        PluginHandlers.ClientState.LevelChanged -= OnLevelChanged;
-    }
-
-    public override void Update(float deltaTime) { } // No update needed for this one
+    public override void Update(float deltaTime) // No update needed for this one
+        { } 
 }

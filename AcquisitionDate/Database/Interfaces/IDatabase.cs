@@ -1,14 +1,21 @@
 using AcquisitionDate.Serializiation;
 using System;
+using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Database.Structs;
+using AcquisitionDate.Updating.Interfaces;
 
 namespace AcquisitionDate.Database.Interfaces;
 
-internal interface IDatabase
+internal interface IDatabase : IUpdatable
 {
-    IDatableData GetEntry(ulong contentID);
     IDatableData[] GetEntries();
 
     SerializableUser[] SerializeDatabase();
-
-    string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser);
+    IDatableData? GetLocalUser();
+    
+    //bool GetDateTime(AcquirableDateType dataType, uint index, out 
+    
+    TypedDatabaseEntry[] GetDateLists(AcquirableDateType dateType);
+    
+    string? GetDateTimeString(uint forId, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser);
 }

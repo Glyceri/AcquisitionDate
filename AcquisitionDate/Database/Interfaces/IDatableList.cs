@@ -9,13 +9,13 @@ internal interface IDatableList
 {
     int Length { get; }
 
-    uint GetID(int index);
+    uint GetId(int index);
 
-    UnlockedDate? GetDate(uint ID);
+    UnlockedDate? GetDate(uint id);
 
-    void SetDate(uint ID, DateTime? value, AcquiredDateType dateType);
-    bool RemoveDate(uint ID, AcquiredDateType dateType);
-    bool RemoveDate(uint ID);
+    void SetDate(uint id, DateTime? value, AcquiredDateType dateType);
+    bool RemoveDate(uint id, AcquiredDateType dateType);
+    bool RemoveDate(uint id);
 
     SerializableList Serialise();
 }

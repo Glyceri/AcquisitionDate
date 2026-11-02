@@ -1,9 +1,9 @@
 ﻿using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
-using AcquisitionDate.Core.Handlers;
 using Dalamud.Game;
 using Dalamud.Utility;
 using System.Collections.Generic;
 using System.Linq;
+using AcquisitionDate;
 
 internal struct PetSheetData : IPetSheetData
 {

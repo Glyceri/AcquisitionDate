@@ -1,20 +1,21 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
-using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Services.Interfaces;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using AcquisitionDate.Database.Interfaces;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal unsafe class QuestUnlockHook : UnlockHook
 {
-    private readonly List<uint> QuestsCompleted = new List<uint>();
+    private readonly List<uint> QuestsCompleted = [];
     private byte lastAcceptedQuestCount = 0;
 
-    public QuestUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public QuestUnlockHook(IDatabase database, ISheets sheets) 
+        : base(database, sheets) 
+        { }
 
     public override void Reset()
     {
@@ -48,10 +49,13 @@ internal unsafe class QuestUnlockHook : UnlockHook
 
             QuestsCompleted.Add(questRowID);
             PluginHandlers.PluginLog.Information($"Quest with ID {questRowID} and name {quest.Name.ExtractText()} has been found.");
-            UserList.ActiveUser?.Data.GetDate(AcquirableDateType.Quest).SetDate(questRowID, DateTime.Now, AcquiredDateType.Manual);
+            Database.GetLocalUser()?.GetDateList(AcquirableDateType.Quest).SetDate(questRowID, DateTime.Now, AcquiredDateType.Manual);
         }
     }
 
-    public override void Init() { } // No init needed for this one
-    public override void Dispose() { } // No dispose needed for this one
+    public override void Init() // No init needed for this one
+        { }
+    
+    public override void Dispose() // No dispose needed for this one
+        { } 
 }

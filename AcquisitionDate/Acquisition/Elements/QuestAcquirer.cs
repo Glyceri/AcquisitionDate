@@ -33,7 +33,7 @@ internal class QuestAcquirer : AcquirerCounter
 
     void OnQuestData(QuestData data)
     {
-        _currentUser.GetDate(AcquirableDateType.Quest).SetDate(data.QuestID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDateList(AcquirableDateType.Quest).SetDate(data.QuestID, data.AchievedDate, AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

@@ -1,13 +1,9 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Enums;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Gui;
-using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -19,14 +15,20 @@ internal unsafe class ItemUnlockHook : UnlockHook
 {
     private readonly List<uint> UnlockedItems = [];
 
-    public ItemUnlockHook(IUserList userList, ISheets sheets) 
-        : base(userList, sheets) { }
+    public ItemUnlockHook(IDatabase database, ISheets sheets) 
+        : base(database, sheets) 
+        { }
 
     public override void Init()
     {
         PluginHandlers.GameGui.AgentUpdate += OnAgentUpdate;
     }
 
+    public override void Dispose()
+    {
+        PluginHandlers.GameGui.AgentUpdate -= OnAgentUpdate;
+    }
+    
     public override void Reset()
     {
         UnlockedItems.Clear();
@@ -135,64 +137,62 @@ internal unsafe class ItemUnlockHook : UnlockHook
     {
         if (item.ItemAction.RowId == 0) return;
 
-        IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null) return;
-
-        IDatableData data = localUser.Data;
+        IDatableData? data = Database.GetLocalUser();
+        if (data == null) return;
 
         PluginHandlers.PluginLog.Verbose($"Detected Item Completion with ID: {item.RowId}");
 
         switch ((ItemActionType)item.ItemAction.Value.Action.RowId)
         {
             case ItemActionType.Companion:
-                data.GetDate(AcquirableDateType.Minion).SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Minion).SetDate(GetCompanionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.BuddyEquip:
-                data.GetDate(AcquirableDateType.BuddyEquip).SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.BuddyEquip).SetDate(GetBuddyEquipID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Mount:
-                data.GetDate(AcquirableDateType.Mount).SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Mount).SetDate(GetMountID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.SecretRecipeBook:
-                data.GetDate(AcquirableDateType.SecretRecipeBook).SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.SecretRecipeBook).SetDate(GetSecretRecipeID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.UnlockLink:
-                data.GetDate(AcquirableDateType.UnlockLink).SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.UnlockLink).SetDate(GetUnlockLinkID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.TripleTriadCard when item.AdditionalData.Is<TripleTriadCard>():
-                data.GetDate(AcquirableDateType.Card).SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Card).SetDate(GetTrippleTriadID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FolkloreTome:
-                data.GetDate(AcquirableDateType.FolkloreTome).SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.FolkloreTome).SetDate(GetFolkloreID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.OrchestrionRoll when item.AdditionalData.Is<Orchestrion>():
-                data.GetDate(AcquirableDateType.Orchestrion).SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Orchestrion).SetDate(GetOrchestrionID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.FramersKit:
-                data.GetDate(AcquirableDateType.Framers).SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Framers).SetDate(GetFramerKitID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Ornament:
-                data.GetDate(AcquirableDateType.Fashion).SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Fashion).SetDate(GetOrnamentID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
 
             case ItemActionType.Glasses:
-                data.GetDate(AcquirableDateType.Facewear).SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
+                data.GetDateList(AcquirableDateType.Facewear).SetDate(GetGlassesID(item), DateTime.Now, AcquiredDateType.Manual);
                 break;
         }
     }
 
     private void OnAgentUpdate(AgentUpdateFlag updateFlag)
     {
-        if (UserList.ActiveUser == null)
+        if (Database.GetLocalUser() == null)
         {
             return;
         }
@@ -214,10 +214,6 @@ internal unsafe class ItemUnlockHook : UnlockHook
         }
     }
 
-    public override void Dispose()
-    {
-        PluginHandlers.GameGui.AgentUpdate -= OnAgentUpdate;
-    }
-
-    public override void Update(float deltaTime) { } // No update needed for this one
+    public override void Update(float deltaTime) 
+        { } // No update needed for this one
 }

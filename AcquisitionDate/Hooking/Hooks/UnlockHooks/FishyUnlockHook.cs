@@ -1,11 +1,8 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Enums;
+﻿using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System;
-using System.Linq;
 using System.Numerics;
 
 namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
@@ -16,16 +13,20 @@ internal unsafe class FishyUnlockHook : UnlockHook
 
     private byte[] _fishStore       = [];
     private byte[] _spearFishStore  = [];
+    private byte[] _fishZoneStore   = [];
 
-    public FishyUnlockHook(IUserList userList, ISheets sheets) : base(userList, sheets) { }
+    public FishyUnlockHook(IDatabase database, ISheets sheets) 
+        : base(database, sheets) 
+        { }
 
     public override void Reset() 
     {
+        _fishZoneStore  = PlayerState.Instance()->UnlockedFishingSpots.ToArray();
         _fishStore      = PlayerState.Instance()->CaughtFish.ToArray();
         _spearFishStore = PlayerState.Instance()->CaughtSpearfish.ToArray();
     }
-
-    public uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
+    
+    private uint? GetCaughtFishIndices(Span<byte> oldStore, Span<byte> newStore)
     {
         // Calculate the minimum length of both bitmasks
         int maxLength = Math.Min(oldStore.Length, newStore.Length);
@@ -37,14 +38,16 @@ internal unsafe class FishyUnlockHook : UnlockHook
             byte difference = (byte)(newStore[byteIndex] & ~oldStore[byteIndex]);
 
             // If there is any difference, find the fish index
-            if (difference != 0)
+            if (difference == 0)
             {
-                // Use a fast bit scan to find the first bit set in 'difference'
-                int bitIndex = BitOperations.TrailingZeroCount(difference);
-
-                // Return the global fish index by combining byte and bit indices
-                return (uint)(byteIndex * 8 + bitIndex);
+                continue;
             }
+            
+            // Use a fast bit scan to find the first bit set in 'difference'
+            int bitIndex = BitOperations.TrailingZeroCount(difference);
+
+            // Return the global fish index by combining byte and bit indices
+            return (uint)(byteIndex * 8 + bitIndex);
         }
 
         return null;
@@ -55,7 +58,11 @@ internal unsafe class FishyUnlockHook : UnlockHook
         Span<byte> span = bitmask;
 
         bool fishyEquals = new Span<byte>(store, 0, store.Length).SequenceEqual(span);
-        if (fishyEquals) return null;
+        
+        if (fishyEquals)
+        {
+            return null;
+        }
 
         uint? outcome = GetCaughtFishIndices(store, span);
 
@@ -66,27 +73,42 @@ internal unsafe class FishyUnlockHook : UnlockHook
 
     public override void Update(float deltaTime) 
     {
-        IDatableUser? localUser = UserList.ActiveUser;
-        if (localUser == null) return;
-
-        IDatableData data = localUser.Data;
-
-        uint? fishOutcome = CheckFishies(ref _fishStore, PlayerState.Instance()->CaughtFish);
-        if (fishOutcome != null)
+        IDatableData? data = Database.GetLocalUser();
+        
+        if (data == null)
         {
-            data.GetDate(AcquirableDateType.Fishing).SetDate(fishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
-            PluginHandlers.PluginLog.Information($"Found new fish caught with ID: {fishOutcome.Value}");
+            return;
         }
 
-        uint? spfishOutcome = CheckFishies(ref _spearFishStore, PlayerState.Instance()->CaughtSpearfish);
-        if (spfishOutcome != null)
+        HandleFishy(data);
+    }
+    
+    private void HandleFishy(IDatableData data)
+    {
+        HandleFishyStore(data, ref _fishStore,      PlayerState.Instance()->CaughtFish,           AcquirableDateType.Fishing);
+        HandleFishyStore(data, ref _spearFishStore, PlayerState.Instance()->CaughtSpearfish,      AcquirableDateType.Fishing,     SpearFishIdOffset);
+        HandleFishyStore(data, ref _fishZoneStore,  PlayerState.Instance()->UnlockedFishingSpots, AcquirableDateType.FishingSpot);
+    }
+    
+    private void HandleFishyStore(IDatableData data, ref byte[] store, Span<byte> bitmask, AcquirableDateType dateType, uint offset = 0)
+    {
+        uint? outcome = CheckFishies(ref store, bitmask);
+        
+        if (outcome == null)
         {
-            spfishOutcome += SpearFishIdOffset;
-            data.GetDate(AcquirableDateType.Fishing).SetDate(spfishOutcome.Value, DateTime.Now, AcquiredDateType.Manual);
-            PluginHandlers.PluginLog.Information($"Found new spearfish caught with ID: {spfishOutcome.Value}");
+            return;
         }
+        
+        outcome += offset;
+        
+        data.GetDateList(dateType).SetDate(outcome.Value, DateTime.Now, AcquiredDateType.Manual);
+        
+        PluginHandlers.PluginLog.Information($"Found new {dateType} with ID: {outcome.Value}");
     }
 
-    public override void Init() { }     // Init is unused
-    public override void Dispose() { }  // Dispose is unsued
+    public override void Init() // Init is unused
+        { }     
+    
+    public override void Dispose()  // Dispose is unsued
+        { } 
 }

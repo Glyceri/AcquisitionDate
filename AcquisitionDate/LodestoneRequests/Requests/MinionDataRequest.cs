@@ -11,5 +11,5 @@ internal class MinionDataRequest : ItemPageDataRequest
 {
     public MinionDataRequest(ItemPageDataParser itemPageDataParser, ISheets sheets, string baseURL, LodestoneRegion pageRegion, Action<ItemData> onItemData, Action? successCallback = null, Action<Exception>? failureCallback = null) : base(itemPageDataParser, sheets, baseURL, "minion", pageRegion, onItemData, successCallback, failureCallback) { }
 
-    protected override uint? GetIDFromString(string itemName) => (uint)(Sheets.GetCompanionByName(itemName)?.ID ?? 0);
+    protected override uint? GetIdFromString(string itemName) => (uint)(Sheets.GetCompanionByName(itemName)?.ID ?? 0);
 }

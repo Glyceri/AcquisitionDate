@@ -1,8 +1,8 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using System.Numerics;
+using AcquisitionDate.Translation;
 using AcquisitionDate.Windows;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Labels;

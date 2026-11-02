@@ -10,7 +10,8 @@ namespace AcquisitionDate.Acquisition.Elements;
 
 internal class AchievementAcquirer : AcquirerCounter
 {
-    public AchievementAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser) : base(networker, acquistionParser) { }
+    public AchievementAcquirer(ILodestoneNetworker networker, IAcquisitionParser acquistionParser)
+        : base(networker, acquistionParser) { }
 
     protected override ILodestoneRequest PageCountRequest() => new AchievementPageCountRequest
     (
@@ -31,15 +32,17 @@ internal class AchievementAcquirer : AcquirerCounter
         OnFailure
     );
     
-    void OnAchievementData(AchievementData data) 
+    private void OnAchievementData(AchievementData data) 
     {
+        PluginHandlers.PluginLog.Debug("Just got achievement data: " + data.AchievementID);
+        
         // This is the chocobo quest, a failsafe because chocobo mount is peepeepoopoo
         if (data.AchievementID == 66698)
         {
-            _currentUser?.GetDate(AcquirableDateType.Mount).SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+            _currentUser?.GetDateList(AcquirableDateType.Mount).SetDate(1, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
         }
 
-        _currentUser?.GetDate(AcquirableDateType.Achievement).SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser?.GetDateList(AcquirableDateType.Achievement).SetDate(data.AchievementID, data.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

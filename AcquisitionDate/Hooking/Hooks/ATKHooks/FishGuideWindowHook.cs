@@ -1,118 +1,104 @@
-using AcquisitionDate.Core.Handlers;
 using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Database.Interfaces;
 using Acquisition.PetNicknames.Hooking;
-using Lumina.Excel.Sheets;
 using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Nodes;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Lumina.Excel.Sheets;
 
 namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
 
 internal unsafe class FishGuideWindowHook : DateTextHook
 {
-    const uint customDateTextNodeID = 800;
-
-    AtkTextNode* tNode;
-
-    uint lastID = 0;
-
-    public FishGuideWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) 
-    {
-
-    }
+    private FishGuideResNode? ResNode;
+    
+    public FishGuideWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "FishGuide2", HookDetour);
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "FishGuide2", HookDetour);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup,           "FishGuide2", OnSetup);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize,         "FishGuide2", OnFinalize);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "FishGuide2", OnPostRequest);
     }
-
-    protected override IDatableList GetList(IDatableData userData) => userData.GetDate(AcquirableDateType.Fishing);
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnFishGuide;
 
     protected override void OnDispose() 
     {
-        TrySafeInvalidateUIElement(ref tNode);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnSetup);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnFinalize);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnPostRequest);
     }
-
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+    
+    protected override bool HandleConfig(Configuration configuration) 
+        => configuration.DrawDatesOnFishGuide;
+    
+    
+    private void OnSetup(AddonEvent addonEvent, AddonArgs addonArgs)
     {
-        if (_lastEventType == AddonEvent.PreReceiveEvent)
+        ResNode = new FishGuideResNode();
+        ResNode.AttachNode((AtkUnitBase*)addonArgs.Addon.Address);
+    }
+    
+    private void OnFinalize(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        ResNode?.Dispose();
+        ResNode = null;
+    }
+    
+    private void OnPostRequest(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        if (ResNode == null)
         {
-            uint fishItemID = (uint)PluginHandlers.GameGui.HoveredItem;
-            foreach (FishParameter fish in Sheets.AllFishies)
-            {
-                if (fish.Item.RowId != fishItemID) continue;
-
-                lastID = fish.RowId;
-                break;
-            }
-
-            foreach (SpearfishingItem spearfishingItem in Sheets.AllSpearFishies)
-            {
-                if (spearfishingItem.Item.RowId != fishItemID) continue;
-
-                lastID = spearfishingItem.RowId;
-                break;
-            }
-
-            PluginHandlers.PluginLog.Verbose($"Received event for fishy: {lastID}");
             return;
         }
-        else if (_lastEventType == AddonEvent.PostRequestedUpdate)
+        
+        bool draw = DrawDateString(ResNode.DateTextNode, DrawTextFlags.DisallowQuestionmarks, AcquirableDateType.Fishing, GetSelectedId());
+        
+        ResNode.IsVisible = draw;
+    }
+    
+    private uint GetSelectedId()
+    {
+        int* array       = AtkStage.Instance()->GetNumberArrayData(NumberArrayType.FishGuide)->IntArray;
+        bool isSpearFish = array[2] == 1;
+        int  index       = array[8];
+        int  itemId      = array[9 + (index * 4)];
+        
+        if (!isSpearFish)
         {
-            AtkTextNode* titleNode = baseNode.GetNode<AtkTextNode>(136);
-            if (titleNode == null) return;
-
-            AtkTextNode* stuffeNode = baseNode.GetNode<AtkTextNode>(137);
-            if (stuffeNode == null) return;
-
-            AtkTextNode* sternNode = baseNode.GetNode<AtkTextNode>(138);
-            if (sternNode == null) return;
-
-            AtkTextNode* standortNode = baseNode.GetNode<AtkTextNode>(139);
-            if (standortNode == null) return;
-
-            tNode = baseNode.GetNode<AtkTextNode>(customDateTextNodeID);
-            if (tNode == null)
+            foreach (FishParameter fish in Services.Sheets.AllFishies)
             {
-                tNode = CreateTextNode(customDateTextNodeID);
-                if (tNode == null) return;
-
-                MergeTextBetweenElements(tNode, &titleNode->AtkResNode, &stuffeNode->AtkResNode, &baseAddon->UldManager);
-
-                tNode->SetAlignment(AlignmentType.Left);
-                tNode->DrawFlags = stuffeNode->DrawFlags;
-                tNode->TextFlags = stuffeNode->TextFlags;
-
-                tNode->EdgeColor = stuffeNode->EdgeColor;
-                tNode->Color = stuffeNode->Color;
-                tNode->TextColor = stuffeNode->TextColor;
-
-                tNode->SetYFloat(19);
-                tNode->SetXFloat(0);
-
-                stuffeNode->SetYFloat(35);
-                standortNode->SetYFloat(35);
-                sternNode->SetYFloat(35);
-            }
-
-            if (lastID == 0)
-            {
-                tNode->ToggleVisibility(false);
-                return;
-            }
-
-            if (DrawDate(tNode, lastID, showAlt: false, stillDraw: true))
-            {
-                GiveTooltip(baseAddon, tNode, lastID);
-            }
-            else
-            {
-                ClearOldTooldtips();
+                if (fish.Item.RowId != itemId)
+                {
+                    continue;
+                }
+                
+                return fish.RowId;
             }
         }
+        else
+        {
+            foreach (SpearfishingItem spearfishingItem in Services.Sheets.AllSpearFishies)
+            {
+                if (spearfishingItem.Item.RowId != itemId)
+                {
+                    continue;
+                }
+
+                return spearfishingItem.RowId;
+            }
+        }
+        
+        return 0;
     }
+    
+    
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.Fishing);
+    
+    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseAddon)
+        { }
 }

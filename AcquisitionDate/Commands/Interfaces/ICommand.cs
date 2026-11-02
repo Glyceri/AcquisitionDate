@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcquisitionDate.AcquisitionDate.Commands.Interfaces;
+namespace AcquisitionDate.Commands.Interfaces;
 
 internal interface ICommand : IDisposable
 {

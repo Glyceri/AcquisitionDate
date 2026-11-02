@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Database.Structs;
@@ -12,34 +11,36 @@ namespace AcquisitionDate.Database;
 
 internal class DatableList : IDatableList
 {
-    public uint[] IDs = [];
+    public uint[]      IDs            = [];
     public DateTime?[] LodestoneTimes = [];
-    public DateTime?[] ManualTimes = [];
+    public DateTime?[] ManualTimes    = [];
 
-    readonly IDirtySetter DirtySetter;
-    readonly Configuration Configuration;
+    private readonly IDirtySetter  DirtySetter;
+    private readonly Configuration Configuration;
 
-    public int Length => IDs.Length;
+    public int Length 
+        => IDs.Length;
 
     DateTime? lowestDateTime = null;
     bool isDirty = true;
 
     public DatableList(IDirtySetter dirtySetter, Configuration configuration)
     {
-        DirtySetter = dirtySetter;
+        DirtySetter   = dirtySetter;
         Configuration = configuration;
     }
 
-    public DatableList(IDirtySetter dirtySetter, SerializableList list, Configuration configuration) : this(dirtySetter, configuration)
+    public DatableList(IDirtySetter dirtySetter, SerializableList list, Configuration configuration) 
+        : this(dirtySetter, configuration)
     {
-        IDs = list.IDS;
+        IDs            = list.IDS;
         LodestoneTimes = list.LodestoneTimes;
-        ManualTimes = list.ManualTimes;
+        ManualTimes    = list.ManualTimes;
     }
-
-    public UnlockedDate? GetDate(uint ID)
+    
+    public UnlockedDate? GetDate(uint id)
     {
-        int? index = GetIndex(ID);
+        int? index = GetIndex(id);
         if (index == null) return null;
 
         DateTime? lowestDateTime = GetLowestDateTime();
@@ -47,7 +48,7 @@ internal class DatableList : IDatableList
         DateTime? manualTime = ManualTimes[index.Value];
         DateTime? lodestoneTime = LodestoneTimes[index.Value];
 
-        AcquisitionDateTime? acqManualTime = null;
+        AcquisitionDateTime? acqManualTime    = null;
         AcquisitionDateTime? acqLodestoneTime = null;
 
         bool manualTimeIsLowest = false;
@@ -67,26 +68,26 @@ internal class DatableList : IDatableList
 
         if (manualTime != null)
         {
-            acqManualTime = new AcquisitionDateTime(manualTime.Value, manualTimeIsLowest);
+            acqManualTime = new AcquisitionDateTime(Configuration, manualTime.Value, manualTimeIsLowest);
         }
 
         if (lodestoneTime != null)
         {
-            acqLodestoneTime = new AcquisitionDateTime(lodestoneTime.Value, lodestoneTimeIsLowest);
+            acqLodestoneTime = new AcquisitionDateTime(Configuration, lodestoneTime.Value, lodestoneTimeIsLowest);
         }
 
         return new UnlockedDate(Configuration, acqManualTime, acqLodestoneTime);
     }
 
-    public bool RemoveDate(uint ID, AcquiredDateType dateType)
+    public bool RemoveDate(uint id, AcquiredDateType dateType)
     {
-        int? index = GetIndex(ID);
+        int? index = GetIndex(id);
         if (index == null) return false;
 
         int i = index.Value;
 
         if (dateType == AcquiredDateType.Lodestone) LodestoneTimes[i] = null;
-        if (dateType == AcquiredDateType.Manual)    ManualTimes[i] = null;
+        if (dateType == AcquiredDateType.Manual)    ManualTimes[i]    = null;
 
         if (LodestoneTimes[i] != null || ManualTimes[i] != null) 
         { 
@@ -94,7 +95,7 @@ internal class DatableList : IDatableList
             return true; 
         }
 
-        return RemoveDate(ID);
+        return RemoveDate(id);
     }
 
     public bool RemoveDate(uint ID)
@@ -207,7 +208,9 @@ internal class DatableList : IDatableList
         array = list.ToArray();
     }
 
-    public uint GetID(int index) => IDs[index];
+    public uint GetId(int index) 
+        => IDs[index];
 
-    public SerializableList Serialise() => new SerializableList(this);
+    public SerializableList Serialise() 
+        => new SerializableList(this);
 }

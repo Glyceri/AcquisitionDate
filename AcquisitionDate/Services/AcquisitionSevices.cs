@@ -1,4 +1,3 @@
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers;
 using AcquisitionDate.AcquisitionDate.Services.ServiceWrappers.Interfaces;
 using AcquisitionDate.Services.Interfaces;
@@ -12,6 +11,7 @@ internal class AcquisitionSevices : IAcquisitionServices
     public IPetLog          PetLog          { get; }
     public Configuration    Configuration   { get; }
     public ISheets          Sheets          { get; }
+    public IStringBuilder   StringBuilder   { get; }
 
     public AcquisitionSevices()
     {
@@ -19,5 +19,6 @@ internal class AcquisitionSevices : IAcquisitionServices
         Backup          = new BackupWrapper();
         Configuration   = PluginHandlers.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Sheets          = new SheetsWrapper();
+        StringBuilder   = new StringBuilder(Configuration);
     }
 }

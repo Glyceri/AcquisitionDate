@@ -33,7 +33,7 @@ internal class FacewearAcquirer : AcquirerItem
 
     void OnItemData(ItemData itemData)
     {
-        _currentUser.GetDate(AcquirableDateType.Facewear).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
+        _currentUser.GetDateList(AcquirableDateType.Facewear).SetDate(itemData.ItemID, itemData.AchievedDate, Database.Enums.AcquiredDateType.Lodestone);
     }
 
     protected override void OnDispose() { }

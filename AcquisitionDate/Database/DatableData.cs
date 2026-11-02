@@ -1,6 +1,5 @@
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
 using AcquisitionDate.Services.Interfaces;
@@ -11,15 +10,15 @@ internal class DatableData : IDatableData
 {
     readonly IDatableList[] AllDatableData = new IDatableList[(int)AcquirableDateType.COUNT];
 
-    public ulong ContentID { get; private set; }
+    public ulong ContentId { get; private set; }
     public string Name { get; private set; } = "";
     public ushort Homeworld { get; private set; }
     public string HomeworldName { get; private set; } = "";
 
-    public ulong? LodestoneID { get; private set; } = null;
+    public ulong? LodestoneId { get; private set; } = null;
 
-    public bool HasSearchedLodestoneID { get; set; } = false;
-    public bool IsReady => LodestoneID != null;
+    public bool HasSearchedLodestoneId { get; set; } = false;
+    public bool IsReady => LodestoneId != null;
 
     readonly IAcquisitionServices Services;
     readonly IDirtySetter DirtySetter;
@@ -29,8 +28,8 @@ internal class DatableData : IDatableData
         IDirtySetter dirtySetter,
         string name,
         ushort homeworld,
-        ulong contentID,
-        ulong? lodestoneID,
+        ulong contentId,
+        ulong? lodestoneId,
         IDatableList? achievementList       = null,
         IDatableList? questList             = null,
         IDatableList? minionList            = null,
@@ -42,6 +41,7 @@ internal class DatableData : IDatableData
         IDatableList? fashionList           = null,
         IDatableList? dutyList              = null,
         IDatableList? fishingList           = null,
+        IDatableList? fishingSpotList       = null,
         IDatableList? sightList             = null,
         IDatableList? framerList            = null,
         IDatableList? secretRecipeList      = null,
@@ -49,15 +49,15 @@ internal class DatableData : IDatableData
         IDatableList? unlockLinkList        = null,
         IDatableList? folkloreList          = null)
     {
-        Services = services;
+        Services    = services;
         DirtySetter = dirtySetter;
 
         SetName(name);
         SetHomeworld(homeworld);
-        SetContentID(contentID);
-        if (lodestoneID != null)
+        SetContentId(contentId);
+        if (lodestoneId != null)
         {
-            SetLodestoneID(lodestoneID.Value);
+            SetLodestoneId(lodestoneId.Value);
         }
 
         AllDatableData[(int)AcquirableDateType.Achievement]         = achievementList       ?? new DatableList(DirtySetter, Services.Configuration);
@@ -71,6 +71,7 @@ internal class DatableData : IDatableData
         AllDatableData[(int)AcquirableDateType.Fashion]             = fashionList           ?? new DatableList(DirtySetter, Services.Configuration);
         AllDatableData[(int)AcquirableDateType.Duty]                = dutyList              ?? new DatableList(DirtySetter, Services.Configuration);
         AllDatableData[(int)AcquirableDateType.Fishing]             = fishingList           ?? new DatableList(DirtySetter, Services.Configuration);
+        AllDatableData[(int)AcquirableDateType.FishingSpot]         = fishingSpotList       ?? new DatableList(DirtySetter, Services.Configuration);
         AllDatableData[(int)AcquirableDateType.Incognita]           = sightList             ?? new DatableList(DirtySetter, Services.Configuration);
         AllDatableData[(int)AcquirableDateType.Framers]             = framerList            ?? new DatableList(DirtySetter, Services.Configuration);
         AllDatableData[(int)AcquirableDateType.SecretRecipeBook]    = secretRecipeList      ?? new DatableList(DirtySetter, Services.Configuration);
@@ -79,49 +80,58 @@ internal class DatableData : IDatableData
         AllDatableData[(int)AcquirableDateType.FolkloreTome]        = folkloreList          ?? new DatableList(DirtySetter, Services.Configuration);
     }
 
-    public void UpdateEntry(IDatableUser datableUser)
+    public bool IsLocalPlayer
+        => GetIsLocalPlayer();
+
+    public void UpdateEntry(ulong contentId, string name, ushort homeworld)
     {
-        SetContentID(datableUser.ContentID);
-        SetName(datableUser.Name);
-        SetHomeworld(datableUser.Homeworld);
+        SetContentId(contentId);
+        SetName(name);
+        SetHomeworld(homeworld);
 
         MarkDirty();
     }
 
-    void SetHomeworld(ushort homeworld)
+    private void SetHomeworld(ushort homeworld)
     {
-        Homeworld = homeworld;
+        Homeworld     = homeworld;
         HomeworldName = Services.Sheets.GetWorldName(Homeworld) ?? "...";
     }
 
-    void SetName(string name)
+    private void SetName(string name)
     {
         Name = name;
     }
 
-    void SetContentID(ulong contentID)
+    private void SetContentId(ulong contentId)
     {
-        ContentID = contentID;
+        ContentId = contentId;
     }
 
-    public void SetLodestoneID(ulong lodestoneID)
+    public void SetLodestoneId(ulong lodestoneId)
     {
-        LodestoneID = lodestoneID;
-        HasSearchedLodestoneID = true;
+        LodestoneId            = lodestoneId;
+        HasSearchedLodestoneId = true;
 
         MarkDirty();
     }
 
-    void MarkDirty()
-    {
-        DirtySetter.NotifyDirtyDatabase();
-    }
+    private void MarkDirty() 
+        => DirtySetter.NotifyDirtyDatabase();
 
-    public SerializableUser SerializeEntry() => new SerializableUser(this);
-
-    // The plugin should straight up crash IMO if flag doesnt get found
-    public IDatableList GetDate(AcquirableDateType flag)
+    public SerializableUser SerializeEntry() 
+        => new SerializableUser(this);
+    
+    public IDatableList GetDateList(AcquirableDateType flag)
+        => AllDatableData[(int)flag];
+    
+    private bool GetIsLocalPlayer()
     {
-        return AllDatableData[(int)flag];
+        if (!PluginHandlers.PlayerState.IsLoaded)
+        {
+            return false;
+        }
+        
+        return PluginHandlers.PlayerState.ContentId == ContentId;
     }
 }

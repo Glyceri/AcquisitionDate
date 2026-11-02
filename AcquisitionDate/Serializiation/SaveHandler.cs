@@ -6,10 +6,10 @@ namespace AcquisitionDate.Serializiation;
 
 internal class SaveHandler : IDisposable, IUpdatable
 {
-    readonly IDirtyListener DirtyListener;
-    readonly Configuration Configuration;
+    private readonly IDirtyListener DirtyListener;
+    private readonly Configuration  Configuration;
 
-    bool shouldSave = false;
+    private bool _shouldSave;
 
     public SaveHandler(IDirtyListener dirtyListener, Configuration configuration)
     {
@@ -19,21 +19,25 @@ internal class SaveHandler : IDisposable, IUpdatable
         DirtyListener.RegisterDirtyDatabase(OnDirty);
     }
 
-    void OnDirty()
+    public void Dispose()
     {
-        shouldSave = true;
+        DirtyListener.UnregisterDirtyDatabase(OnDirty);
+    }
+    
+    private void OnDirty()
+    {
+        _shouldSave = true;
     }
 
     public void Update(float deltaTime)
     {
-        if (!shouldSave) return;
+        if (!_shouldSave)
+        {
+            return;
+        }
 
-        shouldSave = false;
+        _shouldSave = false;
+        
         Configuration.Save();
-    }
-
-    public void Dispose()
-    {
-        DirtyListener.UnregisterDirtyDatabase(OnDirty);
     }
 }

@@ -1,9 +1,6 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.ImageDatabase.Interfaces;
 using AcquisitionDate.Windows.Components.Image;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using AcquistionDate.PetNicknames.Windowing.Components;
 using Dalamud.Interface.Utility;
@@ -14,6 +11,7 @@ using Dalamud.Utility;
 using AcquisitionDate.Windows.Windows.ListTabs.Tabs;
 using AcquisitionDate.Windows.Windows.ListTabs;
 using AcquisitionDate.Services.Interfaces;
+using AcquisitionDate.Translation;
 
 namespace AcquisitionDate.Windows.Windows;
 
@@ -25,11 +23,12 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
 
     protected override bool HasHeaderBar { get; } = true;
 
-    readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IImageDatabase ImageDatabase;
     readonly IAcquisitionServices AcquisitionServices;
 
+    IDatableData? lastData = null;
+    
     float BarHeight => 30 * ImGuiHelpers.GlobalScaleSafe;
 
     bool inUserMode = false;
@@ -40,13 +39,12 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
     string activeSearchText = string.Empty;
 
     IDatableData? ActiveEntry;
-    IDatableUser? lastUser;
 
     readonly DataTab AchievementTab;
 
-    public AcquisitionListWindow(WindowHandler windowHandler, IAcquisitionServices services, IUserList userList, IDatabase database, IImageDatabase imageDatabase) : base(windowHandler, services.Configuration, "Acquisition List")
+    public AcquisitionListWindow(WindowHandler windowHandler, IAcquisitionServices services, IDatabase database, IImageDatabase imageDatabase)
+        : base(windowHandler, services.Configuration, "Acquisition List")
     {
-        UserList = userList;
         Database = database;
         ImageDatabase = imageDatabase;
         AcquisitionServices = services;
@@ -57,15 +55,17 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
     public override void OnOpen()
     {
         ClearSearchBar();
-        SetUser(UserList.ActiveUser?.Data);
+        SetUser(Database.GetLocalUser());
     }
 
     protected override void OnDraw()
     {
-        if (lastUser != UserList.ActiveUser)
+        IDatableData? localData = Database.GetLocalUser();
+        
+        if (lastData != localData)
         {
-            lastUser = UserList.ActiveUser;
-            SetUser(lastUser?.Data);
+            lastData = localData;
+            SetUser(localData);
         }
 
         DrawHeader();
@@ -111,7 +111,7 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
                     }
                 }
                 BasicLabel.Draw(ActiveEntry?.HomeworldName ?? Translator.GetLine("..."), barSize);
-                BasicLabel.Draw(ActiveEntry?.LodestoneID?.ToString() ?? Translator.GetLine("..."), barSize);
+                BasicLabel.Draw(ActiveEntry?.LodestoneId?.ToString() ?? Translator.GetLine("..."), barSize);
 
                 TextAligner.PopAlignment();
                 Listbox.End();
@@ -201,7 +201,7 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
                             });
                         }
                         LabledLabel.Draw("Homeworld:", data.HomeworldName, new Vector2(ImGui.GetContentRegionAvail().X, BarHeight));
-                        LabledLabel.Draw("Lodestone ID:", data.LodestoneID?.ToString() ?? Translator.GetLine("..."), new Vector2(ImGui.GetContentRegionAvail().X, BarHeight));
+                        LabledLabel.Draw("Lodestone ID:", data.LodestoneId?.ToString() ?? Translator.GetLine("..."), new Vector2(ImGui.GetContentRegionAvail().X, BarHeight));
 
                         Listbox.End();
                     }
@@ -219,7 +219,7 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
 
         if (Listbox.Begin($"##Listbox_{WindowHandler.InternalCounter}", ImGui.GetContentRegionAvail()))
         {
-            AchievementTab.Draw(ActiveEntry.GetDate(AchievementTab.MyType), activeSearchText);
+            AchievementTab.Draw(ActiveEntry.GetDateList(AchievementTab.MyType), activeSearchText);
             Listbox.End();
         }
     }
@@ -234,9 +234,11 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
     {
         inUserMode = !inUserMode;
 
-        if (!inUserMode && UserList.ActiveUser != null)
+        IDatableData? localData = Database.GetLocalUser();
+        
+        if (!inUserMode && localData != null)
         {
-            ActiveEntry = UserList.ActiveUser?.Data;
+            ActiveEntry = localData;
         }
 
         SetUser(ActiveEntry);
@@ -259,9 +261,11 @@ internal unsafe class AcquisitionListWindow : AcquisitionWindow
 
     bool HandleIfLocalEntry(IDatableData? entry)
     {
-        if (UserList.ActiveUser != null && entry != null)
+        IDatableData? localData = Database.GetLocalUser();
+        
+        if (localData != null && entry != null)
         {
-            return UserList.ActiveUser.ContentID == entry.ContentID;
+            return localData.ContentId == entry.ContentId;
         }
         else
         {

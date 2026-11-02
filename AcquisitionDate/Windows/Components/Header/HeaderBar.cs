@@ -1,13 +1,12 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using System.Numerics;
 using AcquisitionDate.Windows;
 using AcquisitionDate;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.AcquisitionDate.Windowing.Windows;
-using AcquisitionDate.Core.Handlers;
+using AcquisitionDate.Translation;
 
 namespace AcquistionDate.PetNicknames.Windowing.Components.Header;
 

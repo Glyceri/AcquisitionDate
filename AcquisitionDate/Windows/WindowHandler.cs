@@ -1,12 +1,9 @@
 using System;
 using Dalamud.Interface.Windowing;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Windows.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Windows.Windows;
 using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Services.Interfaces;
-using AcquistionDate.PetNicknames.Windowing.Components;
 using AcquisitionDate.AcquisitionDate.Windowing.Windows;
 using AcquisitionDate.Acquisition.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
@@ -24,7 +21,6 @@ internal class WindowHandler : IDisposable
     readonly WindowSystem WindowSystem;
 
     readonly IAcquisitionServices Services;
-    readonly IUserList UserList;
     readonly IDatabase Database;
     readonly IAcquirerHandler AcquirerHandler;
     readonly ILodestoneNetworker LodestoneNetworker;
@@ -32,7 +28,7 @@ internal class WindowHandler : IDisposable
     readonly IAcquisitionParser Parser;
     readonly IImageDatabase ImageDatabase;
 
-    public WindowHandler(IAcquisitionServices services, IUserList userList, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener, IAcquisitionParser parser, IImageDatabase imageDatabase)
+    public WindowHandler(IAcquisitionServices services, IDatabase database, IAcquirerHandler acquirerHandler, ILodestoneNetworker lodestoneNetworker, IDirtyListener dirtyListener, IAcquisitionParser parser, IImageDatabase imageDatabase)
     {
         WindowSystem = new WindowSystem("AcquisitionDate");
         PluginHandlers.PluginInterface.UiBuilder.Draw += Draw;
@@ -40,7 +36,6 @@ internal class WindowHandler : IDisposable
         PluginHandlers.PluginInterface.UiBuilder.OpenMainUi += OpenWindow<AcquiryWindow>;
 
         Services = services;
-        UserList = userList;
         Database = database;
         AcquirerHandler = acquirerHandler;
         LodestoneNetworker = lodestoneNetworker;
@@ -53,12 +48,12 @@ internal class WindowHandler : IDisposable
 
     void Register()
     {
-        AddWindow(new AcquisitionDebugWindow(Services, UserList, Database, this, Services.Configuration, Parser, LodestoneNetworker));
+        AddWindow(new AcquisitionDebugWindow(Services, Database, this, Services.Configuration, Parser, LodestoneNetworker));
         AddWindow(new AcquisitionConfigWindow(this, Services.Configuration));
         AddWindow(new KofiWindow(this, Services.Configuration));
-        AddWindow(new AcquiryWindow(this, Services.Configuration, UserList, Database, AcquirerHandler, LodestoneNetworker, DirtyListener));
+        AddWindow(new AcquiryWindow(this, Services.Configuration, Database, AcquirerHandler, LodestoneNetworker, DirtyListener));
         AddWindow(new SessionTokenWindow(this, Services.Configuration));
-        AddWindow(new AcquisitionListWindow(this, Services, UserList, Database, ImageDatabase));
+        AddWindow(new AcquisitionListWindow(this, Services, Database, ImageDatabase));
     }
 
     void Draw()

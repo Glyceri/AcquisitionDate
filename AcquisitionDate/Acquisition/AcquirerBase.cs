@@ -16,7 +16,7 @@ internal abstract class AcquirerBase : IAcquirer
     public bool HasSucceeded { get; private set; }
 
     protected readonly ILodestoneNetworker Networker;
-    protected readonly IAcquisitionParser AcquisitionParser;
+    protected readonly IAcquisitionParser  AcquisitionParser;
 
     protected IDatableData _currentUser = null!;
 

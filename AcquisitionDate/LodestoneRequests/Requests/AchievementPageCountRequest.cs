@@ -8,7 +8,10 @@ namespace AcquisitionDate.LodestoneRequests.Requests;
 
 internal class AchievementPageCountRequest : AchievementTypePageCountRequest
 {
-    public AchievementPageCountRequest(AchievementListPageCountParser countParser, IDatableData data, Action<PageCountData?> pageCountCallback) : base(countParser, data, pageCountCallback) { }
+    public AchievementPageCountRequest(AchievementListPageCountParser countParser, IDatableData data, Action<PageCountData?> pageCountCallback) 
+        : base(countParser, data, pageCountCallback) 
+        { }
 
-    public override string GetURL() => base.GetURL() + "achievement/?page=1#anchor_achievement";
+    public override string GetURL() 
+        => base.GetURL() + "achievement/?page=1#anchor_achievement";
 }

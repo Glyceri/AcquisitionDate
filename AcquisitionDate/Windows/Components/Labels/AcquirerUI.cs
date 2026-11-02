@@ -1,12 +1,12 @@
 ﻿using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Acquisition.Interfaces;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using AcquistionDate.PetNicknames.Windowing.Components.Labels;
 using AcquistionDate.PetNicknames.Windowing.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface;
 using Dalamud.Bindings.ImGui;
 using System.Numerics;
+using AcquisitionDate.Translation;
 using Dalamud.Utility;
 
 namespace AcquisitionDate.Windows.Components.Labels;

@@ -1,109 +1,130 @@
 ﻿using Acquisition.PetNicknames.Hooking;
-using AcquisitionDate;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
-using AcquisitionDate.Hooking.Hooks;
+using AcquisitionDate.Hooking.Enums;
+using AcquisitionDate.Hooking.Structs;
+using AcquisitionDate.Nodes;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Hooking;
+using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 
+namespace AcquisitionDate.Hooking.Hooks.ATKHooks;
+
 internal unsafe class CutsceneReplayWindowHook : DateTextHook
 {
-    const uint customJournalTextNodeID = 80;
-
-    AtkTextNode* tNode;
-
-    uint lastQuestID = 0;
-
-    bool isQuest = false;
-
-    public CutsceneReplayWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    private delegate nint GetJournalCategoryRowDelegate(uint rowIdOrIndex);
+    
+    [Signature("E8 ?? ?? ?? ?? 48 8B D3 0F B6 48", DetourName = nameof(GetJournalCategoryRowDetour))]
+    private readonly Hook<GetJournalCategoryRowDelegate> GetJournalCategoryRowHook = null!;
+    
+    private CutsceneReplayDateResNode? _cutsceneReplayDateResNode;
+    
+    private int  _selectedQuest                  = 0;
+    private uint _lastGottenJournalCategoryIndex = 0;
+    
+    public CutsceneReplayWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
-        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "CutSceneReplay", HookDetour);
+        GetJournalCategoryRowHook.Enable();
+        
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, "AddonCutSceneReplayDetail", OnRefresh);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PostSetup,   "AddonCutSceneReplayDetail", OnSetup);
+        PluginHandlers.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "AddonCutSceneReplayDetail", OnFinalize);
     }
-
-    protected override IDatableList GetList(IDatableData userData)
-    {
-        if (isQuest) return userData.GetDate(AcquirableDateType.Quest);
-        return userData.GetDate(AcquirableDateType.Duty);
-    }
-
-    protected override bool HandleConfig(Configuration configuration) => configuration.DrawDatesOnCutsceneReplay;
 
     protected override void OnDispose()
     {
-        TrySafeInvalidateUIElement(ref tNode);
+        GetJournalCategoryRowHook.Dispose();
+        
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnRefresh);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnSetup);
+        PluginHandlers.AddonLifecycle.UnregisterListener(OnFinalize);
     }
-
-    protected override unsafe void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseaddon)
+    
+    private nint GetJournalCategoryRowDetour(uint rowIdOrIndex)
     {
-        AtkUnitBase* cutsceneReplayDetail = AtkStage.Instance()->RaptureAtkUnitManager->GetAddonByName("AddonCutSceneReplayDetail");
-        if (cutsceneReplayDetail == null || !cutsceneReplayDetail->IsVisible) return;
-
-        BaseNode newBaseNode = new BaseNode(cutsceneReplayDetail);
-
-        AtkTextNode* siblingNode = newBaseNode.GetNode<AtkTextNode>(10);
-        if (siblingNode == null) return;
-
-        AtkResNode* prevNode = newBaseNode.GetNode<AtkResNode>(7);
-        if (prevNode == null) return;
-
-        tNode = AccurateGrabTextNode(cutsceneReplayDetail, customJournalTextNodeID);
-        if (tNode == null)
-        {
-            tNode = CreateTextNode(customJournalTextNodeID);
-            if (tNode == null) return;
-
-            MergeTextBetweenElements(tNode, prevNode, &siblingNode->AtkResNode, &cutsceneReplayDetail->UldManager);
-
-            baseaddon->UldManager.UpdateDrawNodeList();
-
-            tNode->SetAlignment(AlignmentType.BottomRight);
-
-            tNode->AtkResNode.X = 390;
-            tNode->AtkResNode.Y = 103;
-
-            tNode->TextColor.R = 51;
-            tNode->TextColor.G = 51;
-            tNode->TextColor.B = 51;
-        }
-
-        string contentName = siblingNode->NodeText.ToString().Trim();
-
-        Quest? quest = Sheets.GetQuest(contentName);
-
-        uint questID = quest?.RowId ?? 0;
-
-        if (questID != 0)
-        {
-            isQuest = true;
-        }
-        else
-        {
-            isQuest = false;
-            ContentFinderCondition? contentFinder = Sheets.GetContentFinderConditionByName(contentName);
-            questID = contentFinder?.RowId ?? 0;
-        }
-
-        if (lastQuestID == questID) return;
-
-        lastQuestID = questID;
-
-        PluginHandlers.PluginLog.Verbose($"Clicked on quest or content: {questID}");
-
-        if (DrawDate(tNode, questID, showAlt: false, stillDraw: true))
-        {
-            GiveTooltip(cutsceneReplayDetail, tNode, questID, isQuest);
-            cutsceneReplayDetail->SetX((short)(cutsceneReplayDetail->X + 1)); // This forces an update and only THEN does the text become visible :/ (seems to produce no side effects currently)
-        }
-        else
-        {
-            ClearOldTooldtips();
-        }
+        _lastGottenJournalCategoryIndex = rowIdOrIndex;
+        
+        return GetJournalCategoryRowHook.Original(rowIdOrIndex);
     }
+    
+    private void OnSetup(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        _cutsceneReplayDateResNode = new CutsceneReplayDateResNode();
+        _cutsceneReplayDateResNode.AttachNode((AtkUnitBase*)addonArgs.Addon.Address);
+    }
+    
+    private void OnFinalize(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        _cutsceneReplayDateResNode?.Dispose();
+        _cutsceneReplayDateResNode = null;
+    }
+    
+    private void OnRefresh(AddonEvent addonEvent, AddonArgs addonArgs)
+    {
+        if (_cutsceneReplayDateResNode == null)
+        {
+            return;
+        }
+        
+        _cutsceneReplayDateResNode.IsVisible = false;
+        
+        MyAgentCutsceneReplay* agentStruct = (MyAgentCutsceneReplay*)AgentModule.Instance()->GetAgentByInternalId(AgentId.CutsceneReplay);
+        
+        if (agentStruct == null)
+        {
+            return;
+        }
+        
+        _selectedQuest = agentStruct->ActiveQuest;
+        
+        Services.PetLog.LogVerbose("Selected Index: " + _selectedQuest);
+        Services.PetLog.LogVerbose("Selected Journal Entry: " + _lastGottenJournalCategoryIndex);
+        
+        JournalCategory? journalCategory = Services.Sheets.GetJournalCategory(_lastGottenJournalCategoryIndex);
+        
+        if (journalCategory == null)
+        {
+            return;
+        }
+        
+        JournalCategoryDataType dataType = (JournalCategoryDataType)journalCategory.Value.DataType;
+        uint                    id       = (uint)_selectedQuest;
+        AcquirableDateType      dateType = AcquirableDateType.Quest;
+        
+        if (dataType != JournalCategoryDataType.Quest && 
+            dataType != JournalCategoryDataType.Duty)
+        {
+            return;
+        }
+        
+        if (dataType == JournalCategoryDataType.Duty)
+        {
+            dateType = AcquirableDateType.Duty;
+        }
+        
+        bool draw = DrawDateString(_cutsceneReplayDateResNode.DateTextNode, DrawTextFlags.None, dateType, id);
+        
+        _cutsceneReplayDateResNode.IsVisible = draw;
+    }
+    
+    
+    protected override bool HandleConfig(Configuration configuration) 
+        => configuration.DrawDatesOnCutsceneReplay;
+    
+    // TODO: PENDING REMOVAL VVVV
+    
+    protected override IDatableList GetList(IDatableData userData) 
+        => userData.GetDateList(AcquirableDateType.Quest);
+
+    protected override void OnHookDetour(BaseNode baseNode, ref AtkUnitBase* baseaddon)
+    { }
 }

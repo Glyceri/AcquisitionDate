@@ -3,19 +3,24 @@ using AcquisitionDate.Database.Structs;
 using AcquisitionDate.DirtySystem.Interfaces;
 using AcquisitionDate.Serializiation;
 using AcquisitionDate.Services.Interfaces;
-using AcquistionDate.PetNicknames.TranslatorSystem;
 using System;
 using System.Collections.Generic;
+using AcquisitionDate.Database.Enums;
+using AcquisitionDate.Translation;
 
 namespace AcquisitionDate.Database;
 
 internal class DatableDatabase : IDatabase
 {
-    List<IDatableData> _entries = new List<IDatableData>();
+    private List<IDatableData> _entries = [];
 
-    readonly IAcquisitionServices Services;
-    readonly IDirtySetter DirtySetter;
+    private readonly IAcquisitionServices Services;
+    private readonly IDirtySetter DirtySetter;
 
+    private IDatableData? localPlayerData = null;
+    private ulong lastLocalPlayerId = 0;
+    private bool lastIsLoaded = false;
+    
     public DatableDatabase(IAcquisitionServices services, IDirtySetter dirtySetter)
     {
         Services = services;
@@ -50,6 +55,7 @@ internal class DatableDatabase : IDatabase
                 new DatableList(DirtySetter, user.FashionList, Services.Configuration),
                 new DatableList(DirtySetter, user.DutyList, Services.Configuration),
                 new DatableList(DirtySetter, user.FishingList, Services.Configuration),
+                new DatableList(DirtySetter, user.FishingSpotList, Services.Configuration),
                 new DatableList(DirtySetter, user.SightList, Services.Configuration),
                 new DatableList(DirtySetter, user.FramersList, Services.Configuration),
                 new DatableList(DirtySetter, user.SecretRecipeBookList, Services.Configuration),
@@ -62,17 +68,49 @@ internal class DatableDatabase : IDatabase
         }
     }
 
-    public IDatableData GetEntry(ulong contentID)
+    public IDatableData? GetLocalUser()
+        => localPlayerData;
+    
+    public TypedDatabaseEntry[] GetDateLists(AcquirableDateType dateType)
     {
-        IDatableData? entry = GetEntryNoCreate(contentID);
-        if (entry != null) return entry;
+        List<TypedDatabaseEntry> datableLists = [];
+        
+        foreach (IDatableData data in _entries)
+        {
+            IDatableList       dataList = data.GetDateList(dateType);
+            TypedDatabaseEntry entry    = new TypedDatabaseEntry(data, dataList);
+            
+            if (data.ContentId == localPlayerData?.ContentId)
+            {
+                datableLists.Insert(0, entry);
+            }
+            else
+            {
+                datableLists.Add(entry);
+            }
+        }
+        
+        return datableLists.ToArray();
+    }
+    
+    private IDatableData GetEntry(ulong contentId)
+    {
+        IDatableData? entry = GetEntryNoCreate(contentId);
+        
+        if (entry != null)
+        {
+            return entry;
+        }
 
-        IDatableData newEntry = new DatableData(Services, DirtySetter, string.Empty, 0, contentID, null);
+        IDatableData newEntry = new DatableData(Services, DirtySetter, string.Empty, 0, contentId, null);
+        
         _entries.Add(newEntry);
+        
         return newEntry;
     }
 
-    public IDatableData[] GetEntries() => _entries.ToArray();
+    public IDatableData[] GetEntries() 
+        => _entries.ToArray();
 
     public IDatableData? GetEntryNoCreate(ulong contentID)
     {
@@ -81,7 +119,7 @@ internal class DatableDatabase : IDatabase
         for (int i = 0; i < entriesCount; i++)
         {
             IDatableData entry = _entries[i];
-            if (entry.ContentID != contentID) continue;
+            if (entry.ContentId != contentID) continue;
             return _entries[i];
         }
 
@@ -106,7 +144,7 @@ internal class DatableDatabase : IDatabase
     {
         DirtySetter.NotifyDirtyDatabase();
     }
-
+    
     public string? GetDateTimeString(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser)
     {
         bool earliestIsLocal = false;
@@ -127,12 +165,12 @@ internal class DatableDatabase : IDatabase
             return Services.Configuration.DateStandinString();
         }
 
-        if (earliestData.ContentID == localUser.ContentID)
+        if (earliestData.ContentId == localUser.ContentId)
         {
             earliestIsLocal = true;
         }
 
-        string? dateString = earliestTime.Value.GetTimeString();
+        string? dateString = earliestTime?.GetDateTime()?.GetTimeString();
         if (dateString == null)
         {
             return Services.Configuration.DateStandinString();
@@ -151,7 +189,7 @@ internal class DatableDatabase : IDatabase
         return dateString;
     }
 
-    void GetDateValues(uint forID, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser,
+    public void GetDateValues(uint forId, Func<IDatableData, IDatableList> getListCallback, bool showAlts, IDatableData localUser,
                        out AcquisitionDateTime? earliestTimeStamp, out UnlockedDate? earliestTime, out IDatableData? earliestData)
     {
         earliestTimeStamp = null;
@@ -164,7 +202,7 @@ internal class DatableDatabase : IDatabase
             {
                 IDatableList list = GetList(entry, getListCallback);
 
-                UnlockedDate? date = GetDate(forID, list);
+                UnlockedDate? date = GetDate(forId, list);
                 if (date == null) continue;
 
                 AcquisitionDateTime? dateTime = date.Value.GetDateTime();
@@ -188,14 +226,38 @@ internal class DatableDatabase : IDatabase
 
             IDatableList list = GetList(earliestData, getListCallback);
 
-            UnlockedDate? date = GetDate(forID, list);
+            UnlockedDate? date = GetDate(forId, list);
 
             earliestTime = date;
             earliestTimeStamp = date?.GetDateTime();
         }
     }
 
-    IDatableList GetList(IDatableData data, Func<IDatableData, IDatableList> getListCallback) => getListCallback.Invoke(data);
+    IDatableList GetList(IDatableData data, Func<IDatableData, IDatableList> getListCallback) 
+        => getListCallback.Invoke(data);
 
-    UnlockedDate? GetDate(uint forID, IDatableList list) => list.GetDate(forID);
+    UnlockedDate? GetDate(uint forID, IDatableList list) 
+        => list.GetDate(forID);
+    
+    public void Update(float deltaTime)
+    {
+        if (!PluginHandlers.PlayerState.IsLoaded)
+        {
+            localPlayerData = null;
+            
+            return;
+        }
+        
+        if (localPlayerData != null)
+        {
+            return;
+        }
+        
+        ulong playerId = PluginHandlers.PlayerState.ContentId;
+        
+        lastLocalPlayerId = playerId;
+        localPlayerData   = GetEntry(playerId);
+        
+        localPlayerData.UpdateEntry(playerId, PluginHandlers.PlayerState.CharacterName, (ushort)PluginHandlers.PlayerState.HomeWorld.RowId);
+    }
 }

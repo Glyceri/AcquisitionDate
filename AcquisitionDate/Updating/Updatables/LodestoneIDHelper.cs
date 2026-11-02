@@ -1,4 +1,4 @@
-using AcquisitionDate.DatableUsers.Interfaces;
+using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.LodestoneNetworking.Interfaces;
 using AcquisitionDate.LodestoneRequests.Requests;
 using AcquisitionDate.Parser.Interfaces;
@@ -11,16 +11,16 @@ internal class LodestoneIDHelper : IUpdatable
     const float lodestoneIDCooldown = 30;
 
     readonly ILodestoneNetworker LodestoneNetworker;
-    readonly IUserList UserList;
+    readonly IDatabase Database;
     readonly IAcquisitionParser AcquisitionParser;
 
     float searchTimer = 0;
 
-    public LodestoneIDHelper(IAcquisitionParser parser, ILodestoneNetworker networker, IUserList userList)
+    public LodestoneIDHelper(IAcquisitionParser parser, ILodestoneNetworker networker, IDatabase database)
     {
         AcquisitionParser = parser;
         LodestoneNetworker = networker;
-        UserList = userList;
+        Database = database;
     }
 
     public void Update(float deltaTime)
@@ -29,8 +29,10 @@ internal class LodestoneIDHelper : IUpdatable
         if (searchTimer < 0) searchTimer = 0;
         if (searchTimer > 0) return;
 
-        if (UserList.ActiveUser == null) return;
-        if (UserList.ActiveUser.Data.HasSearchedLodestoneID) return;
+        IDatableData? data = Database.GetLocalUser();
+        
+        if (data == null) return;
+        if (data.HasSearchedLodestoneId) return;
 
         searchTimer = lodestoneIDCooldown;
 
@@ -39,7 +41,7 @@ internal class LodestoneIDHelper : IUpdatable
             new LodestoneIDRequest
             (
                 AcquisitionParser.LodestoneIDParser,
-                UserList.ActiveUser.Data
+                data
             )
         );
     }

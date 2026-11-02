@@ -27,10 +27,12 @@ internal interface ISheets
     IPetSheetData? GetCompanionByName(string name);
     Mount? GetMountByName(string name);
     Mount? GetMountByID(uint id);
-    IGlassesSheetData? GetGlassesByName(string name);
-    IGlassesSheetData? GetGlassesByID(uint id);
+    Glasses? GetGlassesByName(string name);
+    Glasses? GetGlassesById(uint id);
+    Glasses? GetGlassesByIconId(uint iconId);
     Ornament? GetOrnamentByName(string name);
-    Ornament? GetOrnamentByID(uint id);
+    Ornament? GetOrnamentById(uint id);
+    Ornament? GetOrnamentByIconId(uint iconId);
     Orchestrion? GetOrchestrionByName(string name);
     Orchestrion? GetOrchestrionByID(uint id);
     ContentFinderCondition? GetContentFinderCondition(ushort id);
@@ -38,4 +40,5 @@ internal interface ISheets
     ClassJob? GetClassJob(uint id);
     Adventure? GetAdventureByIndex(uint index);
     Emote? GetEmoteByID(uint id);
+    JournalCategory? GetJournalCategory(uint index);
 }

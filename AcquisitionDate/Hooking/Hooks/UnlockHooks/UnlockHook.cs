@@ -1,4 +1,4 @@
-﻿using AcquisitionDate.DatableUsers.Interfaces;
+﻿using AcquisitionDate.Database.Interfaces;
 using AcquisitionDate.Services.Interfaces;
 using AcquisitionDate.Updating.Interfaces;
 
@@ -6,13 +6,13 @@ namespace AcquisitionDate.Hooking.Hooks.UnlockHooks;
 
 internal abstract class UnlockHook : HookableElement, IUpdatable
 {
-    protected IUserList UserList;
-    protected ISheets Sheets;
+    protected readonly IDatabase Database;
+    protected readonly ISheets   Sheets;
 
-    public UnlockHook(IUserList userList, ISheets sheets)
+    protected UnlockHook(IDatabase database, ISheets sheets)
     {
-        UserList = userList;
-        Sheets = sheets;
+        Database = database;
+        Sheets   = sheets;
     }
 
     public abstract void Update(float deltaTime);

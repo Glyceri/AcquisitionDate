@@ -1,9 +1,7 @@
 using Acquisition.PetNicknames.Hooking;
 using AcquisitionDate;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Database.Enums;
 using AcquisitionDate.Database.Interfaces;
-using AcquisitionDate.DatableUsers.Interfaces;
 using AcquisitionDate.Hooking.Hooks;
 using AcquisitionDate.Services.Interfaces;
 using Dalamud.Game.Addon.Lifecycle;
@@ -18,7 +16,9 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
     uint lastID = 0;
     bool isQuest = false;
 
-    public QuestJournalWindowHook(IUserList userList, IDatabase database, ISheets sheets, Configuration configuration) : base(userList, database, sheets, configuration) { }
+    public QuestJournalWindowHook(IDatabase database, IAcquisitionServices services)
+        : base(database, services)
+        { }
 
     public override void Init()
     {
@@ -29,8 +29,8 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
 
     protected override IDatableList GetList(IDatableData userData)
     {
-        if (isQuest) return userData.GetDate(AcquirableDateType.Quest);
-        return userData.GetDate(AcquirableDateType.Duty);
+        if (isQuest) return userData.GetDateList(AcquirableDateType.Quest);
+        return userData.GetDateList(AcquirableDateType.Duty);
     }
 
     protected override bool HandleConfig(Configuration configuration)
@@ -88,7 +88,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
                 return;
             }
 
-            Quest? quest = Sheets.GetQuest(contentString);
+            Quest? quest = Services.Sheets.GetQuest(contentString);
             currentID = quest?.RowId ?? 0;
 
             if (currentID == 0) // Failsafe :shrug:
@@ -100,7 +100,7 @@ internal unsafe class QuestJournalWindowHook : DateTextHook
         else if (_lastAddonName == "ContentsFinder" || _lastAddonName == "RaidFinder")
         {
             isQuest = false;
-            ContentFinderCondition? content = Sheets.GetContentFinderConditionByName(contentString);
+            ContentFinderCondition? content = Services.Sheets.GetContentFinderConditionByName(contentString);
             if (content == null)
             {
                 stillDraw = false;

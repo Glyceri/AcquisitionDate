@@ -1,7 +1,5 @@
 using AcquiryDate.PetNicknames.Services.ServiceWrappers.Interfaces;
-using AcquisitionDate.Core.Handlers;
 using AcquisitionDate.Services.Interfaces;
-using AcquisitionDate.Services.Structs;
 using Dalamud.Utility;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -15,7 +13,6 @@ namespace AcquisitionDate.Services.Wrappers;
 internal class SheetsWrapper : ISheets
 {
     readonly List<IPetSheetData> petSheetCache = new List<IPetSheetData>();
-    readonly List<IGlassesSheetData> glassesSheetCache = new List<IGlassesSheetData>();
 
     public Quest[] AllQuests => Quests.ToArray();
     public Item[] AllItems => Items.ToArray();
@@ -41,6 +38,7 @@ internal class SheetsWrapper : ISheets
     readonly ExcelSheet<Ornament>                   Ornaments;
     readonly ExcelSheet<Orchestrion>                Orchestrions;
     readonly ExcelSheet<Emote>                      Emotes;
+    readonly ExcelSheet<JournalCategory>            JournalCategories;
 
     public SheetsWrapper()
     {
@@ -59,31 +57,13 @@ internal class SheetsWrapper : ISheets
         Ornaments                   = PluginHandlers.DataManager.GetExcelSheet<Ornament>();
         Orchestrions                = PluginHandlers.DataManager.GetExcelSheet<Orchestrion>();
         Emotes                      = PluginHandlers.DataManager.GetExcelSheet<Emote>();
-
+        JournalCategories           = PluginHandlers.DataManager.GetExcelSheet<JournalCategory>();
+        
         SetupSheetDataCache();
     }
 
     void SetupSheetDataCache()
     {
-        foreach (Glasses glass in Glasses)
-        {
-            if(glass.RowId == 0) continue;
-
-            uint rowId = glass.RowId;
-
-            string singular = glass.Singular.ExtractText();
-
-            if (singular.IsNullOrWhitespace()) continue;
-
-            singular = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(singular);
-
-            string plural = glass.Plural.ExtractText();
-
-            sbyte pronoun = glass.Pronoun;
-
-            glassesSheetCache.Add(new GlassesSheetData((int)rowId, pronoun, singular, plural));
-        }
-
         foreach (Companion companion in Companions)
         {
             if (!companion.Model.IsValid) continue;
@@ -290,31 +270,24 @@ internal class SheetsWrapper : ISheets
         return null;
     }
 
-    public IGlassesSheetData? GetGlassesByName(string name)
-    {
-        foreach (IGlassesSheetData glass in glassesSheetCache)
-        {
-            if (!glass.IsGlass(name)) continue;
-
-            return glass;
-        }
-
-        return null;
-    }
-
+    public Glasses? GetGlassesByName(string name)
+        => Glasses.FirstOrDefault(g => string.Equals(g.Name.ExtractText(), name, System.StringComparison.InvariantCultureIgnoreCase));
+    
+    public Glasses? GetGlassesByIconId(uint iconId)
+        => Glasses.FirstOrDefault(g => g.Icon == (int)iconId);
+    
+    public Glasses? GetGlassesById(uint id)
+        => Glasses.GetRowOrDefault(id);
+    
     public Ornament? GetOrnamentByName(string name)
-    {
-        foreach (Ornament ornament in Ornaments)
-        {
-            string mName = ornament.Singular.ExtractText();
-            if (!mName.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)) continue;
-
-            return ornament;
-        }
-
-        return null;
-    }
-
+        => Ornaments.FirstOrDefault(g => string.Equals(g.Singular.ExtractText(), name, System.StringComparison.InvariantCultureIgnoreCase));
+    
+    public Ornament? GetOrnamentByIconId(uint iconId)
+        => Ornaments.FirstOrDefault(g => g.Icon == (int)iconId);
+    
+    public Ornament? GetOrnamentById(uint id)
+        => Ornaments.GetRowOrDefault(id);
+    
     public Orchestrion? GetOrchestrionByName(string name)
     {
         foreach (Orchestrion orchestrion in Orchestrions)
@@ -365,30 +338,6 @@ internal class SheetsWrapper : ISheets
         return null;
     }
 
-    public IGlassesSheetData? GetGlassesByID(uint id)
-    {
-        foreach (IGlassesSheetData glasses in glassesSheetCache)
-        {
-            if (glasses.Model != id) continue;
-
-            return glasses;
-        }
-
-        return null;
-    }
-
-    public Ornament? GetOrnamentByID(uint id)
-    {
-        foreach (Ornament ornament in Ornaments)
-        {
-            if (ornament.RowId != id) continue;
-
-            return ornament;
-        }
-
-        return null;
-    }
-
     public Orchestrion? GetOrchestrionByID(uint id)
     {
         foreach (Orchestrion orchestrion in Orchestrions)
@@ -412,4 +361,7 @@ internal class SheetsWrapper : ISheets
 
         return null;
     }
+
+    public JournalCategory? GetJournalCategory(uint index)
+        => JournalCategories.GetRowOrDefault(index);
 }

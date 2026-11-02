@@ -1,5 +1,4 @@
-﻿using AcquisitionDate.Core.Handlers;
-using AcquisitionDate.Services.Interfaces;
+﻿using AcquisitionDate.Services.Interfaces;
 
 namespace AcquisitionDate.Services.Wrappers;
 
